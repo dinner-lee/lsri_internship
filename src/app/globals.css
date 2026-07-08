@@ -1,26 +1,78 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* 강조용 — 학교안심 알림장 */
+@font-face {
+  font-family: "SchoolSafetyNotification";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/2408-5@1.0/HakgyoansimAllimjangTTF-R.woff2")
+    format("woff2");
+  font-weight: 400;
+  font-display: swap;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+@font-face {
+  font-family: "SchoolSafetyNotification";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/2408-5@1.0/HakgyoansimAllimjangTTF-B.woff2")
+    format("woff2");
+  font-weight: 700;
+  font-display: swap;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* 본문용 — 편진고딕 */
+@font-face {
+  font-family: "PyeojinGothic";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/2504-1@1.0/PyeojinGothic-Light.woff2")
+    format("woff2");
+  font-weight: 300;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "PyeojinGothic";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/2504-1@1.0/PyeojinGothic-Regular.woff2")
+    format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "PyeojinGothic";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/2504-1@1.0/PyeojinGothic-Bold.woff2")
+    format("woff2");
+  font-weight: 700;
+  font-display: swap;
+}
+
+@theme {
+  --color-accent: oklch(0.45 0.13 255);
+  --color-accent-strong: oklch(0.4 0.13 255);
+  --color-accent-soft: oklch(0.95 0.02 255);
+  --color-accent-border: oklch(0.9 0.03 255);
+  --color-accent-tint: oklch(0.97 0.01 255);
+  --color-bad: oklch(0.52 0.15 25);
+  --color-bad-soft: oklch(0.96 0.02 25);
+  --color-bad-border: oklch(0.85 0.06 25);
+  --color-good: oklch(0.5 0.12 155);
+  --color-warn: oklch(0.55 0.12 60);
+  --color-line: #e7e5e2;
+  --color-line-soft: #f0efec;
+  --color-paper: #fafaf9;
+  --font-sans: "PyeojinGothic", var(--font-noto), "Noto Sans KR", system-ui, sans-serif;
+  --font-display: "SchoolSafetyNotification", "PyeojinGothic", var(--font-noto), "Noto Sans KR",
+    system-ui, sans-serif;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-paper);
+  color: #18181b;
+  font-family: var(--font-sans);
+}
+
+::placeholder {
+  color: #b8b4ae;
+}
+
+textarea:focus,
+input:focus {
+  outline: 2px solid oklch(0.75 0.08 255);
+  outline-offset: -1px;
 }

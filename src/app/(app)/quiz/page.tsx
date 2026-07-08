@@ -1,0 +1,136 @@
+import Link from "next/link";
+import { prisma } from "@/lib/prisma";
+import { requireUser } from "@/lib/auth";
+import { formatTimeLimit } from "@/lib/quiz";
+import { initialOf, dDayLabel } from "@/lib/utils";
+
+export default async function QuizHomePage() {
+  const user = await requireUser();
+
+  const current = await prisma.quiz.findFirst({
+    where: { publishedAt: { not: null } },
+    orderBy: { week: "desc" },
+    include: { _count: { select: { questions: true } } },
+  });
+
+  const mySubmissions = await prisma.submission.findMany({
+    where: { userId: user.id },
+    include: { quiz: true },
+    orderBy: { quiz: { week: "desc" } },
+  });
+  const currentSub = current ? mySubmissions.find((s) => s.quizId === current.id) : null;
+  const records = mySubmissions.filter((s) => s.quizId !== current?.id);
+
+  // 확정된 최신 모둠에서 내 모둠 찾기
+  const confirmedSet = await prisma.groupSet.findFirst({
+    where: { confirmedAt: { not: null } },
+    orderBy: { confirmedAt: "desc" },
+    include: {
+      groups: {
+        orderBy: { index: "asc" },
+        include: { members: { include: { user: true } } },
+      },
+    },
+  });
+  const myGroup = confirmedSet?.groups.find((g) =>
+    g.members.some((m) => m.userId === user.id)
+  );
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-2.5">
+        <div className="font-display text-[16px] text-stone-600">이번 주 퀴즈</div>
+      {current ? (
+        <div className="flex items-center justify-between gap-5 rounded-[14px] border border-line bg-white p-7">
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <span className="rounded-[5px] bg-accent-soft px-2 py-[3px] text-[11px] font-semibold text-accent">
+                이번 주
+              </span>
+              <span className="text-[11.5px] text-stone-400">
+                {[dDayLabel(current.dueAt), `${current._count.questions}문항 · ${formatTimeLimit(current.timeLimitSec)}`]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </span>
+            </div>
+            <div className="font-display text-[19px] font-normal tracking-tight">{current.title || "(제목 없음)"}</div>
+            <div className="text-[13px] text-stone-500">{current.description}</div>
+          </div>
+          <Link
+            href={currentSub ? `/quiz/${current.id}/result` : `/quiz/${current.id}/take`}
+            className="font-display rounded-[10px] bg-accent px-6 py-3 text-[14.5px] whitespace-nowrap text-white hover:bg-accent-strong"
+          >
+            {currentSub ? "결과 보기" : "퀴즈 시작"}
+          </Link>
+        </div>
+      ) : (
+        <div className="rounded-[14px] border border-line bg-white p-7 text-sm text-stone-400">
+          아직 발행된 퀴즈가 없습니다.
+        </div>
+      )}
+      </div>
+
+      {myGroup && (
+        <div className="flex items-center justify-between rounded-[14px] border border-accent-border bg-accent-tint px-6 py-5">
+          <div className="flex flex-col gap-1">
+            <div className="font-display text-[12.5px] text-accent">이번 주 모둠 배정</div>
+            <div className="text-[14.5px] font-bold">
+              모둠 {myGroup.index + 1} · {myGroup.members.length}명
+            </div>
+          </div>
+          <div className="flex flex-wrap justify-end gap-2">
+            {myGroup.members.map((m) => (
+              <div
+                key={m.id}
+                className="flex items-center gap-1.5 rounded-full border border-line bg-white py-[5px] pr-3 pl-1.5"
+              >
+                <div className="flex h-[22px] w-[22px] items-center justify-center rounded-full bg-line text-[10px] font-semibold text-stone-600">
+                  {initialOf(m.user.name)}
+                </div>
+                <span className="text-xs font-medium text-stone-700">
+                  {m.userId === user.id ? `${m.user.name} (나)` : m.user.name}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="flex flex-col gap-2.5">
+        <div className="font-display text-[16px] text-stone-600">지난 퀴즈 기록</div>
+        <div className="flex flex-col overflow-hidden rounded-xl border border-line bg-white">
+          {records.length === 0 && (
+            <div className="px-5 py-4 text-[13px] text-stone-400">아직 기록이 없습니다.</div>
+          )}
+          {records.map((rec) => (
+            <div
+              key={rec.id}
+              className="flex items-center justify-between border-b border-line-soft px-5 py-[15px] last:border-b-0"
+            >
+              <div className="flex items-center gap-3.5">
+                <span className="w-10 text-xs text-stone-400">{rec.quiz.week}주차</span>
+                <span className="text-[13.5px] font-medium text-stone-800">
+                  {rec.quiz.title || "(제목 없음)"}
+                </span>
+              </div>
+              <div className="flex items-center gap-4">
+                <span className="text-xs text-stone-400">
+                  {rec.correctCount}/{rec.total} 정답
+                </span>
+                <span className="w-[38px] text-right text-sm font-bold text-accent">
+                  {rec.score}점
+                </span>
+                <Link
+                  href={`/quiz/${rec.quizId}/result`}
+                  className="text-xs text-stone-500 hover:text-accent"
+                >
+                  해설 보기 →
+                </Link>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,199 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  LEARNER
+  ADMIN
+}
+
+enum QuestionType {
+  SINGLE
+  MULTI
+  SHORT
+}
+
+enum GroupMethod {
+  BALANCED
+  SIMILAR
+  AVOID_PREV
+}
+
+model User {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  name         String
+  passwordHash String
+  role         Role     @default(LEARNER)
+  email        String?  @unique // 추후 Google 로그인 연동용
+  image        String? // 프로필 사진 URL (Google 로그인 시 자동 반영)
+  createdAt    DateTime @default(now())
+
+  submissions  Submission[]
+  topic        Topic?
+  topicLikes   TopicLike[]
+  keywordLikes KeywordLike[]
+  comments     Comment[]
+  groupMembers GroupMember[]
+}
+
+model InviteCode {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  role      Role     @default(LEARNER)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model Quiz {
+  id          String    @id @default(cuid())
+  week        Int       @unique
+  title       String    @default("")
+  description String    @default("")
+  timeLimitSec Int?
+  markdown    String    @default("")
+  publishedAt DateTime?
+  dueAt       DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  questions   Question[]
+  submissions Submission[]
+  groupSets   GroupSet[]
+}
+
+model Question {
+  id           String       @id @default(cuid())
+  quizId       String
+  quiz         Quiz         @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  order        Int
+  type         QuestionType
+  text         String
+  explanation  String       @default("")
+  shortAnswers String[]     @default([])
+
+  options Option[]
+  answers Answer[]
+
+  @@unique([quizId, order])
+}
+
+model Option {
+  id         String   @id @default(cuid())
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  order      Int
+  label      String
+  isCorrect  Boolean  @default(false)
+
+  @@unique([questionId, order])
+}
+
+model Submission {
+  id           String   @id @default(cuid())
+  quizId       String
+  quiz         Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  submittedAt  DateTime @default(now())
+  score        Int
+  correctCount Int
+  total        Int
+
+  answers Answer[]
+
+  @@unique([quizId, userId])
+}
+
+model Answer {
+  id              String     @id @default(cuid())
+  submissionId    String
+  submission      Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  questionId      String
+  question        Question   @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  selectedOptions Int[]      @default([]) // 선택한 선지의 order 목록
+  text            String?
+  isCorrect       Boolean
+
+  @@unique([submissionId, questionId])
+}
+
+model GroupSet {
+  id          String      @id @default(cuid())
+  quizId      String // 기준 주차 퀴즈
+  quiz        Quiz        @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  size        Int
+  method      GroupMethod
+  confirmedAt DateTime?
+  createdAt   DateTime    @default(now())
+
+  groups Group[]
+}
+
+model Group {
+  id         String   @id @default(cuid())
+  groupSetId String
+  groupSet   GroupSet @relation(fields: [groupSetId], references: [id], onDelete: Cascade)
+  index      Int
+
+  members GroupMember[]
+
+  @@unique([groupSetId, index])
+}
+
+model GroupMember {
+  id      String @id @default(cuid())
+  groupId String
+  group   Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  userId  String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+}
+
+model Topic {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  markdown  String   @default("")
+  keywords  String[] @default([])
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+
+  likes    TopicLike[]
+  comments Comment[]
+}
+
+model TopicLike {
+  id      String @id @default(cuid())
+  topicId String
+  topic   Topic  @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  userId  String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([topicId, userId])
+}
+
+model KeywordLike {
+  id      String @id @default(cuid())
+  keyword String
+  userId  String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([keyword, userId])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  topicId   String
+  topic     Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  text      String
+  createdAt DateTime @default(now())
+}
