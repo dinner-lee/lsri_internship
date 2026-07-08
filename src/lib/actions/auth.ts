@@ -63,6 +63,10 @@ export async function registerAction(
   }
 }
 
+export async function googleLoginAction() {
+  await signIn("google", { redirectTo: "/" });
+}
+
 export async function logoutAction() {
   await signOut({ redirectTo: "/login" });
 }
