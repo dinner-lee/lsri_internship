@@ -24,12 +24,14 @@ export default async function AdminResultsPage({
   const selected =
     quizzes.find((q) => String(q.week) === week) ?? quizzes[quizzes.length - 1];
 
-  const submissions = await prisma.submission.findMany({
-    where: { quizId: selected.id },
-    include: { user: true },
-    orderBy: { score: "desc" },
-  });
-  const learnerCount = await prisma.user.count({ where: { role: "LEARNER" } });
+  const [submissions, learnerCount] = await Promise.all([
+    prisma.submission.findMany({
+      where: { quizId: selected.id },
+      include: { user: true },
+      orderBy: { score: "desc" },
+    }),
+    prisma.user.count({ where: { role: "LEARNER" } }),
+  ]);
 
   const scores = submissions.map((s) => s.score);
   const avg = scores.length

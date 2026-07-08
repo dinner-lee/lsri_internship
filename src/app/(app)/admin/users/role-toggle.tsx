@@ -1,17 +1,20 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useOptimistic, useState, useTransition } from "react";
 import type { Role } from "@prisma/client";
 import { setRoleAction } from "@/lib/actions/users";
 
 export function RoleToggle({ userId, role }: { userId: string; role: Role }) {
-  const [pending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  // 낙관적 갱신: 클릭 즉시 토글 이동
+  const [optRole, setOptRole] = useOptimistic(role, (_s, next: Role) => next);
 
   const change = (next: Role) => {
-    if (next === role || pending) return;
+    if (next === optRole) return;
     startTransition(async () => {
       setError(null);
+      setOptRole(next);
       const res = await setRoleAction(userId, next);
       if (res.error) setError(res.error);
     });
@@ -19,7 +22,7 @@ export function RoleToggle({ userId, role }: { userId: string; role: Role }) {
 
   return (
     <div className="flex flex-col items-end gap-1">
-      <div className={`flex rounded-lg bg-line-soft p-[2px] ${pending ? "opacity-50" : ""}`}>
+      <div className="flex rounded-lg bg-line-soft p-[2px]">
         {(
           [
             { key: "LEARNER", label: "학습자" },
@@ -30,9 +33,8 @@ export function RoleToggle({ userId, role }: { userId: string; role: Role }) {
             key={r.key}
             type="button"
             onClick={() => change(r.key)}
-            disabled={pending}
             className={`cursor-pointer rounded-md px-2.5 py-1 text-[11.5px] font-semibold ${
-              role === r.key ? "bg-white text-accent shadow-sm" : "text-stone-400"
+              optRole === r.key ? "bg-white text-accent shadow-sm" : "text-stone-400"
             }`}
           >
             {r.label}

@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 import { Markdown } from "@/lib/md";
 import { initialOf } from "@/lib/utils";
-import { TopicLikeButton, CommentForm } from "./interactions";
+import { TopicLikeButton, CommentsSection } from "./interactions";
 
 export default async function TopicDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -55,23 +55,11 @@ export default async function TopicDetailPage({ params }: { params: Promise<{ id
         )}
       </div>
 
-      <div className="flex flex-col gap-3.5 rounded-[14px] border border-line bg-white px-7 py-6">
-        <div className="font-display text-[13.5px] text-stone-600">
-          댓글 {topic.comments.length}
-        </div>
-        {topic.comments.map((c) => (
-          <div key={c.id} className="flex gap-2.5">
-            <div className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-line text-[11px] font-semibold text-stone-600">
-              {initialOf(c.user.name)}
-            </div>
-            <div className="flex flex-col gap-0.5">
-              <span className="text-xs font-semibold">{c.user.name}</span>
-              <span className="text-[13px] leading-relaxed text-stone-700">{c.text}</span>
-            </div>
-          </div>
-        ))}
-        <CommentForm topicId={topic.id} />
-      </div>
+      <CommentsSection
+        topicId={topic.id}
+        myName={user.name ?? ""}
+        comments={topic.comments.map((c) => ({ id: c.id, name: c.user.name, text: c.text }))}
+      />
     </div>
   );
 }

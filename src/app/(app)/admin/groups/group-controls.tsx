@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useOptimistic, useState, useTransition } from "react";
 import Link from "next/link";
 import { generateGroupsAction, confirmGroupsAction } from "@/lib/actions/groups";
 import { METHOD_LABELS, type GroupMethodKey } from "@/lib/groups";
@@ -132,8 +132,11 @@ export function ConfirmButtons({
   groupSetId: string;
   confirmed: boolean;
 }) {
-  const [pending, startTransition] = useTransition();
-  if (confirmed)
+  const [, startTransition] = useTransition();
+  // 낙관적 갱신: 클릭 즉시 확정 상태로 표시
+  const [optConfirmed, setOptConfirmed] = useOptimistic(confirmed, () => true);
+
+  if (optConfirmed)
     return (
       <span className="rounded-lg bg-stone-900 px-4 py-2 text-xs font-semibold text-white">
         ✓ 확정됨 · 학습자에게 공개
@@ -142,9 +145,13 @@ export function ConfirmButtons({
   return (
     <button
       type="button"
-      onClick={() => startTransition(() => confirmGroupsAction(groupSetId))}
-      disabled={pending}
-      className="font-display cursor-pointer rounded-lg bg-stone-900 px-4 py-2 text-[12.5px] text-white disabled:opacity-60"
+      onClick={() =>
+        startTransition(async () => {
+          setOptConfirmed(true);
+          await confirmGroupsAction(groupSetId);
+        })
+      }
+      className="font-display cursor-pointer rounded-lg bg-stone-900 px-4 py-2 text-[12.5px] text-white"
     >
       이 구성으로 확정
     </button>

@@ -7,31 +7,32 @@ import { initialOf, dDayLabel } from "@/lib/utils";
 export default async function QuizHomePage() {
   const user = await requireUser();
 
-  const current = await prisma.quiz.findFirst({
-    where: { publishedAt: { not: null } },
-    orderBy: { week: "desc" },
-    include: { _count: { select: { questions: true } } },
-  });
-
-  const mySubmissions = await prisma.submission.findMany({
-    where: { userId: user.id },
-    include: { quiz: true },
-    orderBy: { quiz: { week: "desc" } },
-  });
+  // 왕복 지연을 줄이기 위해 병렬 실행
+  const [current, mySubmissions, confirmedSet] = await Promise.all([
+    prisma.quiz.findFirst({
+      where: { publishedAt: { not: null } },
+      orderBy: { week: "desc" },
+      include: { _count: { select: { questions: true } } },
+    }),
+    prisma.submission.findMany({
+      where: { userId: user.id },
+      include: { quiz: true },
+      orderBy: { quiz: { week: "desc" } },
+    }),
+    // 확정된 최신 모둠
+    prisma.groupSet.findFirst({
+      where: { confirmedAt: { not: null } },
+      orderBy: { confirmedAt: "desc" },
+      include: {
+        groups: {
+          orderBy: { index: "asc" },
+          include: { members: { include: { user: true } } },
+        },
+      },
+    }),
+  ]);
   const currentSub = current ? mySubmissions.find((s) => s.quizId === current.id) : null;
   const records = mySubmissions.filter((s) => s.quizId !== current?.id);
-
-  // 확정된 최신 모둠에서 내 모둠 찾기
-  const confirmedSet = await prisma.groupSet.findFirst({
-    where: { confirmedAt: { not: null } },
-    orderBy: { confirmedAt: "desc" },
-    include: {
-      groups: {
-        orderBy: { index: "asc" },
-        include: { members: { include: { user: true } } },
-      },
-    },
-  });
   const myGroup = confirmedSet?.groups.find((g) =>
     g.members.some((m) => m.userId === user.id)
   );

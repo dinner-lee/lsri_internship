@@ -29,20 +29,21 @@ export default async function AdminGroupsPage({
   const selected =
     quizzes.find((q) => String(q.week) === week) ?? quizzes[quizzes.length - 1];
 
-  const groupSet = await prisma.groupSet.findFirst({
-    where: { quizId: selected.id },
-    orderBy: [{ confirmedAt: { sort: "desc", nulls: "first" } }, { createdAt: "desc" }],
-    include: {
-      groups: {
-        orderBy: { index: "asc" },
-        include: { members: { include: { user: true } } },
+  const [groupSet, submissions, prevGroupOf] = await Promise.all([
+    prisma.groupSet.findFirst({
+      where: { quizId: selected.id },
+      orderBy: [{ confirmedAt: { sort: "desc", nulls: "first" } }, { createdAt: "desc" }],
+      include: {
+        groups: {
+          orderBy: { index: "asc" },
+          include: { members: { include: { user: true } } },
+        },
       },
-    },
-  });
-
-  const submissions = await prisma.submission.findMany({ where: { quizId: selected.id } });
+    }),
+    prisma.submission.findMany({ where: { quizId: selected.id } }),
+    getPrevGroupOf(selected.id),
+  ]);
   const scoreOf = new Map(submissions.map((s) => [s.userId, s.score]));
-  const prevGroupOf = await getPrevGroupOf(selected.id);
 
   const groupCards = (groupSet?.groups ?? []).map((g) => {
     const scores = g.members.map((m) => scoreOf.get(m.userId) ?? 0);

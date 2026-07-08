@@ -1,24 +1,39 @@
 "use client";
 
-import { useTransition } from "react";
+import { useOptimistic, useTransition } from "react";
 import { toggleKeywordLikeAction } from "@/lib/actions/topics";
 
-export function KeywordCloud({
-  items,
-}: {
-  items: { keyword: string; count: number; liked: boolean }[];
-}) {
-  const [, startTransition] = useTransition();
+interface Item {
+  keyword: string;
+  count: number;
+  liked: boolean;
+}
 
-  if (items.length === 0)
+export function KeywordCloud({ items }: { items: Item[] }) {
+  const [, startTransition] = useTransition();
+  // 낙관적 갱신: 클릭 즉시 하트/카운트 반영, 서버 응답 도착 시 실제 값으로 정착
+  const [optItems, applyToggle] = useOptimistic(items, (state, keyword: string) =>
+    state.map((it) =>
+      it.keyword === keyword
+        ? { ...it, liked: !it.liked, count: it.count + (it.liked ? -1 : 1) }
+        : it
+    )
+  );
+
+  if (optItems.length === 0)
     return <div className="text-xs text-stone-400">아직 등록된 키워드가 없습니다.</div>;
 
   return (
     <div className="flex flex-wrap gap-[7px]">
-      {items.map((it) => (
+      {optItems.map((it) => (
         <button
           key={it.keyword}
-          onClick={() => startTransition(() => toggleKeywordLikeAction(it.keyword))}
+          onClick={() =>
+            startTransition(async () => {
+              applyToggle(it.keyword);
+              await toggleKeywordLikeAction(it.keyword);
+            })
+          }
           className={`flex cursor-pointer items-center gap-[7px] rounded-full border px-[13px] py-1.5 hover:border-accent-border ${
             it.liked ? "border-bad-border bg-bad-soft" : "border-line bg-white"
           }`}

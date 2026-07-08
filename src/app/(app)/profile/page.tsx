@@ -7,13 +7,12 @@ import { ProfileForm } from "./profile-form";
 export default async function ProfilePage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
-  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    include: { topic: true },
+  });
   if (!user) redirect("/login");
-
-  const topic =
-    user.role === "LEARNER"
-      ? await prisma.topic.findUnique({ where: { userId: user.id } })
-      : null;
+  const topic = user.topic;
 
   return (
     <div className="flex flex-col gap-8">

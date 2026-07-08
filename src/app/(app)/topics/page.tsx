@@ -14,19 +14,27 @@ export default async function TopicsPage({
   const mode = view === "network" ? "network" : view === "keywords" ? "keywords" : "cards";
   const user = await requireUser();
 
-  const topics = await prisma.topic.findMany({
-    where: { markdown: { not: "" }, userId: { not: user.id } },
-    include: {
-      user: true,
-      likes: true,
-      _count: { select: { comments: true } },
-    },
-    orderBy: { updatedAt: "desc" },
-  });
-
-  // 키워드 지도: 사용 수 + 좋아요 수
-  const allTopics = await prisma.topic.findMany({ select: { keywords: true } });
-  const keywordLikes = await prisma.keywordLike.findMany();
+  // 왕복 지연을 줄이기 위해 병렬 실행
+  const [topics, allTopics, keywordLikes, netTopics] = await Promise.all([
+    prisma.topic.findMany({
+      where: { markdown: { not: "" }, userId: { not: user.id } },
+      include: {
+        user: true,
+        likes: true,
+        _count: { select: { comments: true } },
+      },
+      orderBy: { updatedAt: "desc" },
+    }),
+    // 키워드 지도: 사용 수 + 좋아요 수
+    prisma.topic.findMany({ select: { keywords: true } }),
+    prisma.keywordLike.findMany(),
+    // 네트워크: 나를 포함해 주제/키워드를 등록한 전원
+    prisma.topic.findMany({
+      where: { OR: [{ markdown: { not: "" } }, { NOT: { keywords: { isEmpty: true } } }] },
+      include: { user: true },
+      orderBy: { createdAt: "asc" },
+    }),
+  ]);
   const usage = new Map<string, number>();
   allTopics.forEach((t) => t.keywords.forEach((k) => usage.set(k, (usage.get(k) ?? 0) + 1)));
   keywordLikes.forEach((kl) => {
@@ -46,12 +54,6 @@ export default async function TopicsPage({
     }))
     .sort((a, b) => b.count - a.count);
 
-  // 네트워크: 나를 포함해 주제/키워드를 등록한 전원
-  const netTopics = await prisma.topic.findMany({
-    where: { OR: [{ markdown: { not: "" } }, { NOT: { keywords: { isEmpty: true } } }] },
-    include: { user: true },
-    orderBy: { createdAt: "asc" },
-  });
   const studentNodes: NetNode[] = netTopics.map((t) => ({
     id: t.id,
     name: t.user.name,
