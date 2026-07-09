@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 import { initialOf, formatDateTime } from "@/lib/utils";
 import { MemoEditor } from "./memo-editor";
+import { WeekPicker } from "./week-picker";
 import { MemoLikeButton, MemoComments } from "./interactions";
 
 export default async function GroupMemoPage({
@@ -78,14 +79,38 @@ export default async function GroupMemoPage({
         >
           ← 돌아가기
         </Link>
-        <div className="flex items-baseline gap-2.5">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
           <span className="font-display text-[19px] whitespace-nowrap text-stone-800">
             모둠 {group.index + 1} 메모장
           </span>
-          <span className="text-[12.5px] whitespace-nowrap text-stone-400">
-            {group.groupSet.quiz.week}주차 모둠 ·{" "}
-            {canWrite ? "모둠원과 실시간으로 함께 작성됩니다" : "읽기 전용"}
-          </span>
+          {setChips.length > 0 && (
+            <WeekPicker
+              options={setChips.filter((c) => c.groupId).map((c) => ({
+                setId: c.setId,
+                groupId: c.groupId!,
+                label: c.label,
+              }))}
+              activeSetId={group.groupSetId}
+            />
+          )}
+          {siblings.length > 1 && (
+            <div className="flex flex-wrap items-center gap-1.5">
+              {siblings.map((sib) => (
+                <Link
+                  key={sib.id}
+                  href={`/group-memo/${sib.id}`}
+                  className={`rounded-full border-[1.5px] px-3.5 py-1.5 text-xs font-semibold ${
+                    sib.id === group.id
+                      ? "border-accent bg-accent-soft text-accent"
+                      : "border-line bg-white text-stone-600 hover:border-stone-300"
+                  }`}
+                >
+                  모둠 {sib.index + 1}
+                  {sib.isMine && " (내 모둠)"}
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
         <div className="flex flex-wrap gap-1.5">
           {group.members.map((m) => (
@@ -104,63 +129,23 @@ export default async function GroupMemoPage({
         </div>
       </div>
 
-      {setChips.length > 1 && (
-        <div className="flex flex-wrap items-center gap-1.5">
-          <span className="mr-1 text-[11.5px] font-semibold text-stone-400">주차</span>
-          {setChips.map(
-            (c) =>
-              c.groupId && (
-                <Link
-                  key={c.setId}
-                  href={`/group-memo/${c.groupId}`}
-                  className={`rounded-full border-[1.5px] px-3.5 py-1.5 text-xs font-semibold ${
-                    c.active
-                      ? "border-accent bg-accent-soft text-accent"
-                      : "border-line bg-white text-stone-600 hover:border-stone-300"
-                  }`}
-                >
-                  {c.label}
-                </Link>
-              )
-          )}
-        </div>
-      )}
 
-      {siblings.length > 1 && (
-        <div className="flex flex-wrap items-center gap-1.5">
-          <span className="mr-1 text-[11.5px] font-semibold text-stone-400">모둠</span>
-          {siblings.map((s) => (
-            <Link
-              key={s.id}
-              href={`/group-memo/${s.id}`}
-              className={`rounded-full border-[1.5px] px-3.5 py-1.5 text-xs font-semibold ${
-                s.id === group.id
-                  ? "border-accent bg-accent-soft text-accent"
-                  : "border-line bg-white text-stone-600 hover:border-stone-300"
-              }`}
-            >
-              모둠 {s.index + 1}
-              {s.isMine && " (내 모둠)"}
-            </Link>
-          ))}
-        </div>
-      )}
-
-      <MemoEditor
-        key={group.id}
-        groupId={group.id}
-        initialContent={group.memo?.content ?? ""}
-        initialVersion={group.memo?.version ?? 0}
-        readOnly={!canWrite}
-      />
-
-      <div className="flex justify-end">
-        <MemoLikeButton
-          key={`like-${group.id}`}
+      <div className="flex flex-col gap-2">
+        <MemoEditor
+          key={group.id}
           groupId={group.id}
-          liked={group.memoLikes.some((l) => l.userId === user.id)}
-          count={group.memoLikes.length}
+          initialContent={group.memo?.content ?? ""}
+          initialVersion={group.memo?.version ?? 0}
+          readOnly={!canWrite}
         />
+        <div className="flex justify-end">
+          <MemoLikeButton
+            key={`like-${group.id}`}
+            groupId={group.id}
+            liked={group.memoLikes.some((l) => l.userId === user.id)}
+            count={group.memoLikes.length}
+          />
+        </div>
       </div>
 
       <MemoComments
