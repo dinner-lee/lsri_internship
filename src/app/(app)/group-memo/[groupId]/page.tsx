@@ -2,8 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
-import { initialOf } from "@/lib/utils";
+import { initialOf, formatDateTime } from "@/lib/utils";
 import { MemoEditor } from "./memo-editor";
+import { MemoLikeButton, MemoComments } from "./interactions";
 
 export default async function GroupMemoPage({
   params,
@@ -12,6 +13,16 @@ export default async function GroupMemoPage({
 }) {
   const { groupId } = await params;
   const user = await requireUser();
+
+  // 확정된 모든 구성 (이전 주차 메모장 탐색용)
+  const confirmedSetsPromise = prisma.groupSet.findMany({
+    where: { confirmedAt: { not: null } },
+    orderBy: { confirmedAt: "desc" },
+    include: {
+      quiz: true,
+      groups: { orderBy: { index: "asc" }, include: { members: true } },
+    },
+  });
 
   const group = await prisma.group.findUnique({
     where: { id: groupId },
@@ -24,9 +35,30 @@ export default async function GroupMemoPage({
         },
       },
       memo: true,
+      memoLikes: true,
+      memoComments: { include: { user: true }, orderBy: { createdAt: "asc" } },
     },
   });
   if (!group) notFound();
+  const confirmedSets = await confirmedSetsPromise;
+
+  // 주차 선택 칩: 각 구성에서 내 모둠(없으면 첫 모둠)으로 연결
+  const weekSeen = new Map<number, number>();
+  const setChips = confirmedSets.map((gs) => {
+    const mine = gs.groups.find((g) => g.members.some((m) => m.userId === user.id));
+    const target = mine ?? gs.groups[0];
+    const nth = weekSeen.get(gs.quiz.week) ?? 0;
+    weekSeen.set(gs.quiz.week, nth + 1);
+    return {
+      setId: gs.id,
+      groupId: target?.id,
+      label:
+        nth === 0
+          ? `${gs.quiz.week}주차`
+          : `${gs.quiz.week}주차 · ${formatDateTime(gs.confirmedAt!)}`,
+      active: gs.id === group.groupSetId,
+    };
+  });
 
   const isMember = group.members.some((m) => m.userId === user.id);
   const canWrite = isMember || user.role === "ADMIN";
@@ -72,8 +104,31 @@ export default async function GroupMemoPage({
         </div>
       </div>
 
+      {setChips.length > 1 && (
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="mr-1 text-[11.5px] font-semibold text-stone-400">주차</span>
+          {setChips.map(
+            (c) =>
+              c.groupId && (
+                <Link
+                  key={c.setId}
+                  href={`/group-memo/${c.groupId}`}
+                  className={`rounded-full border-[1.5px] px-3.5 py-1.5 text-xs font-semibold ${
+                    c.active
+                      ? "border-accent bg-accent-soft text-accent"
+                      : "border-line bg-white text-stone-600 hover:border-stone-300"
+                  }`}
+                >
+                  {c.label}
+                </Link>
+              )
+          )}
+        </div>
+      )}
+
       {siblings.length > 1 && (
         <div className="flex flex-wrap items-center gap-1.5">
+          <span className="mr-1 text-[11.5px] font-semibold text-stone-400">모둠</span>
           {siblings.map((s) => (
             <Link
               key={s.id}
@@ -97,6 +152,26 @@ export default async function GroupMemoPage({
         initialContent={group.memo?.content ?? ""}
         initialVersion={group.memo?.version ?? 0}
         readOnly={!canWrite}
+      />
+
+      <div className="flex justify-end">
+        <MemoLikeButton
+          key={`like-${group.id}`}
+          groupId={group.id}
+          liked={group.memoLikes.some((l) => l.userId === user.id)}
+          count={group.memoLikes.length}
+        />
+      </div>
+
+      <MemoComments
+        key={`comments-${group.id}`}
+        groupId={group.id}
+        myName={user.name ?? ""}
+        comments={group.memoComments.map((c) => ({
+          id: c.id,
+          name: c.user.name,
+          text: c.text,
+        }))}
       />
     </div>
   );

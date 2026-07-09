@@ -49,7 +49,9 @@ model User {
   groupMembers GroupMember[]
   liveParticipants LiveParticipant[]
   liveAnswers      LiveAnswer[]
-  memoEdits        GroupMemo[]       @relation("MemoEditor")
+  memoEdits        GroupMemo[]        @relation("MemoEditor")
+  groupMemoLikes   GroupMemoLike[]
+  groupMemoComments GroupMemoComment[]
 }
 
 model InviteCode {
@@ -198,10 +200,32 @@ model Group {
   groupSet   GroupSet @relation(fields: [groupSetId], references: [id], onDelete: Cascade)
   index      Int
 
-  members GroupMember[]
-  memo    GroupMemo?
+  members      GroupMember[]
+  memo         GroupMemo?
+  memoLikes    GroupMemoLike[]
+  memoComments GroupMemoComment[]
 
   @@unique([groupSetId, index])
+}
+
+model GroupMemoLike {
+  id      String @id @default(cuid())
+  groupId String
+  group   Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  userId  String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+}
+
+model GroupMemoComment {
+  id        String   @id @default(cuid())
+  groupId   String
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  text      String
+  createdAt DateTime @default(now())
 }
 
 // 모둠 공유 메모장 (diff 패치 동기화)
