@@ -5,6 +5,7 @@ import Link from "next/link";
 import { joinLiveAction, submitLiveAnswerAction } from "@/lib/actions/live";
 import { useLiveState } from "@/components/live/use-live-state";
 import { RankingList } from "@/components/live/ranking";
+import { EmojiBurst } from "@/components/live/emoji-burst";
 import { typeLabel, type AnswerInput } from "@/lib/quiz";
 
 export function LiveClient({ sessionId }: { sessionId: string }) {
@@ -57,8 +58,13 @@ export function LiveClient({ sessionId }: { sessionId: string }) {
   const q = state.question;
   const sel = new Set(answer.selectedOptions ?? []);
 
+  // 정답 공개 시 내가 맞혔으면 이모지 축하 (문항당 1회)
+  const burstTrigger =
+    state.status === "REVEAL" && state.reveal?.myCorrect ? `q${state.index}` : null;
+
   return (
     <div className="mx-auto flex max-w-[640px] flex-col gap-5">
+      <EmojiBurst trigger={burstTrigger} />
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <span className="flex items-center gap-1.5 rounded-full bg-bad-soft px-3 py-1 text-[11.5px] font-bold text-bad">
