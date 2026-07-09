@@ -57,6 +57,16 @@ export function DiscussionIcon({ size }: { size?: number }) {
   );
 }
 
+// 탐색: 나침반
+export function CompassIcon({ size }: { size?: number }) {
+  return (
+    <Base size={size}>
+      <circle cx="12" cy="12" r="10" />
+      <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
+    </Base>
+  );
+}
+
 // 기록: 히스토리 시계
 export function HistoryIcon({ size }: { size?: number }) {
   return (

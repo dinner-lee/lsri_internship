@@ -4,6 +4,7 @@ import { requireUser } from "@/lib/auth";
 import { initialOf } from "@/lib/utils";
 import { KeywordCloud } from "./keyword-cloud";
 import { TopicNetwork, type NetEdge, type NetNode } from "@/components/topic-network";
+import { CompassIcon } from "@/components/icons";
 
 export default async function TopicsPage({
   searchParams,
@@ -99,6 +100,7 @@ export default async function TopicsPage({
     <div className="flex flex-col gap-[22px]">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5 font-display text-[16px] text-stone-600">
+          <CompassIcon />
           동료 주제 탐색
           {user.role === "LEARNER" && (
             <span className="group relative inline-flex items-center">
