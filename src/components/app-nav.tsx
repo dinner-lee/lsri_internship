@@ -29,7 +29,7 @@ export function AppNav({ role }: { role: Role }) {
           <Link
             key={t.href}
             href={t.href}
-            className={`font-display rounded-lg px-3.5 py-[7px] text-[14px] ${
+            className={`font-display rounded-lg px-2.5 py-[7px] text-[13px] whitespace-nowrap ${
               active
                 ? "bg-accent-soft font-semibold text-accent"
                 : "font-medium text-stone-400 hover:text-stone-600"

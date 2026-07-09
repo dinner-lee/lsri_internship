@@ -58,7 +58,7 @@ export default async function LoginPage() {
             <form action={googleLoginAction}>
               <button
                 type="submit"
-                className="flex w-full cursor-pointer items-center justify-center gap-2.5 rounded-[10px] border border-line bg-white py-3 text-[13.5px] font-medium text-stone-700 transition-colors hover:bg-paper"
+                className="font-display flex w-full cursor-pointer items-center justify-center gap-2.5 rounded-[10px] border border-line bg-white py-3 text-[15px] text-stone-700 transition-colors hover:bg-paper"
               >
                 <GoogleIcon />
                 Google 계정으로 로그인
