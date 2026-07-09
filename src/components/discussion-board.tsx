@@ -73,7 +73,7 @@ export async function DiscussionBoard({
             >
               <div className="flex items-center justify-between border-b border-line-soft px-5 py-3">
                 <div className="flex items-center gap-2.5">
-                  <span className="font-display text-[14px] font-bold">모둠 {g.index + 1}</span>
+                  <span className="font-display text-[14px] font-normal">모둠 {g.index + 1}</span>
                   {isMine && (
                     <span className="rounded-[5px] bg-accent-soft px-1.5 py-0.5 text-[10px] font-semibold text-accent">
                       내 모둠
@@ -111,13 +111,20 @@ export async function DiscussionBoard({
                 )}
               </div>
 
-              <div className="flex items-center justify-between border-t border-line-soft bg-paper px-5 py-2.5 text-[11.5px] text-stone-400">
-                <span>
-                  ♥ {g.memoLikes.length} · 💬 {g._count.memoComments}
+              <div className="flex items-center justify-between border-t border-line-soft bg-paper px-5 py-1.5 text-[11px] text-stone-400">
+                <span className="flex items-center gap-1.5 tabular-nums">
+                  <span className="inline-flex items-center gap-0.5">
+                    <span className="text-bad">♥</span>
+                    {g.memoLikes.length}
+                  </span>
+                  <span className="inline-flex items-center gap-0.5">
+                    <span>💬</span>
+                    {g._count.memoComments}
+                  </span>
                 </span>
                 {g.memo && (
                   <span>
-                    마지막 수정 {g.memo.updatedBy ? `${g.memo.updatedBy.name} · ` : ""}
+                    {g.memo.updatedBy ? `${g.memo.updatedBy.name} · ` : ""}
                     {formatDateTime(g.memo.updatedAt)}
                   </span>
                 )}
