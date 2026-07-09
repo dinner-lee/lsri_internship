@@ -89,6 +89,7 @@ export async function MemoView({ groupId }: { groupId: string }) {
                 <Link
                   key={sib.id}
                   href={`/group-memo/${sib.id}`}
+                  replace
                   className={`rounded-full border-[1.5px] px-3.5 py-1.5 text-xs font-semibold ${
                     sib.id === group.id
                       ? "border-accent bg-accent-soft text-accent"

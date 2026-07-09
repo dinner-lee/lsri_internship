@@ -1,4 +1,3 @@
-import { requireUser } from "@/lib/auth";
 import { ModalShell } from "@/components/modal-shell";
 import { MemoView } from "@/app/(app)/group-memo/[groupId]/memo-view";
 
@@ -9,11 +8,8 @@ export default async function GroupMemoModal({
   params: Promise<{ groupId: string }>;
 }) {
   const { groupId } = await params;
-  const user = await requireUser();
-  const closeHref = user.role === "ADMIN" ? "/admin/groups" : "/quiz";
-
   return (
-    <ModalShell closeHref={closeHref}>
+    <ModalShell>
       <MemoView groupId={groupId} />
     </ModalShell>
   );

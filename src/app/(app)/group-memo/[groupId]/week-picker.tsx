@@ -22,7 +22,8 @@ export function WeekPicker({
       value={activeSetId}
       onChange={(e) => {
         const target = options.find((o) => o.setId === e.target.value);
-        if (target) router.push(`/group-memo/${target.groupId}`);
+        // replace: 모달 안에서 이동해도 히스토리가 쌓이지 않아 닫기(back) 한 번에 복귀
+        if (target) router.replace(`/group-memo/${target.groupId}`);
       }}
       className="font-display cursor-pointer rounded-lg border border-line bg-white px-3 py-2 text-[13px] text-stone-700 hover:border-stone-300"
     >

@@ -6,6 +6,7 @@ import type { Role } from "@prisma/client";
 
 const LEARNER_TABS = [
   { href: "/quiz", label: "스터디" },
+  { href: "/discussions", label: "논의" },
   { href: "/topics", label: "자율연구" },
 ];
 
