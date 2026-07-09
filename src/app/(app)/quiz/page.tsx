@@ -104,9 +104,11 @@ export default async function QuizHomePage() {
         <div className="flex flex-col gap-2.5">
           <div className="font-display text-[16px] text-stone-600">이번 주 모둠</div>
         <div className="flex items-center justify-between gap-4 rounded-[14px] border border-accent-border bg-accent-tint px-6 py-5">
-          <div className="flex flex-col gap-1">
-            <div className="font-display text-[12.5px] text-accent">이번 주 모둠 배정</div>
-            <div className="text-[14.5px] font-bold">
+          <div className="flex flex-none flex-col gap-1">
+            <div className="font-display text-[12.5px] whitespace-nowrap text-accent">
+              이번 주 모둠 배정
+            </div>
+            <div className="text-[14.5px] font-bold whitespace-nowrap">
               모둠 {myGroup.index + 1} · {myGroup.members.length}명
             </div>
           </div>
