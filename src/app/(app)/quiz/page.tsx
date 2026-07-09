@@ -4,6 +4,7 @@ import { requireUser } from "@/lib/auth";
 import { formatTimeLimit } from "@/lib/quiz";
 import { initialOf, dDayLabel } from "@/lib/utils";
 import { DiscussionBoard } from "@/components/discussion-board";
+import { QuizIcon, GroupIcon, DiscussionIcon, HistoryIcon } from "@/components/icons";
 import { RefreshOnFocus, RefreshButton } from "@/components/refresh";
 
 export default async function QuizHomePage({
@@ -77,7 +78,10 @@ export default async function QuizHomePage({
       )}
 
       <div className="flex flex-col gap-2.5">
-        <div className="font-display text-[16px] text-stone-600">이번 주 퀴즈</div>
+        <div className="flex items-center gap-1.5 font-display text-[16px] text-stone-600">
+          <QuizIcon />
+          이번 주 퀴즈
+        </div>
       {current ? (
         <div className="flex items-center justify-between gap-5 rounded-[14px] border border-line bg-white px-7 py-3.5">
           <div className="flex flex-col gap-2">
@@ -91,7 +95,20 @@ export default async function QuizHomePage({
                   .join(" · ")}
               </span>
             </div>
-            <div className="font-display text-[19px] font-normal tracking-tight">{current.title || "(제목 없음)"}</div>
+            <div className="font-display text-[19px] font-normal tracking-tight">
+              {(() => {
+                const title = current.title || "(제목 없음)";
+                const m = title.match(/^(\d+주차\s*·?\s*)(.*)$/);
+                return m ? (
+                  <>
+                    <span className="text-accent">{m[1]}</span>
+                    {m[2]}
+                  </>
+                ) : (
+                  title
+                );
+              })()}
+            </div>
           </div>
           <Link
             href={currentSub ? `/quiz/${current.id}/result` : `/quiz/${current.id}/take`}
@@ -109,7 +126,10 @@ export default async function QuizHomePage({
 
       {myGroup && (
         <div className="flex flex-col gap-2.5">
-          <div className="font-display text-[16px] text-stone-600">이번 주 모둠</div>
+          <div className="flex items-center gap-1.5 font-display text-[16px] text-stone-600">
+            <GroupIcon />
+            이번 주 모둠
+          </div>
         <div className="flex items-center justify-between gap-5 rounded-[14px] border border-line bg-white px-7 py-3.5">
           <div className="flex flex-none flex-col gap-2">
             <div>
@@ -118,7 +138,8 @@ export default async function QuizHomePage({
               </span>
             </div>
             <div className="font-display text-[19px] font-normal tracking-tight whitespace-nowrap">
-              모둠 {myGroup.index + 1} · {myGroup.members.length}명
+              <span className="text-accent">모둠 {myGroup.index + 1}</span> ·{" "}
+              {myGroup.members.length}명
             </div>
           </div>
           <div className="flex flex-1 flex-wrap items-center justify-end gap-2">
@@ -149,7 +170,10 @@ export default async function QuizHomePage({
       {confirmedSet && (
         <div className="flex flex-col gap-2.5">
           <div className="flex items-end justify-between">
-            <div className="font-display text-[16px] text-stone-600">모둠별 논의</div>
+            <div className="flex items-center gap-1.5 font-display text-[16px] text-stone-600">
+              <DiscussionIcon />
+              모둠별 논의
+            </div>
             <RefreshButton />
           </div>
           <DiscussionBoard weekParam={week} basePath="/quiz" userId={user.id} />
@@ -157,7 +181,10 @@ export default async function QuizHomePage({
       )}
 
       <div className="flex flex-col gap-2.5">
-        <div className="font-display text-[16px] text-stone-600">지난 퀴즈 기록</div>
+        <div className="flex items-center gap-1.5 font-display text-[16px] text-stone-600">
+          <HistoryIcon />
+          지난 퀴즈 기록
+        </div>
         <div className="flex flex-col overflow-hidden rounded-xl border border-line bg-white">
           {records.length === 0 && (
             <div className="px-5 py-4 text-[13px] text-stone-400">아직 기록이 없습니다.</div>

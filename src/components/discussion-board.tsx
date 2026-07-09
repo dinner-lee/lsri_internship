@@ -2,6 +2,42 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { initialOf, formatDateTime } from "@/lib/utils";
 
+function HeartIcon({ size = 12 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.51 4.04 3 5.5l7 7Z" />
+    </svg>
+  );
+}
+
+function CommentIcon({ size = 12 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
+    </svg>
+  );
+}
+
 // 주차별 전체 모둠 메모 모아보기 (관리자 '논의' + 학습자 '논의' 공용)
 export async function DiscussionBoard({
   weekParam,
@@ -112,13 +148,15 @@ export async function DiscussionBoard({
               </div>
 
               <div className="flex items-center justify-between border-t border-line-soft bg-paper px-5 py-1.5 text-[11px] text-stone-400">
-                <span className="flex items-center gap-1.5 tabular-nums">
-                  <span className="inline-flex items-center gap-0.5">
-                    <span className="text-bad">♥</span>
+                <span className="flex items-center gap-2 tabular-nums">
+                  <span className="inline-flex items-center gap-1">
+                    <span className="text-bad">
+                      <HeartIcon />
+                    </span>
                     {g.memoLikes.length}
                   </span>
-                  <span className="inline-flex items-center gap-0.5">
-                    <span>💬</span>
+                  <span className="inline-flex items-center gap-1">
+                    <CommentIcon />
                     {g._count.memoComments}
                   </span>
                 </span>
