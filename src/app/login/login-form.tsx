@@ -72,7 +72,7 @@ export function LoginForm() {
 
       {!isLogin && (
         <p className="text-center text-[11.5px] leading-relaxed text-stone-400">
-          초대 코드는 담당 교수·관리자에게 받을 수 있습니다
+          초대 코드는 관리자에게 요청하십시오
         </p>
       )}
     </div>
