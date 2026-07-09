@@ -5,7 +5,13 @@ import { prisma } from "@/lib/prisma";
 import { AppNav } from "@/components/app-nav";
 import { UserMenu } from "@/components/user-menu";
 
-export default async function AppLayout({ children }: { children: React.ReactNode }) {
+export default async function AppLayout({
+  children,
+  modal,
+}: {
+  children: React.ReactNode;
+  modal: React.ReactNode;
+}) {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
@@ -42,6 +48,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         </div>
       </header>
       <main className="mx-auto w-full max-w-[960px] px-8 pt-8 pb-20">{children}</main>
+      {modal}
     </>
   );
 }
