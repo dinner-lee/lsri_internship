@@ -61,7 +61,7 @@ export async function DiscussionBoard({
         ))}
       </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {selected.groups.map((g) => {
           const isMine = g.members.some((m) => m.userId === userId);
           return (
