@@ -8,7 +8,7 @@ export default async function QuizHomePage() {
   const user = await requireUser();
 
   // 왕복 지연을 줄이기 위해 병렬 실행
-  const [current, mySubmissions, confirmedSet] = await Promise.all([
+  const [current, mySubmissions, confirmedSet, liveSession] = await Promise.all([
     prisma.quiz.findFirst({
       where: { publishedAt: { not: null } },
       orderBy: { week: "desc" },
@@ -30,6 +30,12 @@ export default async function QuizHomePage() {
         },
       },
     }),
+    // 진행 중인 실시간 세션
+    prisma.liveSession.findFirst({
+      where: { status: { not: "ENDED" }, quiz: { publishedAt: { not: null } } },
+      orderBy: { createdAt: "desc" },
+      include: { quiz: true },
+    }),
   ]);
   const currentSub = current ? mySubmissions.find((s) => s.quizId === current.id) : null;
   const records = mySubmissions.filter((s) => s.quizId !== current?.id);
@@ -39,6 +45,29 @@ export default async function QuizHomePage() {
 
   return (
     <div className="flex flex-col gap-6">
+      {liveSession && (
+        <Link
+          href={`/live/${liveSession.id}`}
+          className="flex items-center justify-between rounded-[14px] border border-bad-border bg-bad-soft px-6 py-4 hover:opacity-90"
+        >
+          <div className="flex items-center gap-3">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-bad opacity-60" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-bad" />
+            </span>
+            <div className="flex flex-col">
+              <span className="font-display text-[14.5px] text-bad">실시간 퀴즈 진행 중</span>
+              <span className="text-xs text-stone-500">
+                {liveSession.quiz.week}주차 · {liveSession.quiz.title || "(제목 없음)"}
+              </span>
+            </div>
+          </div>
+          <span className="font-display rounded-[9px] bg-bad px-5 py-2 text-[13.5px] text-white">
+            지금 참여하기 →
+          </span>
+        </Link>
+      )}
+
       <div className="flex flex-col gap-2.5">
         <div className="font-display text-[16px] text-stone-600">이번 주 퀴즈</div>
       {current ? (

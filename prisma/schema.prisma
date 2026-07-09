@@ -24,6 +24,13 @@ enum GroupMethod {
   AVOID_PREV
 }
 
+enum LiveStatus {
+  LOBBY
+  QUESTION
+  REVEAL
+  ENDED
+}
+
 model User {
   id           String   @id @default(cuid())
   username     String   @unique
@@ -40,6 +47,8 @@ model User {
   keywordLikes KeywordLike[]
   comments     Comment[]
   groupMembers GroupMember[]
+  liveParticipants LiveParticipant[]
+  liveAnswers      LiveAnswer[]
 }
 
 model InviteCode {
@@ -62,9 +71,10 @@ model Quiz {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  questions   Question[]
-  submissions Submission[]
-  groupSets   GroupSet[]
+  questions    Question[]
+  submissions  Submission[]
+  groupSets    GroupSet[]
+  liveSessions LiveSession[]
 }
 
 model Question {
@@ -77,10 +87,55 @@ model Question {
   explanation  String       @default("")
   shortAnswers String[]     @default([])
 
-  options Option[]
-  answers Answer[]
+  options     Option[]
+  answers     Answer[]
+  liveAnswers LiveAnswer[]
 
   @@unique([quizId, order])
+}
+
+// ── 실시간 퀴즈 세션 ─────────────────────────────────────
+
+model LiveSession {
+  id                String     @id @default(cuid())
+  quizId            String
+  quiz              Quiz       @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  status            LiveStatus @default(LOBBY)
+  currentIndex      Int        @default(0) // 진행 중인 문항 order
+  questionStartedAt DateTime?
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  participants LiveParticipant[]
+  answers      LiveAnswer[]
+}
+
+model LiveParticipant {
+  id        String      @id @default(cuid())
+  sessionId String
+  session   LiveSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  joinedAt  DateTime    @default(now())
+
+  @@unique([sessionId, userId])
+}
+
+model LiveAnswer {
+  id              String      @id @default(cuid())
+  sessionId       String
+  session         LiveSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questionId      String
+  question        Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  selectedOptions Int[]       @default([])
+  text            String?
+  isCorrect       Boolean
+  elapsedMs       Int         @default(0) // 문항 공개 후 응답까지 걸린 시간 (동점자 순위용)
+  answeredAt      DateTime    @default(now())
+
+  @@unique([sessionId, userId, questionId])
 }
 
 model Option {

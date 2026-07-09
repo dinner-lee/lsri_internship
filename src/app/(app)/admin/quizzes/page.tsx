@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { startLiveSessionAction } from "@/lib/actions/live";
 
 export default async function AdminQuizzesPage() {
   const quizzes = await prisma.quiz.findMany({
@@ -31,31 +32,42 @@ export default async function AdminQuizzesPage() {
           </div>
         )}
         {quizzes.map((q) => (
-          <Link
+          <div
             key={q.id}
-            href={`/admin/quizzes/${q.id}`}
-            className="flex items-center justify-between border-b border-line-soft px-5 py-4 last:border-b-0 hover:bg-paper"
+            className="flex items-center border-b border-line-soft last:border-b-0 hover:bg-paper"
           >
-            <div className="flex items-center gap-3.5">
-              <span className="w-12 text-xs text-stone-400">{q.week}주차</span>
-              <span className="text-[13.5px] font-medium text-stone-800">
-                {q.title || "(제목 없음)"}
-              </span>
-              <span
-                className={`rounded-[5px] px-2 py-[3px] text-[11px] font-semibold ${
-                  q.publishedAt
-                    ? "bg-accent-soft text-accent"
-                    : "bg-line-soft text-stone-400"
-                }`}
-              >
-                {q.publishedAt ? "발행됨" : "임시저장"}
-              </span>
-            </div>
-            <div className="flex items-center gap-4 text-xs text-stone-400">
-              <span>{q._count.questions}문항</span>
-              <span>제출 {q._count.submissions}</span>
-            </div>
-          </Link>
+            <Link
+              href={`/admin/quizzes/${q.id}`}
+              className="flex flex-1 items-center justify-between px-5 py-4"
+            >
+              <div className="flex items-center gap-3.5">
+                <span className="w-12 text-xs text-stone-400">{q.week}주차</span>
+                <span className="text-[13.5px] font-medium text-stone-800">
+                  {q.title || "(제목 없음)"}
+                </span>
+                <span
+                  className={`rounded-[5px] px-2 py-[3px] text-[11px] font-semibold ${
+                    q.publishedAt
+                      ? "bg-accent-soft text-accent"
+                      : "bg-line-soft text-stone-400"
+                  }`}
+                >
+                  {q.publishedAt ? "발행됨" : "임시저장"}
+                </span>
+              </div>
+              <div className="flex items-center gap-4 text-xs text-stone-400">
+                <span>{q._count.questions}문항</span>
+                <span>제출 {q._count.submissions}</span>
+              </div>
+            </Link>
+            {q.publishedAt && q._count.questions > 0 && (
+              <form action={startLiveSessionAction.bind(null, q.id)} className="pr-4">
+                <button className="cursor-pointer rounded-lg border border-bad-border bg-bad-soft px-3 py-1.5 text-[11.5px] font-bold whitespace-nowrap text-bad hover:opacity-80">
+                  ● 실시간 진행
+                </button>
+              </form>
+            )}
+          </div>
         ))}
       </div>
     </div>
