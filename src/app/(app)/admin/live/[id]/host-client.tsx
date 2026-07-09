@@ -1,12 +1,13 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
 import type { QuestionType } from "@prisma/client";
 import { advanceLiveAction, endLiveAction } from "@/lib/actions/live";
 import { useLiveState } from "@/components/live/use-live-state";
 import { RankingList } from "@/components/live/ranking";
 import { typeLabel } from "@/lib/quiz";
+import { Presentation } from "./presentation";
 
 interface HostQuestion {
   order: number;
@@ -26,6 +27,7 @@ export function HostClient({
 }) {
   const { state, refresh } = useLiveState(sessionId);
   const [pending, startTransition] = useTransition();
+  const [presenting, setPresenting] = useState(false);
 
   if (!state) return <div className="p-7 text-sm text-stone-400">불러오는 중…</div>;
 
@@ -54,6 +56,17 @@ export function HostClient({
 
   return (
     <div className="flex flex-col gap-5">
+      {presenting && (
+        <Presentation
+          state={state}
+          question={q}
+          pending={pending}
+          advanceLabel={advanceLabel}
+          onAdvance={advance}
+          onEnd={end}
+          onClose={() => setPresenting(false)}
+        />
+      )}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <span className="flex items-center gap-1.5 rounded-full bg-bad-soft px-3 py-1 text-[11.5px] font-bold text-bad">
@@ -68,6 +81,12 @@ export function HostClient({
           </span>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setPresenting(true)}
+            className="cursor-pointer rounded-[9px] border border-line bg-white px-4 py-2.5 text-[13px] font-semibold text-stone-600 hover:border-stone-300"
+          >
+            ▶ 프레젠테이션
+          </button>
           {state.status !== "ENDED" && (
             <>
               <button
