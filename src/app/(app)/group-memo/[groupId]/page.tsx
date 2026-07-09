@@ -71,23 +71,23 @@ export default async function GroupMemoPage({
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <Link
-            href={user.role === "ADMIN" ? "/admin/groups" : "/quiz"}
-            className="text-xs text-stone-400 hover:text-stone-600"
-          >
-            ← 돌아가기
-          </Link>
-          <div className="font-display text-[17px] text-stone-800">
+      <div className="flex flex-col gap-3.5">
+        <Link
+          href={user.role === "ADMIN" ? "/admin/groups" : "/quiz"}
+          className="inline-flex w-fit items-center gap-1.5 rounded-lg border border-line bg-white px-3 py-1.5 text-xs font-semibold text-stone-600 hover:border-stone-300 hover:text-stone-800"
+        >
+          ← 돌아가기
+        </Link>
+        <div className="flex items-baseline gap-2.5">
+          <span className="font-display text-[19px] whitespace-nowrap text-stone-800">
             모둠 {group.index + 1} 메모장
-            <span className="ml-2 text-[12.5px] text-stone-400">
-              {group.groupSet.quiz.week}주차 모둠 ·{" "}
-              {canWrite ? "모둠원과 실시간으로 함께 작성됩니다" : "읽기 전용"}
-            </span>
-          </div>
+          </span>
+          <span className="text-[12.5px] whitespace-nowrap text-stone-400">
+            {group.groupSet.quiz.week}주차 모둠 ·{" "}
+            {canWrite ? "모둠원과 실시간으로 함께 작성됩니다" : "읽기 전용"}
+          </span>
         </div>
-        <div className="flex flex-wrap justify-end gap-1.5">
+        <div className="flex flex-wrap gap-1.5">
           {group.members.map((m) => (
             <div
               key={m.id}
