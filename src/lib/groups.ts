@@ -1,6 +1,6 @@
-// 모둠 자동 구성 알고리즘 (프로토타입 로직 포팅)
+// 모둠 자동 구성 알고리즘
 
-export type GroupMethodKey = "BALANCED" | "SIMILAR" | "AVOID_PREV";
+export type GroupMethodKey = "BALANCED" | "SIMILAR";
 
 export interface GroupStudent {
   userId: string;
@@ -13,11 +13,13 @@ export function makeGroups(
   students: GroupStudent[],
   size: number,
   method: GroupMethodKey,
+  avoidPrev: boolean,
   prevGroupOf: Record<string, number> = {}
 ): GroupStudent[][] {
   const sorted = [...students].sort((a, b) => b.score - a.score);
   const g = Math.max(1, Math.ceil(sorted.length / size));
 
+  // 점수 고르게: 스네이크 배분 (모둠 간 평균 균형)
   const snake = (arr: GroupStudent[]) => {
     const groups: GroupStudent[][] = Array.from({ length: g }, () => []);
     arr.forEach((s, i) => {
@@ -28,12 +30,19 @@ export function makeGroups(
     return groups;
   };
 
+  // 유사 점수끼리: 점수순 연속 구간
   const chunk = (arr: GroupStudent[]) => {
     const gs: GroupStudent[][] = [];
     for (let i = 0; i < arr.length; i += size) gs.push(arr.slice(i, i + size));
     return gs;
   };
 
+  const build = (arr: GroupStudent[]) => (method === "SIMILAR" ? chunk(arr) : snake(arr));
+
+  if (!avoidPrev) return build(sorted);
+
+  // 이전 모둠 회피: 점수 차 10 이내 인접 학생을 확률적으로 교환하며
+  // 기준 방식(build)을 유지한 채 겹침이 최소인 후보를 탐색
   const overlapOf = (groups: GroupStudent[][]) => {
     let n = 0;
     groups.forEach((grp) => {
@@ -47,33 +56,26 @@ export function makeGroups(
     return n;
   };
 
-  if (method === "SIMILAR") return chunk(sorted);
-
-  if (method === "AVOID_PREV") {
-    let best: GroupStudent[][] | null = null;
-    let bestScore = Infinity;
-    for (let iter = 0; iter < 300; iter++) {
-      const arr = [...sorted];
-      // 점수 차 10 이내 인접 학생을 확률적으로 교환해 다양한 후보 생성
-      for (let i = 0; i < arr.length - 1; i++) {
-        if (Math.random() < 0.5 && Math.abs(arr[i].score - arr[i + 1].score) <= 10) {
-          const t = arr[i];
-          arr[i] = arr[i + 1];
-          arr[i + 1] = t;
-        }
-      }
-      const cand = snake(arr);
-      const ov = overlapOf(cand);
-      if (ov < bestScore) {
-        bestScore = ov;
-        best = cand;
-        if (ov === 0) break;
+  let best: GroupStudent[][] | null = null;
+  let bestScore = Infinity;
+  for (let iter = 0; iter < 300; iter++) {
+    const arr = [...sorted];
+    for (let i = 0; i < arr.length - 1; i++) {
+      if (Math.random() < 0.5 && Math.abs(arr[i].score - arr[i + 1].score) <= 10) {
+        const t = arr[i];
+        arr[i] = arr[i + 1];
+        arr[i + 1] = t;
       }
     }
-    return best ?? snake(sorted);
+    const cand = build(arr);
+    const ov = overlapOf(cand);
+    if (ov < bestScore) {
+      bestScore = ov;
+      best = cand;
+      if (ov === 0) break;
+    }
   }
-
-  return snake(sorted); // BALANCED
+  return best ?? build(sorted);
 }
 
 export function overlapPairs(
@@ -90,8 +92,8 @@ export function overlapPairs(
   return n;
 }
 
-export const METHOD_LABELS: Record<GroupMethodKey, { label: string; sub: string }> = {
+export const METHOD_LABELS: Record<string, { label: string; sub: string }> = {
   BALANCED: { label: "점수 고르게", sub: "모둠 간 평균이 비슷하게" },
   SIMILAR: { label: "유사 점수끼리", sub: "수준별 모둠 구성" },
-  AVOID_PREV: { label: "이전 모둠 회피", sub: "지난 모둠과 겹침 최소화 + 균형" },
+  AVOID_PREV: { label: "점수 고르게", sub: "" }, // 레거시 데이터 표시용
 };

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { generateGroupsAction, confirmGroupsAction } from "@/lib/actions/groups";
 import { METHOD_LABELS, type GroupMethodKey } from "@/lib/groups";
 
-const METHOD_KEYS: GroupMethodKey[] = ["BALANCED", "SIMILAR", "AVOID_PREV"];
+const METHOD_KEYS: GroupMethodKey[] = ["BALANCED", "SIMILAR"];
 
 export function GroupControls({
   quizId,
@@ -14,6 +14,7 @@ export function GroupControls({
   submissionCount,
   initialSize,
   initialMethod,
+  initialAvoidPrev,
 }: {
   quizId: string;
   week: number;
@@ -21,16 +22,18 @@ export function GroupControls({
   submissionCount: number;
   initialSize: number;
   initialMethod: GroupMethodKey;
+  initialAvoidPrev: boolean;
 }) {
   const [size, setSize] = useState(initialSize);
   const [method, setMethod] = useState<GroupMethodKey>(initialMethod);
+  const [avoidPrev, setAvoidPrev] = useState(initialAvoidPrev);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   const generate = () =>
     startTransition(async () => {
       setError(null);
-      const res = await generateGroupsAction(quizId, size, method);
+      const res = await generateGroupsAction(quizId, size, method, avoidPrev);
       if (res.error) setError(res.error);
     });
 
@@ -103,6 +106,33 @@ export function GroupControls({
               </button>
             ))}
           </div>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <span className="text-xs font-semibold text-stone-600">이전 모둠 회피</span>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={avoidPrev}
+            onClick={() => setAvoidPrev((v) => !v)}
+            className="flex cursor-pointer items-center gap-2.5"
+          >
+            <span
+              className={`flex h-[26px] w-[46px] items-center rounded-full p-[3px] transition-colors ${
+                avoidPrev ? "bg-accent" : "bg-line"
+              }`}
+            >
+              <span
+                className={`h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
+                  avoidPrev ? "translate-x-5" : ""
+                }`}
+              />
+            </span>
+            <span className={`text-[12.5px] font-semibold ${avoidPrev ? "text-accent" : "text-stone-400"}`}>
+              {avoidPrev ? "ON" : "OFF"}
+            </span>
+          </button>
+          <span className="text-[10.5px] text-stone-400">지난 확정 모둠과 겹침 최소화</span>
         </div>
       </div>
 

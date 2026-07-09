@@ -2,7 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getPrevGroupOf } from "@/lib/actions/groups";
 import { overlapPairs, METHOD_LABELS, type GroupMethodKey } from "@/lib/groups";
-import { initialOf } from "@/lib/utils";
+import { initialOf, formatDateTime } from "@/lib/utils";
 import { GroupControls, ConfirmButtons } from "./group-controls";
 
 export default async function AdminGroupsPage({
@@ -29,7 +29,7 @@ export default async function AdminGroupsPage({
   const selected =
     quizzes.find((q) => String(q.week) === week) ?? quizzes[quizzes.length - 1];
 
-  const [groupSet, submissions, prevGroupOf] = await Promise.all([
+  const [groupSet, submissions, prevGroupOf, confirmedHistory] = await Promise.all([
     prisma.groupSet.findFirst({
       where: { quizId: selected.id },
       orderBy: [{ confirmedAt: { sort: "desc", nulls: "first" } }, { createdAt: "desc" }],
@@ -42,6 +42,18 @@ export default async function AdminGroupsPage({
     }),
     prisma.submission.findMany({ where: { quizId: selected.id } }),
     getPrevGroupOf(selected.id),
+    // 확정된 모둠 기록 (최신순)
+    prisma.groupSet.findMany({
+      where: { confirmedAt: { not: null } },
+      orderBy: { confirmedAt: "desc" },
+      include: {
+        quiz: true,
+        groups: {
+          orderBy: { index: "asc" },
+          include: { members: { include: { user: true } } },
+        },
+      },
+    }),
   ]);
   const scoreOf = new Map(submissions.map((s) => [s.userId, s.score]));
 
@@ -73,7 +85,10 @@ export default async function AdminGroupsPage({
         }))}
         submissionCount={selected._count.submissions}
         initialSize={groupSet?.size ?? 4}
-        initialMethod={(groupSet?.method ?? "BALANCED") as GroupMethodKey}
+        initialMethod={
+          (groupSet?.method === "SIMILAR" ? "SIMILAR" : "BALANCED") as GroupMethodKey
+        }
+        initialAvoidPrev={groupSet?.avoidPrev ?? false}
       />
 
       {groupSet && (
@@ -82,7 +97,8 @@ export default async function AdminGroupsPage({
             <span className="font-display text-[13.5px] text-stone-600">
               구성 결과{" "}
               <span className="font-normal text-stone-400">
-                · {METHOD_LABELS[groupSet.method as GroupMethodKey].label} · 모둠 평균{" "}
+                · {METHOD_LABELS[groupSet.method]?.label}
+                {groupSet.avoidPrev && " · 이전 모둠 회피"} · 모둠 평균{" "}
                 {avgs.length ? `${Math.min(...avgs).toFixed(1)}–${Math.max(...avgs).toFixed(1)}점` : "–"}
               </span>
             </span>
@@ -110,7 +126,7 @@ export default async function AdminGroupsPage({
                     </div>
                   ))}
                 </div>
-                {groupSet.method === "AVOID_PREV" && (
+                {groupSet.avoidPrev && (
                   <div
                     className={`border-t border-line-soft pt-2 text-[11px] ${
                       overlap === 0 ? "text-good" : "text-warn"
@@ -120,6 +136,67 @@ export default async function AdminGroupsPage({
                   </div>
                 )}
               </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {confirmedHistory.length > 0 && (
+        <div className="flex flex-col gap-3 border-t border-line pt-6">
+          <span className="font-display text-[13.5px] text-stone-600">
+            확정된 모둠 기록{" "}
+            <span className="font-normal text-stone-400">
+              — 가장 최근 확정이 학습자에게 표시됩니다
+            </span>
+          </span>
+          <div className="flex flex-col gap-2">
+            {confirmedHistory.map((h, hi) => (
+              <details
+                key={h.id}
+                className="group rounded-xl border border-line bg-white open:pb-4"
+              >
+                <summary className="flex cursor-pointer list-none items-center justify-between px-5 py-3.5 [&::-webkit-details-marker]:hidden">
+                  <div className="flex items-center gap-3">
+                    <span className="text-[10px] text-stone-300 transition-transform group-open:rotate-90">
+                      ▶
+                    </span>
+                    <span className="text-[13px] font-semibold text-stone-800">
+                      {h.quiz.week}주차 기준 · 모둠 {h.groups.length}개
+                    </span>
+                    <span className="text-xs text-stone-400">
+                      {METHOD_LABELS[h.method]?.label}
+                      {h.avoidPrev && " · 이전 모둠 회피"} · {h.size}명씩
+                    </span>
+                    {hi === 0 && (
+                      <span className="rounded-[5px] bg-accent-soft px-2 py-[3px] text-[10.5px] font-semibold text-accent">
+                        학습자 공개 중
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-[11.5px] text-stone-400">
+                    {formatDateTime(h.confirmedAt!)} 확정
+                  </span>
+                </summary>
+                <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-2.5 px-5">
+                  {h.groups.map((g) => (
+                    <div key={g.id} className="rounded-lg bg-paper px-3.5 py-2.5">
+                      <div className="mb-1.5 text-xs font-bold text-stone-700">
+                        모둠 {g.index + 1}
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {g.members.map((m) => (
+                          <span
+                            key={m.id}
+                            className="rounded-full bg-white px-2 py-0.5 text-[11px] font-medium text-stone-600"
+                          >
+                            {m.user.name}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </details>
             ))}
           </div>
         </div>

@@ -20,7 +20,8 @@ export async function getPrevGroupOf(excludeQuizId: string) {
 export async function generateGroupsAction(
   quizId: string,
   size: number,
-  method: GroupMethodKey
+  method: GroupMethodKey,
+  avoidPrev: boolean
 ): Promise<{ error?: string }> {
   await requireAdmin();
   if (size < 2 || size > 10) return { error: "모둠 인원은 2–10명이어야 합니다" };
@@ -34,17 +35,18 @@ export async function generateGroupsAction(
     .map((s) => ({ userId: s.userId, name: s.user.name, score: s.score }));
   if (students.length < 2) return { error: "제출한 학습자가 2명 이상이어야 합니다" };
 
-  const prevGroupOf = method === "AVOID_PREV" ? await getPrevGroupOf(quizId) : {};
-  const groups = makeGroups(students, size, method, prevGroupOf);
+  const prevGroupOf = avoidPrev ? await getPrevGroupOf(quizId) : {};
+  const groups = makeGroups(students, size, method, avoidPrev, prevGroupOf);
 
   await prisma.$transaction(async (tx) => {
-    // 같은 퀴즈의 미확정 구성은 교체
+    // 같은 퀴즈의 미확정 구성은 교체 (확정된 기록은 보존)
     await tx.groupSet.deleteMany({ where: { quizId, confirmedAt: null } });
     await tx.groupSet.create({
       data: {
         quizId,
         size,
         method,
+        avoidPrev,
         groups: {
           create: groups.map((grp, i) => ({
             index: i,
@@ -59,19 +61,13 @@ export async function generateGroupsAction(
   return {};
 }
 
+// 확정: 기존 확정 기록은 해제하지 않고 보존한다.
+// 학습자에게는 confirmedAt이 가장 최근인 구성이 표시된다.
 export async function confirmGroupsAction(groupSetId: string) {
   await requireAdmin();
-  await prisma.$transaction(async (tx) => {
-    const gs = await tx.groupSet.findUniqueOrThrow({ where: { id: groupSetId } });
-    // 같은 퀴즈 기준의 기존 확정은 해제하고 이번 구성을 확정
-    await tx.groupSet.updateMany({
-      where: { quizId: gs.quizId, confirmedAt: { not: null } },
-      data: { confirmedAt: null },
-    });
-    await tx.groupSet.update({
-      where: { id: groupSetId },
-      data: { confirmedAt: new Date() },
-    });
+  await prisma.groupSet.update({
+    where: { id: groupSetId },
+    data: { confirmedAt: new Date() },
   });
   revalidatePath("/admin/groups");
   revalidatePath("/quiz");

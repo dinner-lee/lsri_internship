@@ -183,7 +183,8 @@ model GroupSet {
   quizId      String // 기준 주차 퀴즈
   quiz        Quiz        @relation(fields: [quizId], references: [id], onDelete: Cascade)
   size        Int
-  method      GroupMethod
+  method      GroupMethod // BALANCED | SIMILAR (AVOID_PREV는 레거시)
+  avoidPrev   Boolean     @default(false) // 이전 확정 모둠과 겹침 최소화
   confirmedAt DateTime?
   createdAt   DateTime    @default(now())
 
