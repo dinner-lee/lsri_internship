@@ -89,7 +89,12 @@ export function TopicEditor({
       </div>
 
       <div className="flex flex-col gap-2.5">
-        <div className="font-display text-[13.5px] text-stone-600">동료에게 보이는 모습</div>
+        <div className="font-display text-[13.5px] text-stone-600">내 카드 미리보기</div>
+        {/* 미리보기 프레임: 점선 테두리 + 배지로 실제 화면이 아님을 표시 */}
+        <div className="relative rounded-2xl border-2 border-dashed border-accent-border bg-accent-tint/60 p-4 pt-5">
+          <span className="absolute -top-2.5 left-4 rounded-full border border-accent-border bg-white px-2.5 py-0.5 text-[10.5px] font-bold text-accent">
+            미리보기
+          </span>
         <div className="flex flex-col gap-3 rounded-xl border border-line bg-white p-6">
           <div className="flex items-center gap-2.5">
             <div className="flex h-[34px] w-[34px] items-center justify-center rounded-full bg-line font-display text-[13.5px] text-stone-600">
@@ -117,6 +122,7 @@ export function TopicEditor({
               ))}
             </div>
           )}
+        </div>
         </div>
       </div>
     </div>
