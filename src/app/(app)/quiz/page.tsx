@@ -101,14 +101,16 @@ export default async function QuizHomePage() {
       </div>
 
       {myGroup && (
-        <div className="flex items-center justify-between rounded-[14px] border border-accent-border bg-accent-tint px-6 py-5">
+        <div className="flex flex-col gap-2.5">
+          <div className="font-display text-[16px] text-stone-600">이번 주 모둠</div>
+        <div className="flex items-center justify-between gap-4 rounded-[14px] border border-accent-border bg-accent-tint px-6 py-5">
           <div className="flex flex-col gap-1">
             <div className="font-display text-[12.5px] text-accent">이번 주 모둠 배정</div>
             <div className="text-[14.5px] font-bold">
               모둠 {myGroup.index + 1} · {myGroup.members.length}명
             </div>
           </div>
-          <div className="flex flex-wrap justify-end gap-2">
+          <div className="flex flex-wrap items-center justify-end gap-2">
             {myGroup.members.map((m) => (
               <div
                 key={m.id}
@@ -122,7 +124,14 @@ export default async function QuizHomePage() {
                 </span>
               </div>
             ))}
+            <Link
+              href={`/group-memo/${myGroup.id}`}
+              className="font-display rounded-[9px] bg-accent px-4 py-2 text-[12.5px] whitespace-nowrap text-white hover:bg-accent-strong"
+            >
+              📝 모둠 메모장
+            </Link>
           </div>
+        </div>
         </div>
       )}
 

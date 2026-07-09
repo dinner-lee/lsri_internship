@@ -49,6 +49,7 @@ model User {
   groupMembers GroupMember[]
   liveParticipants LiveParticipant[]
   liveAnswers      LiveAnswer[]
+  memoEdits        GroupMemo[]       @relation("MemoEditor")
 }
 
 model InviteCode {
@@ -198,8 +199,21 @@ model Group {
   index      Int
 
   members GroupMember[]
+  memo    GroupMemo?
 
   @@unique([groupSetId, index])
+}
+
+// 모둠 공유 메모장 (diff 패치 동기화)
+model GroupMemo {
+  id          String   @id @default(cuid())
+  groupId     String   @unique
+  group       Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  content     String   @default("")
+  version     Int      @default(0)
+  updatedAt   DateTime @updatedAt
+  updatedById String?
+  updatedBy   User?    @relation("MemoEditor", fields: [updatedById], references: [id], onDelete: SetNull)
 }
 
 model GroupMember {

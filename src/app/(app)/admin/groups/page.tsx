@@ -112,8 +112,16 @@ export default async function AdminGroupsPage({
               >
                 <div className="flex items-center justify-between">
                   <span className="font-display text-[13.5px] font-bold">모둠 {g.index + 1}</span>
-                  <span className="text-[11.5px] text-stone-400">
+                  <span className="flex items-center gap-2.5 text-[11.5px] text-stone-400">
                     평균 <b className="text-accent">{avg}점</b>
+                    {groupSet.confirmedAt && (
+                      <Link
+                        href={`/group-memo/${g.id}`}
+                        className="text-stone-400 hover:text-accent"
+                      >
+                        메모장 →
+                      </Link>
+                    )}
                   </span>
                 </div>
                 <div className="flex flex-col gap-[7px]">
