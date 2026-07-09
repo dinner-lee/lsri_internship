@@ -159,29 +159,31 @@ export function HostClient({
           {q.type !== "SHORT" ? (
             <div className="flex flex-col gap-[7px]">
               {q.options.map((o) => {
+                // 화면 공유 대비: 정답 표시는 결과 공개 시점에만
+                const showAnswer = state.status === "REVEAL" && o.isCorrect;
                 const dist = state.reveal?.distribution.find((d) => d.order === o.order);
                 const max = Math.max(1, state.answeredCount);
                 return (
                   <div
                     key={o.order}
                     className={`relative overflow-hidden rounded-[10px] border-[1.5px] px-4 py-2.5 ${
-                      o.isCorrect ? "border-accent" : "border-line-soft"
+                      showAnswer ? "border-accent" : "border-line-soft"
                     }`}
                   >
                     {state.status === "REVEAL" && dist && (
                       <div
-                        className={`absolute inset-y-0 left-0 ${o.isCorrect ? "bg-accent-soft" : "bg-line-soft"}`}
+                        className={`absolute inset-y-0 left-0 ${showAnswer ? "bg-accent-soft" : "bg-line-soft"}`}
                         style={{ width: `${Math.round((dist.count / max) * 100)}%` }}
                       />
                     )}
                     <div className="relative flex items-center justify-between">
                       <span className="text-[13.5px] text-stone-800">
-                        {o.isCorrect && <span className="mr-1.5 font-bold text-accent">✓</span>}
+                        {showAnswer && <span className="mr-1.5 font-bold text-accent">✓</span>}
                         {o.label}
                       </span>
                       {state.status === "REVEAL" && dist && (
                         <span
-                          className={`text-xs font-semibold ${o.isCorrect ? "text-accent" : "text-stone-400"}`}
+                          className={`text-xs font-semibold ${showAnswer ? "text-accent" : "text-stone-400"}`}
                         >
                           {dist.count}명
                         </span>
@@ -193,9 +195,15 @@ export function HostClient({
             </div>
           ) : (
             <div className="flex flex-col gap-2 text-[13px]">
-              <div className="rounded-lg bg-paper px-3.5 py-2.5 text-stone-700">
-                정답 인정: <b className="text-accent">{q.shortAnswers.join(" | ")}</b>
-              </div>
+              {state.status === "REVEAL" ? (
+                <div className="rounded-lg bg-paper px-3.5 py-2.5 text-stone-700">
+                  정답 인정: <b className="text-accent">{q.shortAnswers.join(" | ")}</b>
+                </div>
+              ) : (
+                <div className="rounded-lg bg-paper px-3.5 py-2.5 text-stone-400">
+                  단답형 — 정답은 결과 공개 시 표시됩니다
+                </div>
+              )}
               {state.status === "REVEAL" && (state.reveal?.shortTexts.length ?? 0) > 0 && (
                 <div className="flex flex-wrap gap-1.5">
                   {state.reveal!.shortTexts.map((t, i) => (

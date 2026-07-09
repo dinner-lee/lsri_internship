@@ -259,11 +259,11 @@ export function LiveClient({ sessionId }: { sessionId: string }) {
           </div>
 
           <RankingList ranking={state.reveal.ranking} limit={5} />
-          <div className="text-center text-xs text-stone-400">
-            {state.reveal.isLast
-              ? "선생님이 세션을 마치면 최종 결과가 표시됩니다"
-              : "선생님이 다음 문제를 열면 자동으로 넘어갑니다"}
-          </div>
+          {state.reveal.isLast && (
+            <div className="text-center text-xs text-stone-400">
+              선생님이 세션을 마치면 최종 결과가 표시됩니다
+            </div>
+          )}
         </>
       )}
 
