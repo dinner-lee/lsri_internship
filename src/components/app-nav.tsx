@@ -62,8 +62,8 @@ export function AppNav({ role }: { role: Role }) {
               <Link
                 key={t.href}
                 href={t.href}
-                className={`px-4 py-2.5 text-[12.5px] hover:bg-paper ${
-                  isActive(t.href) ? "font-semibold text-accent" : "font-medium text-stone-700"
+                className={`font-display px-4 py-2.5 text-[13px] hover:bg-paper ${
+                  isActive(t.href) ? "font-semibold text-accent" : "text-stone-700"
                 }`}
               >
                 {t.label}
