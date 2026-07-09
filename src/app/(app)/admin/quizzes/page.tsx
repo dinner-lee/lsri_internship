@@ -12,7 +12,7 @@ export default async function AdminQuizzesPage() {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <div className="flex flex-col gap-0.5">
-          <div className="font-display text-[17px] font-bold tracking-tight">퀴즈 제작</div>
+          <div className="font-display text-[17px] font-bold tracking-tight">퀴즈 작성</div>
           <div className="text-[12.5px] text-stone-400">
             주차별 퀴즈를 만들고 학습자에게 발행합니다
           </div>
