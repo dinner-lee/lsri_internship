@@ -230,11 +230,12 @@ export function HostClient({
         </div>
       )}
 
-      {/* 랭킹 (결과 공개 및 종료 시) */}
+      {/* 랭킹 — 화면 공유 대비: 진행 중에는 상위 5명만, 종료 시 전체 */}
       {state.reveal && (state.status === "REVEAL" || state.status === "ENDED") && (
         <RankingList
           ranking={state.reveal.ranking}
-          title={state.status === "ENDED" ? "최종 랭킹" : "현재 랭킹"}
+          limit={state.status === "ENDED" ? undefined : 5}
+          title={state.status === "ENDED" ? "최종 랭킹" : "현재 랭킹 TOP 5"}
         />
       )}
 
