@@ -111,12 +111,14 @@ export default async function QuizHomePage({
       {myGroup && (
         <div className="flex flex-col gap-2.5">
           <div className="font-display text-[16px] text-stone-600">이번 주 모둠</div>
-        <div className="flex items-center justify-between gap-4 rounded-[14px] border border-accent-border bg-accent-tint px-6 py-5">
-          <div className="flex flex-none flex-col gap-1">
-            <div className="font-display text-[12.5px] whitespace-nowrap text-accent">
-              이번 주 모둠 배정
+        <div className="flex items-center justify-between gap-5 rounded-[14px] border border-line bg-white p-7">
+          <div className="flex flex-none flex-col gap-2">
+            <div>
+              <span className="rounded-[5px] bg-accent-soft px-2 py-[3px] text-[11px] font-semibold whitespace-nowrap text-accent">
+                이번 주 모둠 배정
+              </span>
             </div>
-            <div className="text-[14.5px] font-bold whitespace-nowrap">
+            <div className="font-display text-[19px] font-normal tracking-tight whitespace-nowrap">
               모둠 {myGroup.index + 1} · {myGroup.members.length}명
             </div>
           </div>
@@ -124,7 +126,7 @@ export default async function QuizHomePage({
             {myGroup.members.map((m) => (
               <div
                 key={m.id}
-                className="flex items-center gap-1.5 rounded-full border border-line bg-white py-[5px] pr-3 pl-1.5"
+                className="flex items-center gap-1.5 rounded-full border border-line bg-paper py-[5px] pr-3 pl-1.5"
               >
                 <div className="flex h-[22px] w-[22px] items-center justify-center rounded-full bg-line text-[10px] font-semibold text-stone-600">
                   {initialOf(m.user.name)}
@@ -135,14 +137,12 @@ export default async function QuizHomePage({
               </div>
             ))}
           </div>
-          <div className="flex flex-none items-center border-l border-accent-border pl-4">
-            <Link
-              href={`/group-memo/${myGroup.id}`}
-              className="font-display rounded-[9px] bg-accent px-4 py-2.5 text-[12.5px] whitespace-nowrap text-white hover:bg-accent-strong"
-            >
-              📝 모둠 메모장
-            </Link>
-          </div>
+          <Link
+            href={`/group-memo/${myGroup.id}`}
+            className="font-display flex-none rounded-[10px] bg-accent px-6 py-3 text-[14.5px] whitespace-nowrap text-white hover:bg-accent-strong"
+          >
+            📝 모둠 메모장
+          </Link>
         </div>
         </div>
       )}
