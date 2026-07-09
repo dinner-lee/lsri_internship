@@ -92,7 +92,6 @@ export default async function QuizHomePage({
               </span>
             </div>
             <div className="font-display text-[19px] font-normal tracking-tight">{current.title || "(제목 없음)"}</div>
-            <div className="text-[13px] text-stone-500">{current.description}</div>
           </div>
           <Link
             href={currentSub ? `/quiz/${current.id}/result` : `/quiz/${current.id}/take`}
