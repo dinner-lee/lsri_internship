@@ -1,50 +1,36 @@
-import React from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
-// 간단 마크다운 렌더러 (제목/리스트/굵게/문단) — 연구 주제용
+// 연구 주제용 마크다운 렌더러 (GFM: 표·취소선·체크리스트·자동 링크 지원)
+// react-markdown은 원시 HTML을 렌더링하지 않으므로 XSS에 안전하다.
 export function Markdown({ md }: { md: string }) {
-  const blocks: React.ReactNode[] = [];
-  let list: React.ReactNode[] | null = null;
-  let key = 0;
-
-  const flush = () => {
-    if (list) {
-      blocks.push(
-        <ul key={key++} className="my-1 flex list-disc flex-col gap-1 pl-5">
-          {list}
-        </ul>
-      );
-      list = null;
-    }
-  };
-
-  const inline = (t: string) =>
-    t.split(/\*\*(.+?)\*\*/g).map((s, i) => (i % 2 ? <b key={i}>{s}</b> : s));
-
-  (md || "").split("\n").forEach((raw) => {
-    const line = raw.trim();
-    if (!line) {
-      flush();
-      return;
-    }
-    if (/^#{1,3} /.test(line)) {
-      flush();
-      blocks.push(
-        <div key={key++} className="my-0.5 text-[15.5px] font-bold tracking-tight">
-          {line.replace(/^#+\s*/, "")}
-        </div>
-      );
-    } else if (line.startsWith("- ")) {
-      (list = list || []).push(<li key={key++}>{inline(line.slice(2))}</li>);
-    } else {
-      flush();
-      blocks.push(
-        <p key={key++} className="my-0.5">
-          {inline(line)}
-        </p>
-      );
-    }
-  });
-  flush();
-
-  return <div className="flex flex-col gap-1.5">{blocks}</div>;
+  return (
+    <div
+      className="prose prose-sm prose-stone max-w-none
+        prose-headings:font-bold prose-headings:tracking-tight
+        prose-h1:text-[17px] prose-h2:text-[15.5px] prose-h3:text-[14px]
+        prose-p:my-1.5 prose-p:leading-[1.75]
+        prose-ul:my-1.5 prose-ol:my-1.5 prose-li:my-0.5
+        prose-a:text-accent prose-a:underline-offset-2
+        prose-blockquote:my-2 prose-blockquote:border-l-line prose-blockquote:font-normal prose-blockquote:text-stone-500
+        prose-code:rounded prose-code:bg-line-soft prose-code:px-1 prose-code:py-0.5 prose-code:text-[12px] prose-code:font-normal prose-code:before:content-none prose-code:after:content-none
+        prose-pre:my-2 prose-pre:rounded-lg prose-pre:bg-stone-900 prose-pre:text-[12px]
+        prose-hr:my-3
+        prose-table:my-2 prose-th:px-2 prose-th:py-1 prose-td:px-2 prose-td:py-1
+        prose-img:my-2 prose-img:rounded-lg"
+    >
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+          a: ({ href, children }) => (
+            <a href={href} target="_blank" rel="noopener noreferrer">
+              {children}
+            </a>
+          ),
+        }}
+      >
+        {md}
+      </ReactMarkdown>
+    </div>
+  );
 }

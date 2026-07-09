@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 /* 강조용 — 학교안심 알림장 */
 @font-face {
