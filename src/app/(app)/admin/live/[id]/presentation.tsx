@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { QuestionType } from "@prisma/client";
 import type { LiveStatePayload } from "@/lib/live";
 import { typeLabel } from "@/lib/quiz";
@@ -36,14 +36,19 @@ export function Presentation({
   onClose: () => void;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const toggleFullscreen = () => {
     if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
     else rootRef.current?.requestFullscreen?.().catch(() => {});
   };
 
+  // ESC 등 브라우저 자체 해제까지 반영해 버튼 라벨 동기화
   useEffect(() => {
+    const sync = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", sync);
     return () => {
+      document.removeEventListener("fullscreenchange", sync);
       if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
     };
   }, []);
@@ -85,7 +90,7 @@ export function Presentation({
             onClick={toggleFullscreen}
             className="cursor-pointer rounded-lg border border-white/15 px-3 py-1.5 text-xs text-white/70 hover:bg-white/10"
           >
-            전체 화면
+            {isFullscreen ? "전체 화면 해제" : "전체 화면"}
           </button>
           <button
             onClick={onClose}
