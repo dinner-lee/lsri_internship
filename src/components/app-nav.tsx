@@ -14,8 +14,15 @@ const ADMIN_STUDY_SUBMENU = [
   { href: "/admin/quizzes", label: "퀴즈" },
   { href: "/admin/results", label: "결과" },
   { href: "/admin/groups", label: "모둠 구성" },
+  { href: "/admin/discussions", label: "논의" },
 ];
-const ADMIN_STUDY_PREFIXES = ["/admin/quizzes", "/admin/results", "/admin/groups", "/admin/live"];
+const ADMIN_STUDY_PREFIXES = [
+  "/admin/quizzes",
+  "/admin/results",
+  "/admin/groups",
+  "/admin/live",
+  "/admin/discussions",
+];
 
 const ADMIN_TABS = [
   { href: "/topics", label: "자율연구" },
