@@ -3,8 +3,15 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 import { formatTimeLimit } from "@/lib/quiz";
 import { initialOf, dDayLabel } from "@/lib/utils";
+import { DiscussionBoard } from "@/components/discussion-board";
+import { RefreshOnFocus, RefreshButton } from "@/components/refresh";
 
-export default async function QuizHomePage() {
+export default async function QuizHomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ week?: string }>;
+}) {
+  const { week } = await searchParams;
   const user = await requireUser();
 
   // 왕복 지연을 줄이기 위해 병렬 실행
@@ -45,6 +52,7 @@ export default async function QuizHomePage() {
 
   return (
     <div className="flex flex-col gap-6">
+      <RefreshOnFocus />
       {liveSession && (
         <Link
           href={`/live/${liveSession.id}`}
@@ -134,6 +142,16 @@ export default async function QuizHomePage() {
             </Link>
           </div>
         </div>
+        </div>
+      )}
+
+      {confirmedSet && (
+        <div className="flex flex-col gap-2.5">
+          <div className="flex items-end justify-between">
+            <div className="font-display text-[16px] text-stone-600">모둠별 논의</div>
+            <RefreshButton />
+          </div>
+          <DiscussionBoard weekParam={week} basePath="/quiz" userId={user.id} />
         </div>
       )}
 
