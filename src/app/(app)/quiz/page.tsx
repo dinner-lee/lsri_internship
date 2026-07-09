@@ -79,7 +79,7 @@ export default async function QuizHomePage({
       <div className="flex flex-col gap-2.5">
         <div className="font-display text-[16px] text-stone-600">이번 주 퀴즈</div>
       {current ? (
-        <div className="flex items-center justify-between gap-5 rounded-[14px] border border-line bg-white px-7 py-5">
+        <div className="flex items-center justify-between gap-5 rounded-[14px] border border-line bg-white px-7 py-3.5">
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
               <span className="rounded-[5px] bg-accent-soft px-2 py-[3px] text-[11px] font-semibold text-accent">
@@ -110,7 +110,7 @@ export default async function QuizHomePage({
       {myGroup && (
         <div className="flex flex-col gap-2.5">
           <div className="font-display text-[16px] text-stone-600">이번 주 모둠</div>
-        <div className="flex items-center justify-between gap-5 rounded-[14px] border border-line bg-white px-7 py-5">
+        <div className="flex items-center justify-between gap-5 rounded-[14px] border border-line bg-white px-7 py-3.5">
           <div className="flex flex-none flex-col gap-2">
             <div>
               <span className="rounded-[5px] bg-accent-soft px-2 py-[3px] text-[11px] font-semibold whitespace-nowrap text-accent">
