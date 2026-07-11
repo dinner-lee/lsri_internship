@@ -29,7 +29,7 @@ export function QuizEditor({
       <input type="hidden" name="id" value={quizId} />
       <input type="hidden" name="markdown" value={md} />
 
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-col gap-0.5">
           <div className="flex items-center gap-2.5">
             <Link href="/admin/quizzes" className="text-xs text-stone-400 hover:text-stone-600">
@@ -70,7 +70,7 @@ export function QuizEditor({
         </div>
       </div>
 
-      <div className="flex items-center gap-5 rounded-xl border border-line bg-white px-5 py-3.5">
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-2.5 rounded-xl border border-line bg-white px-5 py-3.5">
         <label className="flex items-center gap-2 text-[12.5px] font-semibold text-stone-600">
           주차
           <input

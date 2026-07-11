@@ -50,7 +50,7 @@ export function UserMenu({
   return (
     <div className="group relative">
       <button className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1 group-hover:bg-line-soft">
-        <span className="font-display max-w-[90px] truncate text-[13px] whitespace-nowrap text-stone-500">{name}</span>
+        <span className="font-display hidden max-w-[90px] truncate text-[13px] whitespace-nowrap text-stone-500 sm:block">{name}</span>
         <UserAvatar name={name} image={image} />
       </button>
       <div className="invisible absolute right-0 z-50 w-44 pt-1.5 opacity-0 transition-opacity duration-100 group-hover:visible group-hover:opacity-100">

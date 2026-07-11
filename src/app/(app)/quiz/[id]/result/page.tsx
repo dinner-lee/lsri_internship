@@ -36,7 +36,7 @@ export default async function QuizResultPage({ params }: { params: Promise<{ id:
         ← 퀴즈 홈으로
       </Link>
 
-      <div className="flex items-center justify-between rounded-[14px] border border-line bg-white p-7">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-[14px] border border-line bg-white p-6 sm:p-7">
         <div className="flex flex-col gap-1.5">
           <span className="text-xs font-semibold text-stone-400">
             {submission.quiz.week}주차 퀴즈

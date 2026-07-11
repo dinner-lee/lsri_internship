@@ -98,7 +98,7 @@ export default async function TopicsPage({
 
   return (
     <div className="flex flex-col gap-[22px]">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-1.5 font-display text-[16px] text-stone-600">
           <CompassIcon />
           동료 주제 탐색

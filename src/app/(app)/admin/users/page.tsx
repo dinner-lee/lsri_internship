@@ -22,7 +22,8 @@ export default async function AdminUsersPage() {
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-line bg-white">
+      <div className="overflow-x-auto rounded-xl border border-line bg-white">
+        <div className="min-w-[640px]">
         <div className="grid grid-cols-[1fr_130px_190px_90px_150px] gap-2 border-b border-line-soft px-5 py-[11px] text-[11px] font-semibold text-stone-400">
           <span>이름</span>
           <span>아이디</span>
@@ -61,6 +62,7 @@ export default async function AdminUsersPage() {
             </div>
           </div>
         ))}
+        </div>
       </div>
     </div>
   );

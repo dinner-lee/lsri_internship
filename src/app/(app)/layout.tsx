@@ -22,7 +22,7 @@ export default async function AppLayout({
   return (
     <>
       <header className="sticky top-0 z-50 border-b border-line bg-white">
-        <div className="mx-auto flex w-full max-w-[960px] items-center justify-between gap-3 px-6 py-3">
+        <div className="mx-auto flex w-full max-w-[960px] items-center justify-between gap-2 px-4 py-3 sm:gap-3 sm:px-6">
           <div className="flex min-w-0 items-center gap-4">
             <div className="flex flex-none items-center gap-2.5">
               <Image
@@ -32,22 +32,22 @@ export default async function AppLayout({
                 height={28}
                 priority
               />
-              <span className="h-4 w-px bg-line" />
-              <span className="font-display text-[15px] font-normal tracking-tight whitespace-nowrap text-accent">
+              <span className="hidden h-4 w-px bg-line md:block" />
+              <span className="font-display hidden text-[15px] font-normal tracking-tight whitespace-nowrap text-accent md:inline">
                 2026학년도 여름 인턴십
               </span>
             </div>
             <AppNav role={user.role} />
           </div>
           <div className="flex flex-none items-center gap-2">
-            <span className="rounded-md bg-line-soft px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap text-stone-500">
+            <span className="hidden rounded-md bg-line-soft px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap text-stone-500 sm:inline">
               {user.role === "ADMIN" ? "관리자" : "학습자"}
             </span>
             <UserMenu name={user.name} image={user.image} role={user.role} />
           </div>
         </div>
       </header>
-      <main className="mx-auto w-full max-w-[960px] px-8 pt-8 pb-20">{children}</main>
+      <main className="mx-auto w-full max-w-[960px] px-4 pt-6 pb-16 sm:px-8 sm:pt-8 sm:pb-20">{children}</main>
       {modal}
     </>
   );

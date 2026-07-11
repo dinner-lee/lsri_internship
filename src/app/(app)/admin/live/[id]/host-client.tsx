@@ -67,7 +67,7 @@ export function HostClient({
           onClose={() => setPresenting(false)}
         />
       )}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2.5">
           <span className="flex items-center gap-1.5 rounded-full bg-bad-soft px-3 py-1 text-[11.5px] font-bold text-bad">
             <span className="relative flex h-2 w-2">
@@ -108,7 +108,7 @@ export function HostClient({
         </div>
       </div>
 
-      <div className="flex items-center gap-5 rounded-xl border border-line bg-white px-5 py-3.5 text-[12.5px] text-stone-500">
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 rounded-xl border border-line bg-white px-5 py-3.5 text-[12.5px] text-stone-500">
         <span>
           참가자 <b className="text-stone-800">{state.participantCount}명</b>
         </span>

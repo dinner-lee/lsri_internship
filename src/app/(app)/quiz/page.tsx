@@ -57,7 +57,7 @@ export default async function QuizHomePage({
       {liveSession && (
         <Link
           href={`/live/${liveSession.id}`}
-          className="flex items-center justify-between rounded-[14px] border border-bad-border bg-bad-soft px-6 py-4 hover:opacity-90"
+          className="flex flex-col gap-3 rounded-[14px] border border-bad-border bg-bad-soft px-5 py-4 hover:opacity-90 sm:flex-row sm:items-center sm:justify-between sm:px-6"
         >
           <div className="flex items-center gap-3">
             <span className="relative flex h-2.5 w-2.5">
@@ -83,7 +83,7 @@ export default async function QuizHomePage({
           이번 주 퀴즈
         </div>
       {current ? (
-        <div className="flex items-center justify-between gap-5 rounded-[14px] border border-line bg-white px-7 py-3.5">
+        <div className="flex flex-col gap-4 rounded-[14px] border border-line bg-white px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-5 sm:px-7 sm:py-3.5">
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
               <span className="rounded-[5px] bg-accent-soft px-2 py-[3px] text-[11px] font-semibold text-accent">
@@ -112,7 +112,7 @@ export default async function QuizHomePage({
           </div>
           <Link
             href={currentSub ? `/quiz/${current.id}/result` : `/quiz/${current.id}/take`}
-            className="font-display w-[132px] rounded-[10px] bg-accent py-3 text-center text-[14.5px] whitespace-nowrap text-white hover:bg-accent-strong"
+            className="font-display w-full rounded-[10px] bg-accent py-3 text-center text-[14.5px] whitespace-nowrap text-white hover:bg-accent-strong sm:w-[132px]"
           >
             {currentSub ? "결과 보기" : "퀴즈 시작"}
           </Link>
@@ -130,7 +130,7 @@ export default async function QuizHomePage({
             <GroupIcon />
             이번 주 모둠
           </div>
-        <div className="flex items-center justify-between gap-5 rounded-[14px] border border-line bg-white px-7 py-3.5">
+        <div className="flex flex-col gap-4 rounded-[14px] border border-line bg-white px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-5 sm:px-7 sm:py-3.5">
           <div className="flex flex-none flex-col gap-2">
             <div>
               <span className="rounded-[5px] bg-accent-soft px-2 py-[3px] text-[11px] font-semibold whitespace-nowrap text-accent">
@@ -142,7 +142,7 @@ export default async function QuizHomePage({
               {myGroup.members.length}명
             </div>
           </div>
-          <div className="flex flex-1 flex-wrap items-center justify-end gap-2">
+          <div className="flex flex-1 flex-wrap items-center gap-2 sm:justify-end">
             {myGroup.members.map((m) => (
               <div
                 key={m.id}
@@ -159,7 +159,7 @@ export default async function QuizHomePage({
           </div>
           <Link
             href={`/group-memo/${myGroup.id}`}
-            className="font-display w-[132px] flex-none rounded-[10px] bg-accent py-3 text-center text-[14.5px] whitespace-nowrap text-white hover:bg-accent-strong"
+            className="font-display w-full flex-none rounded-[10px] bg-accent py-3 text-center text-[14.5px] whitespace-nowrap text-white hover:bg-accent-strong sm:w-[132px]"
           >
             모둠 메모장
           </Link>

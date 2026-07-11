@@ -92,7 +92,8 @@ export default async function AdminResultsPage({
         ))}
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-line bg-white">
+      <div className="overflow-x-auto rounded-xl border border-line bg-white">
+        <div className="min-w-[560px]">
         <div className="grid grid-cols-[44px_1fr_110px_70px_110px] gap-2 border-b border-line-soft px-5 py-[11px] text-[11px] font-semibold text-stone-400">
           <span>#</span>
           <span>이름</span>
@@ -132,6 +133,7 @@ export default async function AdminResultsPage({
             </span>
           </div>
         ))}
+        </div>
       </div>
     </div>
   );

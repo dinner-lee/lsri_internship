@@ -75,7 +75,7 @@ export default async function LoginPage() {
           >
             서울대학교 학습과학연구소
           </a>
-          <span className="whitespace-nowrap">
+          <span className="sm:whitespace-nowrap">
             (08826) 서울시 관악구 관악로 1 서울대학교 학습과학연구소 10-1동 401호
           </span>
           <span>
