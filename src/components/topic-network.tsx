@@ -121,14 +121,17 @@ function useLayout(nodes: NetNode[], edges: NetEdge[]) {
     });
 
     // 표시 텍스트 전체가 원 안에 들어가도록 반지름을 텍스트 기준으로 결정
-    // 학생 노드는 겹침 점수(weight)가 클수록 뚜렷하게 커짐
+    // 학생·키워드 노드 모두 겹침/선택 점수(weight)가 클수록 뚜렷하게 커짐
     const simNodes: SimNode[] = nodes.map((n, i) => {
-      const bonus =
-        n.weight != null ? Math.min(Math.sqrt(n.weight) * 6.5, 30) : Math.min(degree[i], 4);
       const r =
         n.kind === "keyword"
-          ? Math.min(displayText(n).length, 8) * 4.4 + 6 + Math.min(degree[i] * 1.3, 9)
-          : labelRadius(studentLabel(n.name)) + bonus;
+          ? Math.min(displayText(n).length, 8) * 4.4 +
+            6 +
+            (n.weight != null
+              ? Math.min(Math.sqrt(n.weight) * 9, 36)
+              : Math.min(degree[i] * 1.3, 9))
+          : labelRadius(studentLabel(n.name)) +
+            (n.weight != null ? Math.min(Math.sqrt(n.weight) * 6.5, 30) : Math.min(degree[i], 4));
       return { idx: i, r };
     });
     const simLinks = edges.map((e) => ({ source: e.source, target: e.target, shared: e.shared }));
@@ -438,7 +441,7 @@ export function TopicNetwork({
                     x={pos[i][0]}
                     y={pos[i][1] + 3.5}
                     textAnchor="middle"
-                    fontSize={Math.min(10, ((r - 5) * 2) / text.length)}
+                    fontSize={Math.min(9 + r / 18, ((r - 5) * 2) / text.length)}
                     fontWeight={600}
                     fill="var(--color-accent)"
                     pointerEvents="none"

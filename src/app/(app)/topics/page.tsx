@@ -158,6 +158,12 @@ export default async function TopicsPage({
     ),
   ];
   const kwIndex = new Map(kwList.map((k, i) => [k, netTopics.length + i]));
+  // 키워드 선택 점수: 직접 등록 1.0, 하트 0.4 — 키워드 노드 크기에 반영
+  const kwScore = new Map<string, number>();
+  netTopics.forEach((t) => {
+    (directOf.get(t.userId) ?? []).forEach((k) => kwScore.set(k, (kwScore.get(k) ?? 0) + 1));
+    (likedOf.get(t.userId) ?? []).forEach((k) => kwScore.set(k, (kwScore.get(k) ?? 0) + 0.4));
+  });
   const bipNodes: NetNode[] = [
     // 키워드 그래프에서는 그룹 색·겹침 크기 강조를 적용하지 않음
     ...studentNodes.map((n) => ({ ...n, groups: undefined, weight: undefined })),
@@ -167,6 +173,7 @@ export default async function TopicsPage({
       kind: "keyword" as const,
       keywords: [],
       isMe: false,
+      weight: kwScore.get(k) ?? 0,
     })),
   ];
   const bipEdges: NetEdge[] = [];
