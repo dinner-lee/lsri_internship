@@ -21,6 +21,12 @@ export default async function TopicDetailPage({ params }: { params: Promise<{ id
   if (!topic) notFound();
 
   const liked = topic.likes.some((l) => l.userId === user.id);
+  // 작성자가 키워드 지도에서 하트로 추가한 키워드
+  const heartedKeywords = (
+    await prisma.keywordLike.findMany({ where: { userId: topic.userId } })
+  )
+    .map((kl) => kl.keyword)
+    .filter((k) => !topic.keywords.includes(k));
 
   return (
     <div className="flex max-w-[680px] flex-col gap-4">
@@ -41,7 +47,7 @@ export default async function TopicDetailPage({ params }: { params: Promise<{ id
         <div className="text-[13.5px] leading-[1.75] text-stone-700">
           <Markdown md={topic.markdown} />
         </div>
-        {topic.keywords.length > 0 && (
+        {(topic.keywords.length > 0 || heartedKeywords.length > 0) && (
           <div className="flex flex-wrap gap-1.5 border-t border-line-soft pt-3">
             {topic.keywords.map((k) => (
               <span
@@ -49,6 +55,14 @@ export default async function TopicDetailPage({ params }: { params: Promise<{ id
                 className="rounded-full bg-line-soft px-[11px] py-1 text-[11.5px] font-medium text-stone-600"
               >
                 #{k}
+              </span>
+            ))}
+            {heartedKeywords.map((k) => (
+              <span
+                key={`liked-${k}`}
+                className="rounded-full bg-bad-soft px-[11px] py-1 text-[11.5px] font-medium text-bad"
+              >
+                ♥ #{k}
               </span>
             ))}
           </div>

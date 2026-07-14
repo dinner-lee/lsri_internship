@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
+import { normKeyword } from "@/lib/utils";
 
 export async function saveTopicAction(markdown: string, keywords: string[]) {
   const user = await requireUser();
@@ -31,11 +32,12 @@ export async function toggleTopicLikeAction(topicId: string) {
 
 export async function toggleKeywordLikeAction(keyword: string) {
   const user = await requireUser();
-  const existing = await prisma.keywordLike.findUnique({
-    where: { keyword_userId: { keyword, userId: user.id } },
-  });
-  if (existing) {
-    await prisma.keywordLike.delete({ where: { id: existing.id } });
+  // 표기가 달라도(공백·대소문자) 같은 키워드의 하트로 취급
+  const norm = normKeyword(keyword);
+  const mine = await prisma.keywordLike.findMany({ where: { userId: user.id } });
+  const existing = mine.filter((kl) => normKeyword(kl.keyword) === norm);
+  if (existing.length > 0) {
+    await prisma.keywordLike.deleteMany({ where: { id: { in: existing.map((e) => e.id) } } });
   } else {
     await prisma.keywordLike.create({ data: { keyword, userId: user.id } });
   }

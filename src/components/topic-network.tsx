@@ -17,13 +17,19 @@ export interface NetNode {
   name: string; // 학생 이름 또는 키워드
   kind?: "student" | "keyword";
   keywords: string[];
+  likedKeywords?: string[]; // 하트로 추가한 키워드 (직접 등록과 구분 표시)
   isMe: boolean;
+  // 관심사 그룹 소속(비율) — 한 그룹이면 단색, 여러 그룹과 겹치면 그라데이션
+  groups?: { group: number; weight: number }[];
+  // 겹침 점수 — 클수록 노드가 커짐 (직접 겹침 > 하트 겹침 가중)
+  weight?: number;
 }
 
 export interface NetEdge {
   source: number; // node index
   target: number;
   shared: string[];
+  liked?: string[]; // shared 중 하트(키워드 좋아요)로 추가되어 이어진 키워드
 }
 
 interface SimNode extends SimulationNodeDatum {
@@ -37,6 +43,74 @@ function displayText(node: NetNode) {
   return node.kind === "keyword" ? `#${node.name}` : node.name;
 }
 
+// 커뮤니티 색 — 흰 글자가 읽히는 진한 톤으로 통일
+const GROUP_COLORS = [
+  "#2f4d8f", // 남색
+  "#0e7490", // 청록
+  "#6d28d9", // 보라
+  "#be123c", // 장미
+  "#15803d", // 초록
+  "#92400e", // 갈색
+  "#831843", // 자주
+  "#4338ca", // 남보라
+];
+
+function groupColor(g: number) {
+  return GROUP_COLORS[g % GROUP_COLORS.length];
+}
+
+function nodeFill(node: NetNode, i: number) {
+  if (node.kind === "keyword") return "var(--color-accent-soft)";
+  if (node.isMe) return "#18181b";
+  if (!node.groups || node.groups.length === 0) return "var(--color-accent)";
+  if (node.groups.length === 1) return groupColor(node.groups[0].group);
+  return `url(#node-grad-${i})`; // 여러 그룹과 겹치면 그라데이션
+}
+
+// 학생 라벨: "이름 / 학생 / 학과" → 이름(크게) + 소속(작게) 여러 줄
+const NAME_FONT = 13;
+const SUB_FONT = 9.5;
+const NAME_GAP = 15; // 이름 → 첫 소속 줄
+const SUB_GAP = 12; // 소속 줄 간격
+
+interface NodeLabel {
+  lines: string[];
+  fonts: number[];
+  offsets: number[]; // 노드 중심 기준 각 줄의 세로 중심
+}
+
+function studentLabel(name: string): NodeLabel {
+  let lines = name
+    .split("/")
+    .map((s) => s.trim())
+    .filter(Boolean)
+    // "이름 / 학생 / 학과"의 '학생' 구분은 생략 (이름 자리는 유지)
+    .filter((s, i) => i === 0 || s !== "학생");
+  if (lines.length === 0) lines = [name];
+  const fonts = lines.map((l, i) =>
+    i === 0 ? (lines[0].length > 8 ? 11 : NAME_FONT) : l.length > 10 ? 8.5 : SUB_FONT
+  );
+  const span = lines.length > 1 ? NAME_GAP + (lines.length - 2) * SUB_GAP : 0;
+  const offsets = lines.map((_, i) => (i === 0 ? 0 : NAME_GAP + (i - 1) * SUB_GAP) - span / 2);
+  return { lines, fonts, offsets };
+}
+
+// 모든 줄이 원 안에 들어가는 최소 반지름
+function labelRadius(label: NodeLabel) {
+  let r = 0;
+  label.lines.forEach((l, i) => {
+    const halfW = (l.length * label.fonts[i] * 0.98) / 2;
+    const edgeY = Math.abs(label.offsets[i]) + label.fonts[i] * 0.55;
+    r = Math.max(r, Math.hypot(halfW, edgeY));
+  });
+  return Math.max(26, r + 7);
+}
+
+// 겹치는 키워드 수 → 선 굵기 (1개 1.5 / 2개 3.7 / 3개 5.9 / 4개 8.1 / 5개+ 10.3)
+function edgeWidth(shared: number) {
+  return 1.5 + (Math.min(shared, 5) - 1) * 2.2;
+}
+
 // d3-force 레이아웃 — 초기 배치가 결정적(phyllotaxis)이라 새로고침해도 동일
 function useLayout(nodes: NetNode[], edges: NetEdge[]) {
   return useMemo(() => {
@@ -46,13 +120,15 @@ function useLayout(nodes: NetNode[], edges: NetEdge[]) {
       degree[e.target]++;
     });
 
-    // 표시 텍스트 전체가 원 안에 들어가도록 반지름을 텍스트 길이 기준으로 결정
+    // 표시 텍스트 전체가 원 안에 들어가도록 반지름을 텍스트 기준으로 결정
+    // 학생 노드는 겹침 점수(weight)가 클수록 뚜렷하게 커짐
     const simNodes: SimNode[] = nodes.map((n, i) => {
-      const len = displayText(n).length;
+      const bonus =
+        n.weight != null ? Math.min(Math.sqrt(n.weight) * 6.5, 30) : Math.min(degree[i], 4);
       const r =
         n.kind === "keyword"
-          ? Math.min(len, 8) * 4.4 + 6 + Math.min(degree[i] * 1.3, 9)
-          : Math.min(len, 6) * 5.6 + 9 + Math.min(degree[i], 4);
+          ? Math.min(displayText(n).length, 8) * 4.4 + 6 + Math.min(degree[i] * 1.3, 9)
+          : labelRadius(studentLabel(n.name)) + bonus;
       return { idx: i, r };
     });
     const simLinks = edges.map((e) => ({ source: e.source, target: e.target, shared: e.shared }));
@@ -72,6 +148,59 @@ function useLayout(nodes: NetNode[], edges: NetEdge[]) {
       .stop();
 
     for (let i = 0; i < 300; i++) sim.tick();
+
+    // 후처리: 엣지가 무관한 노드 아래를 지나면 그 노드를 수직 방향으로 밀어냄
+    for (let pass = 0; pass < 40; pass++) {
+      let moved = false;
+      simLinks.forEach((l) => {
+        // forceLink 실행 후에는 source/target이 인덱스가 아닌 노드 객체로 치환됨
+        const a = l.source as unknown as SimNode;
+        const b = l.target as unknown as SimNode;
+        simNodes.forEach((n) => {
+          if (n === a || n === b) return;
+          const ax = a.x ?? 0, ay = a.y ?? 0, bx = b.x ?? 0, by = b.y ?? 0;
+          const dx = bx - ax, dy = by - ay;
+          const len2 = dx * dx + dy * dy || 1;
+          let t = (((n.x ?? 0) - ax) * dx + ((n.y ?? 0) - ay) * dy) / len2;
+          t = Math.max(0.08, Math.min(0.92, t));
+          const cx = ax + t * dx, cy = ay + t * dy;
+          let nx = (n.x ?? 0) - cx, ny = (n.y ?? 0) - cy;
+          const dist = Math.hypot(nx, ny);
+          const clearance = n.r + 10;
+          if (dist >= clearance) return;
+          if (dist < 0.5) {
+            // 선 위에 정확히 얹힌 경우: 선에 수직인 방향으로 밀기
+            const inv = 1 / Math.sqrt(len2);
+            nx = -dy * inv;
+            ny = dx * inv;
+          } else {
+            nx /= dist;
+            ny /= dist;
+          }
+          const push = (clearance - dist) * 0.5;
+          n.x = (n.x ?? 0) + nx * push;
+          n.y = (n.y ?? 0) + ny * push;
+          moved = true;
+        });
+      });
+      // 밀어낸 뒤 원끼리 다시 겹치지 않도록 분리
+      for (let i = 0; i < simNodes.length; i++)
+        for (let j = i + 1; j < simNodes.length; j++) {
+          const p = simNodes[i], q = simNodes[j];
+          const dx = (q.x ?? 0) - (p.x ?? 0);
+          const dy = (q.y ?? 0) - (p.y ?? 0);
+          const dist = Math.hypot(dx, dy) || 1;
+          const min = p.r + q.r + 12;
+          if (dist >= min) continue;
+          const push = (min - dist) / 2;
+          const ux = dx / dist, uy = dy / dist;
+          p.x = (p.x ?? 0) - ux * push;
+          p.y = (p.y ?? 0) - uy * push;
+          q.x = (q.x ?? 0) + ux * push;
+          q.y = (q.y ?? 0) + uy * push;
+        }
+      if (!moved) break;
+    }
 
     // 마커 실제 크기를 포함한 경계로 viewBox 계산 → 잘림 방지
     let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
@@ -114,7 +243,9 @@ export function TopicNetwork({
   const { degree, radii, positions: initialPos, box } = useLayout(nodes, edges);
   const [pos, setPos] = useState(initialPos);
   const svgRef = useRef<SVGSVGElement>(null);
-  const drag = useRef<{ i: number; moved: boolean } | null>(null);
+  const drag = useRef<{ i: number; x: number; y: number; moved: boolean } | null>(null);
+  // click은 pointerup 이후에 발생하므로, 드래그 여부를 클릭 시점까지 보존
+  const justDragged = useRef(false);
 
   // 레이아웃이 바뀌면(데이터 변경) 위치 초기화
   const [prevInitial, setPrevInitial] = useState(initialPos);
@@ -152,9 +283,16 @@ export function TopicNetwork({
   const onPointerMove = (e: React.PointerEvent) => {
     if (!drag.current) return;
     const [x, y] = toSvg(e);
-    const i = drag.current.i;
-    drag.current.moved = true;
-    setPos((prev) => prev.map((p, pi) => (pi === i ? [x, y] : p)));
+    const d = drag.current;
+    // 클릭 시의 미세한 흔들림은 드래그로 치지 않음
+    if (!d.moved && Math.hypot(x - d.x, y - d.y) < 4) return;
+    d.moved = true;
+    setPos((prev) => prev.map((p, pi) => (pi === d.i ? [x, y] : p)));
+  };
+
+  const releaseDrag = () => {
+    justDragged.current = drag.current?.moved ?? false;
+    drag.current = null;
   };
 
   // 툴팁 위치 (컨테이너 % 기준, 경계에서 뒤집기/클램프)
@@ -187,18 +325,40 @@ export function TopicNetwork({
           viewBox={`${box.x} ${box.y} ${box.w} ${box.h}`}
           className="h-auto w-full touch-none select-none"
           onPointerMove={onPointerMove}
-          onPointerUp={() => (drag.current = null)}
+          onPointerUp={releaseDrag}
           onPointerLeave={() => {
-            drag.current = null;
+            releaseDrag();
             setHover(null);
           }}
         >
+          {/* 여러 그룹에 걸친 학생: 그룹 색을 비율대로 섞은 대각 그라데이션 */}
+          <defs>
+            {nodes.map((n, i) => {
+              if (!n.groups || n.groups.length < 2 || n.isMe) return null;
+              const total = n.groups.reduce((s, g) => s + g.weight, 0) || 1;
+              let cum = 0;
+              return (
+                <linearGradient key={n.id} id={`node-grad-${i}`} x1="0" y1="0" x2="1" y2="1">
+                  {n.groups.map((g) => {
+                    const mid = ((cum + g.weight / 2) / total) * 100;
+                    cum += g.weight;
+                    return (
+                      <stop key={g.group} offset={`${mid}%`} stopColor={groupColor(g.group)} />
+                    );
+                  })}
+                </linearGradient>
+              );
+            })}
+          </defs>
+
           {/* 엣지 */}
           {edges.map((e, i) => {
             const active =
               (hover?.type === "edge" && hover.i === i) ||
               (hover?.type === "node" && (e.source === hover.i || e.target === hover.i));
             const dimmed = hover !== null && !active;
+            // 하트로만 이어진 관계는 점선 + 장미색으로 구분
+            const likedOnly = (e.liked?.length ?? 0) >= e.shared.length;
             return (
               <g key={i}>
                 <line
@@ -206,9 +366,21 @@ export function TopicNetwork({
                   y1={pos[e.source][1]}
                   x2={pos[e.target][0]}
                   y2={pos[e.target][1]}
-                  stroke={active ? "var(--color-accent)" : dimmed ? "#eceae7" : "#c9c5bf"}
+                  stroke={
+                    active
+                      ? likedOnly
+                        ? "#be123c"
+                        : "var(--color-accent)"
+                      : dimmed
+                        ? "#eceae7"
+                        : likedOnly
+                          ? "#dcb2be"
+                          : "#c9c5bf"
+                  }
                   strokeOpacity={active ? 0.55 : 1}
-                  strokeWidth={(1 + Math.min(e.shared.length, 3)) * (active ? 1.4 : 1)}
+                  strokeWidth={edgeWidth(e.shared.length) * (active ? 1.3 : 1)}
+                  strokeDasharray={likedOnly ? "7 6" : undefined}
+                  strokeLinecap="round"
                 />
                 {/* 넓은 히트 타깃 */}
                 <line
@@ -241,13 +413,14 @@ export function TopicNetwork({
                 onMouseLeave={() => setHover(null)}
                 onPointerDown={(e) => {
                   (e.target as Element).setPointerCapture?.(e.pointerId);
-                  drag.current = { i, moved: false };
+                  const [x, y] = toSvg(e);
+                  justDragged.current = false;
+                  drag.current = { i, x, y, moved: false };
                 }}
                 onClick={() => {
-                  if (isKeyword) return;
-                  if (drag.current === null || !drag.current.moved) {
-                    router.push(`/topics/${node.id}`);
-                  }
+                  // 드래그해서 놓은 경우에는 이동하지 않음
+                  if (isKeyword || justDragged.current || drag.current?.moved) return;
+                  router.push(`/topics/${node.id}`);
                 }}
                 className={isKeyword ? "cursor-grab" : "cursor-pointer"}
               >
@@ -256,28 +429,44 @@ export function TopicNetwork({
                   cx={pos[i][0]}
                   cy={pos[i][1]}
                   r={r}
-                  fill={
-                    isKeyword
-                      ? "var(--color-accent-soft)"
-                      : node.isMe
-                        ? "#18181b"
-                        : "var(--color-accent)"
-                  }
+                  fill={nodeFill(node, i)}
                   stroke={isKeyword ? "var(--color-accent-border)" : "#fff"}
                   strokeWidth={isKeyword ? 1.5 : 2}
                 />
-                {/* 텍스트 전체를 원 안에 표시 (길면 글자 크기 축소) */}
-                <text
-                  x={pos[i][0]}
-                  y={pos[i][1] + 3.5}
-                  textAnchor="middle"
-                  fontSize={Math.min(isKeyword ? 10 : 11, ((r - 5) * 2) / text.length)}
-                  fontWeight={600}
-                  fill={isKeyword ? "var(--color-accent)" : "#fff"}
-                  pointerEvents="none"
-                >
-                  {text}
-                </text>
+                {isKeyword ? (
+                  <text
+                    x={pos[i][0]}
+                    y={pos[i][1] + 3.5}
+                    textAnchor="middle"
+                    fontSize={Math.min(10, ((r - 5) * 2) / text.length)}
+                    fontWeight={600}
+                    fill="var(--color-accent)"
+                    pointerEvents="none"
+                  >
+                    {text}
+                  </text>
+                ) : (
+                  // 이름(크게) + 소속(작게) 줄바꿈 표시
+                  (() => {
+                    const label = studentLabel(node.name);
+                    return (
+                      <text textAnchor="middle" fill="#fff" pointerEvents="none">
+                        {label.lines.map((l, li) => (
+                          <tspan
+                            key={li}
+                            x={pos[i][0]}
+                            y={pos[i][1] + label.offsets[li] + label.fonts[li] * 0.35}
+                            fontSize={label.fonts[li]}
+                            fontWeight={li === 0 ? 700 : 500}
+                            fillOpacity={li === 0 ? 1 : 0.75}
+                          >
+                            {l}
+                          </tspan>
+                        ))}
+                      </text>
+                    );
+                  })()
+                )}
               </g>
             );
           })}
@@ -318,9 +507,18 @@ export function TopicNetwork({
                       #{k}
                     </span>
                   ))}
-                  {hoveredNode.keywords.length === 0 && (
-                    <span className="text-[10.5px] text-stone-400">키워드 없음</span>
-                  )}
+                  {(hoveredNode.likedKeywords ?? []).map((k) => (
+                    <span
+                      key={`liked-${k}`}
+                      className="rounded-full bg-bad-soft px-2 py-0.5 text-[10.5px] font-medium text-bad"
+                    >
+                      ♥ #{k}
+                    </span>
+                  ))}
+                  {hoveredNode.keywords.length === 0 &&
+                    (hoveredNode.likedKeywords ?? []).length === 0 && (
+                      <span className="text-[10.5px] text-stone-400">키워드 없음</span>
+                    )}
                 </div>
                 {degree[hover.i] > 0 && (
                   <div className="mt-1 text-[10.5px] text-stone-400">
@@ -347,14 +545,19 @@ export function TopicNetwork({
               {displayText(nodes[hoveredEdge.source])} ↔ {displayText(nodes[hoveredEdge.target])}
             </div>
             <div className="mt-1 flex flex-wrap gap-1">
-              {hoveredEdge.shared.map((k) => (
-                <span
-                  key={k}
-                  className="rounded-full bg-accent-soft px-2 py-0.5 text-[10.5px] font-medium text-accent"
-                >
-                  #{k}
-                </span>
-              ))}
+              {hoveredEdge.shared.map((k) => {
+                const viaLike = hoveredEdge.liked?.includes(k);
+                return (
+                  <span
+                    key={k}
+                    className={`rounded-full px-2 py-0.5 text-[10.5px] font-medium ${
+                      viaLike ? "bg-bad-soft text-bad" : "bg-accent-soft text-accent"
+                    }`}
+                  >
+                    {viaLike ? "♥ " : ""}#{k}
+                  </span>
+                );
+              })}
             </div>
           </div>
         )}

@@ -1,3 +1,8 @@
+// 키워드 동일성 비교용 정규화 — 공백·대소문자가 달라도 같은 키워드로 취급
+export function normKeyword(k: string) {
+  return k.replace(/\s+/g, "").toLowerCase();
+}
+
 export function initialOf(name: string) {
   return name.length > 1 ? name[1] : (name[0] ?? "?");
 }
