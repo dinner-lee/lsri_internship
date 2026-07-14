@@ -32,12 +32,27 @@ export interface NetEdge {
   liked?: string[]; // shared 중 하트(키워드 좋아요)로 추가되어 이어진 키워드
 }
 
+// 카드 상호작용(하트·댓글): source 학생이 target 학생의 카드에 남긴 반응
+export interface NetInteraction {
+  source: number;
+  target: number;
+  hearts: number;
+  comments: number;
+}
+
 interface SimNode extends SimulationNodeDatum {
   idx: number;
   r: number;
 }
 
-type Hover = { type: "node"; i: number } | { type: "edge"; i: number } | null;
+type Hover =
+  | { type: "node"; i: number }
+  | { type: "edge"; i: number }
+  | { type: "inter"; i: number; kind: "heart" | "comment" }
+  | null;
+
+const HEART_COLOR = "#cc7d95";
+const COMMENT_COLOR = "#b3ada5";
 
 function displayText(node: NetNode) {
   return node.kind === "keyword" ? `#${node.name}` : node.name;
@@ -235,14 +250,17 @@ function useLayout(nodes: NetNode[], edges: NetEdge[]) {
 export function TopicNetwork({
   nodes,
   edges,
+  interactions,
   caption,
 }: {
   nodes: NetNode[];
   edges: NetEdge[];
+  interactions?: NetInteraction[];
   caption?: string;
 }) {
   const router = useRouter();
   const [hover, setHover] = useState<Hover>(null);
+  const [showInter, setShowInter] = useState(true);
   const { degree, radii, positions: initialPos, box } = useLayout(nodes, edges);
   const [pos, setPos] = useState(initialPos);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -310,6 +328,32 @@ export function TopicNetwork({
     };
   };
 
+  // 상호작용 곡선: 하트는 한쪽, 댓글은 반대쪽으로 휘어 서로 겹치지 않음
+  const interGeom = (it: NetInteraction, bendSign: number) => {
+    const [sx, sy] = pos[it.source];
+    const [tx, ty] = pos[it.target];
+    const dx = tx - sx;
+    const dy = ty - sy;
+    const len = Math.hypot(dx, dy) || 1;
+    const nx = (-dy / len) * bendSign;
+    const ny = (dx / len) * bendSign;
+    const bend = Math.min(0.22 * len, 60) + 14;
+    const cx = (sx + tx) / 2 + nx * bend;
+    const cy = (sy + ty) / 2 + ny * bend;
+    // 양 끝을 원 가장자리까지만 — 화살표가 원에 가려지지 않게
+    const toward = (x: number, y: number, gap: number) => {
+      const d = Math.hypot(cx - x, cy - y) || 1;
+      return [x + ((cx - x) / d) * gap, y + ((cy - y) / d) * gap];
+    };
+    const [ax, ay] = toward(sx, sy, radii[it.source] + 2);
+    const [bx, by] = toward(tx, ty, radii[it.target] + 7);
+    return {
+      d: `M ${ax} ${ay} Q ${cx} ${cy} ${bx} ${by}`,
+      tipX: 0.25 * ax + 0.5 * cx + 0.25 * bx,
+      tipY: 0.25 * ay + 0.5 * cy + 0.25 * by,
+    };
+  };
+
   const connectedNames = (i: number) =>
     edges
       .filter((e) => e.source === i || e.target === i)
@@ -352,6 +396,28 @@ export function TopicNetwork({
                 </linearGradient>
               );
             })}
+            <marker
+              id="arrow-heart"
+              viewBox="0 0 8 8"
+              refX="6.5"
+              refY="4"
+              markerWidth="6.5"
+              markerHeight="6.5"
+              orient="auto"
+            >
+              <path d="M0,0.5 L7.5,4 L0,7.5 Z" fill={HEART_COLOR} />
+            </marker>
+            <marker
+              id="arrow-comment"
+              viewBox="0 0 8 8"
+              refX="6.5"
+              refY="4"
+              markerWidth="6.5"
+              markerHeight="6.5"
+              orient="auto"
+            >
+              <path d="M0,0.5 L7.5,4 L0,7.5 Z" fill={COMMENT_COLOR} />
+            </marker>
           </defs>
 
           {/* 엣지 */}
@@ -399,6 +465,42 @@ export function TopicNetwork({
               </g>
             );
           })}
+
+          {/* 상호작용 오버레이: 카드에 남긴 하트(장미)·댓글(회색) 곡선 화살표 */}
+          {showInter &&
+            (interactions ?? []).map((it, i) => {
+              const parts: { kind: "heart" | "comment"; count: number; sign: number }[] = [];
+              if (it.hearts > 0) parts.push({ kind: "heart", count: it.hearts, sign: 1 });
+              if (it.comments > 0) parts.push({ kind: "comment", count: it.comments, sign: -1 });
+              return parts.map((p) => {
+                const active = hover?.type === "inter" && hover.i === i && hover.kind === p.kind;
+                const related =
+                  hover?.type === "node" && (it.source === hover.i || it.target === hover.i);
+                const dimmed = hover !== null && !active && !related;
+                const { d } = interGeom(it, p.sign);
+                const color = p.kind === "heart" ? HEART_COLOR : COMMENT_COLOR;
+                return (
+                  <g key={`inter-${i}-${p.kind}`}>
+                    <path
+                      d={d}
+                      fill="none"
+                      stroke={color}
+                      strokeOpacity={dimmed ? 0.15 : active || related ? 1 : 0.85}
+                      strokeWidth={(1.3 + Math.min(p.count - 1, 3) * 0.5) * (active ? 1.5 : 1)}
+                      markerEnd={`url(#arrow-${p.kind})`}
+                    />
+                    <path
+                      d={d}
+                      fill="none"
+                      stroke="transparent"
+                      strokeWidth={11}
+                      onMouseEnter={() => setHover({ type: "inter", i, kind: p.kind })}
+                      onMouseLeave={() => setHover(null)}
+                    />
+                  </g>
+                );
+              });
+            })}
 
           {/* 노드 */}
           {nodes.map((node, i) => {
@@ -474,6 +576,45 @@ export function TopicNetwork({
             );
           })}
         </svg>
+
+        {/* 상호작용 표시 토글 */}
+        {(interactions ?? []).length > 0 && (
+          <button
+            onClick={() => setShowInter((v) => !v)}
+            className={`absolute top-2.5 right-2.5 z-10 flex cursor-pointer items-center gap-1 rounded-full border px-3 py-1.5 text-[11.5px] font-medium transition-colors ${
+              showInter
+                ? "border-bad-border bg-bad-soft text-bad"
+                : "border-line bg-white text-stone-400 hover:border-stone-300"
+            }`}
+          >
+            ♥ 상호작용 {showInter ? "끄기" : "표시"}
+          </button>
+        )}
+
+        {/* 상호작용 툴팁 */}
+        {hover?.type === "inter" &&
+          interactions &&
+          (() => {
+            const it = interactions[hover.i];
+            const kind = hover.kind;
+            const { tipX, tipY } = interGeom(it, kind === "heart" ? 1 : -1);
+            const nameOf = (i: number) => nodes[i].name.split("/")[0].trim();
+            return (
+              <div
+                className="pointer-events-none absolute z-10 rounded-lg border border-line bg-white px-3.5 py-2.5 shadow-[0_2px_12px_rgba(0,0,0,0.1)]"
+                style={tooltipStyle(tipX, tipY)}
+              >
+                <div className="text-xs font-bold text-stone-800">
+                  {nameOf(it.source)} → {nameOf(it.target)}
+                </div>
+                <div className="mt-1 text-[10.5px] text-stone-500">
+                  {kind === "heart"
+                    ? `연구 주제 카드에 하트 ♥`
+                    : `연구 주제 카드에 댓글 ${it.comments}개`}
+                </div>
+              </div>
+            );
+          })()}
 
         {/* 노드 툴팁 */}
         {hover?.type === "node" && hoveredNode && (

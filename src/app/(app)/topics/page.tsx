@@ -3,7 +3,13 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 import { initialOf, normKeyword } from "@/lib/utils";
 import { KeywordCloud } from "./keyword-cloud";
-import { TopicNetwork, type NetEdge, type NetNode } from "@/components/topic-network";
+import {
+  TopicNetwork,
+  type NetEdge,
+  type NetNode,
+  type NetInteraction,
+} from "@/components/topic-network";
+import { UserAvatar } from "@/components/user-menu";
 import { detectCommunities } from "@/lib/community";
 import { CompassIcon } from "@/components/icons";
 
@@ -17,25 +23,34 @@ export default async function TopicsPage({
   const user = await requireUser();
 
   // 왕복 지연을 줄이기 위해 병렬 실행
-  const [topics, allTopics, keywordLikes, allNetTopics] = await Promise.all([
-    prisma.topic.findMany({
-      where: { markdown: { not: "" }, userId: { not: user.id } },
-      include: {
-        user: true,
-        likes: true,
-        _count: { select: { comments: true } },
-      },
-      orderBy: { updatedAt: "desc" },
-    }),
-    // 키워드 지도: 사용 수 + 좋아요 수
-    prisma.topic.findMany({ select: { keywords: true } }),
-    prisma.keywordLike.findMany(),
-    // 네트워크: 나를 포함해 주제/키워드를 등록했거나 키워드에 하트를 누른 전원
-    prisma.topic.findMany({
-      include: { user: true },
-      orderBy: { createdAt: "asc" },
-    }),
-  ]);
+  const [topics, allTopics, keywordLikes, allNetTopics, cardLikes, cardComments] =
+    await Promise.all([
+      prisma.topic.findMany({
+        where: { markdown: { not: "" }, userId: { not: user.id } },
+        include: {
+          user: true,
+          likes: { include: { user: { select: { name: true, image: true } } } },
+          comments: { select: { userId: true, user: { select: { name: true, image: true } } } },
+          _count: { select: { comments: true } },
+        },
+        orderBy: { updatedAt: "desc" },
+      }),
+      // 키워드 지도: 사용 수 + 좋아요 수
+      prisma.topic.findMany({ select: { keywords: true } }),
+      prisma.keywordLike.findMany(),
+      // 네트워크: 나를 포함해 주제/키워드를 등록했거나 키워드에 하트를 누른 전원
+      prisma.topic.findMany({
+        include: { user: true },
+        orderBy: { createdAt: "asc" },
+      }),
+      // 상호작용 오버레이: 누가 누구의 카드에 하트/댓글을 남겼는지
+      prisma.topicLike.findMany({
+        select: { userId: true, topic: { select: { userId: true } } },
+      }),
+      prisma.comment.findMany({
+        select: { userId: true, topic: { select: { userId: true } } },
+      }),
+    ]);
   // 표기가 달라도(공백·대소문자) 같은 키워드로 합치기 — 가장 많이 쓰인 표기를 대표로
   const formCount = new Map<string, Map<string, number>>();
   const addForm = (raw: string) => {
@@ -148,6 +163,21 @@ export default async function TopicsPage({
     weight: overlapScore[i],
   }));
 
+  // 상호작용 오버레이: A→B 카드 하트/댓글을 방향 있는 곡선으로
+  const userIdx = new Map(netTopics.map((t, i) => [t.userId, i]));
+  const interMap = new Map<string, NetInteraction>();
+  const addInter = (fromU: string, toU: string, kind: "hearts" | "comments") => {
+    const s = userIdx.get(fromU);
+    const t = userIdx.get(toU);
+    if (s === undefined || t === undefined || s === t) return;
+    const key = `${s}-${t}`;
+    if (!interMap.has(key)) interMap.set(key, { source: s, target: t, hearts: 0, comments: 0 });
+    interMap.get(key)![kind] += 1;
+  };
+  cardLikes.forEach((l) => addInter(l.userId, l.topic.userId, "hearts"));
+  cardComments.forEach((c) => addInter(c.userId, c.topic.userId, "comments"));
+  const interactions = [...interMap.values()];
+
   // 키워드 그래프(이분): 학생 ↔ 키워드 (하트로 추가한 키워드는 점선, 그룹 색은 미적용)
   const kwList = [
     ...new Set(
@@ -233,7 +263,8 @@ export default async function TopicsPage({
         <TopicNetwork
           nodes={studentNodes}
           edges={edges}
-          caption="같은 관심 키워드를 가진 학습자끼리 연결됩니다 · 검은 원이 나, 원 색이 같으면 관심사가 비슷한 그룹이고 여러 그룹과 겹치는 학습자는 그라데이션으로 표시됩니다 · 선이 굵을수록 겹치는 키워드가 많고, 하트로 추가한 키워드로 이어진 관계는 점선입니다 · 선 위에 마우스를 올리면 겹치는 키워드가 표시됩니다 · 원은 드래그로 옮기고, 클릭하면 해당 연구 주제로 이동합니다"
+          interactions={interactions}
+          caption="같은 관심 키워드를 가진 학습자끼리 연결됩니다 · 검은 원이 나, 원 색이 같으면 관심사가 비슷한 그룹이고 여러 그룹과 겹치는 학습자는 그라데이션으로 표시됩니다 · 선이 굵을수록 겹치는 키워드가 많고, 하트로 추가한 키워드로 이어진 관계는 점선입니다 · 가는 곡선 화살표는 카드에 남긴 하트(장미)·댓글(회색)이며 우측 상단에서 켜고 끌 수 있습니다 · 원은 드래그로 옮기고, 클릭하면 해당 연구 주제로 이동합니다"
         />
       )}
 
@@ -269,6 +300,15 @@ export default async function TopicsPage({
             )}
             {topics.map((t) => {
               const liked = t.likes.some((l) => l.userId === user.id);
+              // 반응한 사람(작성자 본인 제외, 중복 없이)
+              const reactorMap = new Map<string, { name: string; image: string | null }>();
+              t.likes.forEach((l) => {
+                if (l.userId !== t.userId) reactorMap.set(l.userId, l.user);
+              });
+              t.comments.forEach((c) => {
+                if (c.userId !== t.userId) reactorMap.set(c.userId, c.user);
+              });
+              const reactors = [...reactorMap.entries()].map(([key, u]) => ({ key, ...u }));
               const ownNorm = new Set(t.keywords.map(normKeyword));
               const heartedKeywords = [
                 ...new Set(
@@ -326,15 +366,34 @@ export default async function TopicsPage({
                       ))}
                     </div>
                   )}
-                  <div
-                    className={`flex gap-3.5 border-t border-line-soft pt-2.5 text-xs ${
-                      liked ? "text-bad" : "text-stone-400"
-                    }`}
-                  >
-                    <span>
-                      {liked ? "♥" : "♡"} {t.likes.length}
-                    </span>
-                    <span className="text-stone-400">💬 {t._count.comments}</span>
+                  <div className="flex items-center justify-between border-t border-line-soft pt-2.5">
+                    <div
+                      className={`flex gap-3.5 text-xs ${liked ? "text-bad" : "text-stone-400"}`}
+                    >
+                      <span>
+                        {liked ? "♥" : "♡"} {t.likes.length}
+                      </span>
+                      <span className="text-stone-400">💬 {t._count.comments}</span>
+                    </div>
+                    {/* 반응한 사람(하트·댓글) 아바타 */}
+                    {reactors.length > 0 && (
+                      <div className="flex items-center -space-x-1.5">
+                        {reactors.slice(0, 5).map((r) => (
+                          <span
+                            key={r.key}
+                            title={r.name}
+                            className="rounded-full border-2 border-white"
+                          >
+                            <UserAvatar name={r.name} image={r.image} size={18} />
+                          </span>
+                        ))}
+                        {reactors.length > 5 && (
+                          <span className="flex h-[22px] w-[22px] items-center justify-center rounded-full border-2 border-white bg-line-soft text-[9px] font-semibold text-stone-500">
+                            +{reactors.length - 5}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </Link>
               );
