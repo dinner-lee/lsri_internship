@@ -11,6 +11,12 @@ function RankBadge({ rank }: { rank: number | null }) {
         미선호
       </span>
     );
+  if (rank === 0)
+    return (
+      <span className="rounded-[4px] bg-stone-800 px-1 py-px text-[9.5px] font-bold text-white">
+        내 주제
+      </span>
+    );
   return (
     <span
       className={`rounded-[4px] px-1 py-px text-[9.5px] font-bold ${

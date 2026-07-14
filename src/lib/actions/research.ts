@@ -30,13 +30,21 @@ export async function generateResearchGroupsAction(groupCount: number) {
   const [students, picks, topics] = await Promise.all([
     prisma.user.findMany({ where: { role: "LEARNER" }, select: { id: true } }),
     prisma.topicPick.findMany(),
-    prisma.topic.findMany({ where: { markdown: { not: "" } }, select: { id: true } }),
+    prisma.topic.findMany({
+      where: { markdown: { not: "" } },
+      select: { id: true, userId: true, user: { select: { role: true } } },
+    }),
   ]);
   if (students.length === 0 || topics.length === 0) return;
 
+  // 작성자는 자기 주제에 암묵적 0순위 — 자기 주제가 앵커가 되면 우선 배정
+  const ownPicks = topics
+    .filter((t) => t.user.role === "LEARNER")
+    .map((t) => ({ userId: t.userId, topicId: t.id, rank: 0 }));
+
   const result = makeResearchGroups(
     students.map((s) => s.id),
-    picks,
+    [...picks, ...ownPicks],
     topics.map((t) => t.id),
     count
   );

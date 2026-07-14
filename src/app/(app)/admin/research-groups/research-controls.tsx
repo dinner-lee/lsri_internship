@@ -50,7 +50,9 @@ export function ResearchControls({
             학습자 {learnerCount}명 → 모둠당 {per}
             {rem > 0 ? `–${per + 1}` : ""}명 · 선호 제출 {pickedCount}명
           </span>
-          <span>득표가 많은 주제 {count}개를 중심으로, 선호 순위를 최대한 반영해 배정합니다</span>
+          <span>
+            작성자는 자기 주제에 우선 배정되고, 나머지는 대체로 1~2순위 안에 들도록 배정합니다
+          </span>
         </div>
         <button
           onClick={generate}
