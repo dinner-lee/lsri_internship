@@ -52,6 +52,8 @@ model User {
   memoEdits        GroupMemo[]        @relation("MemoEditor")
   groupMemoLikes   GroupMemoLike[]
   groupMemoComments GroupMemoComment[]
+  topicPicks           TopicPick[]
+  researchGroupMembers ResearchGroupMember[]
 }
 
 model InviteCode {
@@ -261,6 +263,56 @@ model Topic {
 
   likes    TopicLike[]
   comments Comment[]
+  picks          TopicPick[]
+  researchGroups ResearchGroup[]
+}
+
+// ── 자율연구 모둠 (관심 주제 1~5순위 기반) ─────────────────
+
+// 학습자가 동료의 연구 주제 카드에 매긴 관심 순위 (1 = 가장 관심)
+model TopicPick {
+  id      String @id @default(cuid())
+  userId  String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topicId String
+  topic   Topic  @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  rank    Int
+
+  @@unique([userId, topicId])
+  @@unique([userId, rank])
+}
+
+model ResearchGroupSet {
+  id          String    @id @default(cuid())
+  groupCount  Int
+  confirmedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  groups ResearchGroup[]
+}
+
+model ResearchGroup {
+  id      String           @id @default(cuid())
+  setId   String
+  set     ResearchGroupSet @relation(fields: [setId], references: [id], onDelete: Cascade)
+  index   Int
+  topicId String // 이 모둠의 앵커 연구 주제
+  topic   Topic            @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  members ResearchGroupMember[]
+
+  @@unique([setId, index])
+}
+
+model ResearchGroupMember {
+  id      String        @id @default(cuid())
+  groupId String
+  group   ResearchGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  userId  String
+  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rank    Int? // 배정된 주제에 대한 본인의 선호 순위 (null = 선호 목록에 없던 주제)
+
+  @@unique([groupId, userId])
 }
 
 model TopicLike {

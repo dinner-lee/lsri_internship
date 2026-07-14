@@ -3,6 +3,16 @@ export function normKeyword(k: string) {
   return k.replace(/\s+/g, "").toLowerCase();
 }
 
+// 연구 주제 마크다운의 첫 헤딩을 제목으로
+export function topicTitleOf(markdown: string) {
+  return (
+    markdown
+      .split("\n")
+      .find((l) => l.trim().startsWith("#"))
+      ?.replace(/^#+\s*/, "") ?? "(제목 없음)"
+  );
+}
+
 export function initialOf(name: string) {
   return name.length > 1 ? name[1] : (name[0] ?? "?");
 }

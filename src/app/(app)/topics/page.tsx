@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
-import { initialOf, normKeyword } from "@/lib/utils";
+import { initialOf, normKeyword, topicTitleOf } from "@/lib/utils";
+import { TopicPickControl } from "./topic-pick";
 import { KeywordCloud } from "./keyword-cloud";
 import {
   TopicNetwork,
@@ -51,6 +52,28 @@ export default async function TopicsPage({
         select: { userId: true, topic: { select: { userId: true } } },
       }),
     ]);
+
+  // 자율연구: 내 관심 순위 + 확정된 연구 모둠
+  const [myPicks, researchSet] = await Promise.all([
+    prisma.topicPick.findMany({ where: { userId: user.id } }),
+    prisma.researchGroupSet.findFirst({
+      where: { confirmedAt: { not: null } },
+      orderBy: { confirmedAt: "desc" },
+      include: {
+        groups: {
+          orderBy: { index: "asc" },
+          include: {
+            topic: { include: { user: true } },
+            members: { include: { user: true } },
+          },
+        },
+      },
+    }),
+  ]);
+  const myRankOf = new Map(myPicks.map((p) => [p.topicId, p.rank]));
+  const myResearchGroup = researchSet?.groups.find((g) =>
+    g.members.some((m) => m.userId === user.id)
+  );
   // 표기가 달라도(공백·대소문자) 같은 키워드로 합치기 — 가장 많이 쓰인 표기를 대표로
   const formCount = new Map<string, Map<string, number>>();
   const addForm = (raw: string) => {
@@ -234,7 +257,8 @@ export default async function TopicsPage({
                 i
               </span>
               <span className="invisible absolute top-full left-1/2 z-20 mt-1.5 w-max max-w-[300px] -translate-x-1/2 rounded-lg border border-line bg-white px-3 py-2 font-sans text-[11.5px] font-normal text-stone-600 opacity-0 shadow-[0_2px_10px_rgba(0,0,0,0.08)] transition-opacity duration-100 group-hover:visible group-hover:opacity-100">
-                내 주제는 우측 상단 프로필 메뉴에서 설정합니다
+                내 주제는 우측 상단 프로필 메뉴에서 설정합니다 · 카드의 관심 순위(1~5)는
+                자율연구 모둠 구성에 활용됩니다
               </span>
             </span>
           )}
@@ -278,6 +302,40 @@ export default async function TopicsPage({
 
       {mode === "cards" && (
         <>
+          {/* 확정된 자율연구 모둠 (내 모둠) */}
+          {myResearchGroup && (
+            <div className="flex flex-col gap-2.5 rounded-xl border border-line bg-white px-5 py-4 sm:px-7">
+              <span className="self-start rounded-[5px] bg-accent-soft px-2 py-[3px] text-[10.5px] font-bold text-accent">
+                내 자율연구 모둠
+              </span>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[14.5px] font-bold tracking-tight">
+                    <span className="text-accent">모둠 {myResearchGroup.index + 1}</span> ·{" "}
+                    {topicTitleOf(myResearchGroup.topic.markdown)}
+                  </span>
+                  <span className="text-[11.5px] text-stone-400">
+                    주제 작성: {myResearchGroup.topic.user.name.split("/")[0].trim()}
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {myResearchGroup.members.map((m) => (
+                    <span
+                      key={m.id}
+                      className={`rounded-full px-2.5 py-1 text-[11.5px] font-medium ${
+                        m.userId === user.id
+                          ? "bg-accent-soft text-accent"
+                          : "bg-paper text-stone-600"
+                      }`}
+                    >
+                      {m.user.name.split("/")[0].trim()}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="flex flex-col gap-2.5 rounded-xl border border-line bg-white px-5 py-[18px]">
             <div className="flex items-center gap-1.5 font-display text-[13px] text-stone-600">
               관심 키워드 지도
@@ -365,6 +423,10 @@ export default async function TopicsPage({
                         </span>
                       ))}
                     </div>
+                  )}
+                  {/* 자율연구 모둠 구성용 관심 순위 (학습자만) */}
+                  {user.role === "LEARNER" && (
+                    <TopicPickControl topicId={t.id} rank={myRankOf.get(t.id) ?? null} />
                   )}
                   <div className="flex items-center justify-between border-t border-line-soft pt-2.5">
                     <div

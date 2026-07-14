@@ -24,10 +24,14 @@ const ADMIN_STUDY_PREFIXES = [
   "/admin/discussions",
 ];
 
-const ADMIN_TABS = [
-  { href: "/topics", label: "자율연구" },
-  { href: "/admin/users", label: "계정 관리" },
+// 관리자: '자율연구' 상위 메뉴 아래 주제 탐색/모둠 구성
+const ADMIN_RESEARCH_SUBMENU = [
+  { href: "/topics", label: "주제 탐색" },
+  { href: "/admin/research-groups", label: "모둠 구성" },
 ];
+const ADMIN_RESEARCH_PREFIXES = ["/topics", "/admin/research-groups"];
+
+const ADMIN_TABS = [{ href: "/admin/users", label: "계정 관리" }];
 
 const tabCls = (active: boolean) =>
   `font-display rounded-lg px-2.5 py-[7px] text-[13px] whitespace-nowrap ${
@@ -53,32 +57,43 @@ export function AppNav({ role }: { role: Role }) {
   }
 
   const studyActive = ADMIN_STUDY_PREFIXES.some((p) => isActive(p));
+  const researchActive = ADMIN_RESEARCH_PREFIXES.some((p) => isActive(p));
+
+  const dropdown = (
+    label: string,
+    href: string,
+    active: boolean,
+    submenu: { href: string; label: string }[]
+  ) => (
+    <div className="group relative">
+      <Link href={href} className={`flex items-center gap-1 ${tabCls(active)}`}>
+        {label}
+        <svg width="9" height="6" viewBox="0 0 9 6" aria-hidden className="opacity-60">
+          <path d="M1 1l3.5 3.5L8 1" stroke="currentColor" strokeWidth="1.5" fill="none" />
+        </svg>
+      </Link>
+      <div className="invisible absolute left-0 z-50 w-36 pt-1 opacity-0 transition-opacity duration-100 group-hover:visible group-hover:opacity-100">
+        <div className="flex flex-col overflow-hidden rounded-xl border border-line bg-white py-1 shadow-[0_4px_16px_rgba(0,0,0,0.08)]">
+          {submenu.map((t) => (
+            <Link
+              key={t.href}
+              href={t.href}
+              className={`font-display px-4 py-2.5 text-[13px] hover:bg-paper ${
+                isActive(t.href) ? "font-semibold text-accent" : "text-stone-700"
+              }`}
+            >
+              {t.label}
+            </Link>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <nav className="flex items-center gap-1">
-      <div className="group relative">
-        <Link href="/admin/quizzes" className={`flex items-center gap-1 ${tabCls(studyActive)}`}>
-          스터디
-          <svg width="9" height="6" viewBox="0 0 9 6" aria-hidden className="opacity-60">
-            <path d="M1 1l3.5 3.5L8 1" stroke="currentColor" strokeWidth="1.5" fill="none" />
-          </svg>
-        </Link>
-        <div className="invisible absolute left-0 z-50 w-36 pt-1 opacity-0 transition-opacity duration-100 group-hover:visible group-hover:opacity-100">
-          <div className="flex flex-col overflow-hidden rounded-xl border border-line bg-white py-1 shadow-[0_4px_16px_rgba(0,0,0,0.08)]">
-            {ADMIN_STUDY_SUBMENU.map((t) => (
-              <Link
-                key={t.href}
-                href={t.href}
-                className={`font-display px-4 py-2.5 text-[13px] hover:bg-paper ${
-                  isActive(t.href) ? "font-semibold text-accent" : "text-stone-700"
-                }`}
-              >
-                {t.label}
-              </Link>
-            ))}
-          </div>
-        </div>
-      </div>
+      {dropdown("스터디", "/admin/quizzes", studyActive, ADMIN_STUDY_SUBMENU)}
+      {dropdown("자율연구", "/topics", researchActive, ADMIN_RESEARCH_SUBMENU)}
       {ADMIN_TABS.map((t) => (
         <Link key={t.href} href={t.href} className={tabCls(isActive(t.href))}>
           {t.label}
