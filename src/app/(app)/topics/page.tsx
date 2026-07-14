@@ -284,12 +284,7 @@ export default async function TopicsPage({
       </div>
 
       {mode === "network" && (
-        <TopicNetwork
-          nodes={studentNodes}
-          edges={edges}
-          interactions={interactions}
-          caption="같은 관심 키워드를 가진 학습자끼리 연결됩니다 · 검은 원이 나, 원 색이 같으면 관심사가 비슷한 그룹이고 여러 그룹과 겹치는 학습자는 그라데이션으로 표시됩니다 · 선이 굵을수록 겹치는 키워드가 많고, 하트로 추가한 키워드로 이어진 관계는 점선입니다 · 가는 곡선 화살표는 카드에 남긴 하트(장미)·댓글(회색)이며 우측 상단에서 켜고 끌 수 있습니다 · 원은 드래그로 옮기고, 클릭하면 해당 연구 주제로 이동합니다"
-        />
+        <TopicNetwork nodes={studentNodes} edges={edges} interactions={interactions} />
       )}
 
       {mode === "keywords" && (
