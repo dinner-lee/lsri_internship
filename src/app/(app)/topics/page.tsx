@@ -288,11 +288,7 @@ export default async function TopicsPage({
       )}
 
       {mode === "keywords" && (
-        <TopicNetwork
-          nodes={bipNodes}
-          edges={bipEdges}
-          caption="학습자(원)와 관심 키워드(옅은 원)가 연결된 그래프입니다 · 검은 원이 나입니다 · 키워드 원이 클수록 여러 학습자가 선택한 키워드이고, 하트로 추가한 키워드는 점선으로 연결됩니다 · 원은 드래그로 옮기고, 학습자를 클릭하면 해당 연구 주제로 이동합니다"
-        />
+        <TopicNetwork nodes={bipNodes} edges={bipEdges} />
       )}
 
       {mode === "cards" && (
