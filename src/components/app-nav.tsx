@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { Role } from "@prisma/client";
+import { QuizIcon, ChartIcon, GroupIcon, DiscussionIcon, CompassIcon } from "@/components/icons";
 
 const LEARNER_TABS = [
   { href: "/quiz", label: "스터디" },
@@ -11,10 +12,10 @@ const LEARNER_TABS = [
 
 // 관리자: '스터디' 상위 메뉴 아래 퀴즈/결과/모둠 구성
 const ADMIN_STUDY_SUBMENU = [
-  { href: "/admin/quizzes", label: "퀴즈" },
-  { href: "/admin/results", label: "결과" },
-  { href: "/admin/groups", label: "모둠 구성" },
-  { href: "/admin/discussions", label: "논의" },
+  { href: "/admin/quizzes", label: "퀴즈", icon: QuizIcon },
+  { href: "/admin/results", label: "결과", icon: ChartIcon },
+  { href: "/admin/groups", label: "모둠 구성", icon: GroupIcon },
+  { href: "/admin/discussions", label: "논의", icon: DiscussionIcon },
 ];
 const ADMIN_STUDY_PREFIXES = [
   "/admin/quizzes",
@@ -26,8 +27,8 @@ const ADMIN_STUDY_PREFIXES = [
 
 // 관리자: '자율연구' 상위 메뉴 아래 주제 탐색/모둠 구성
 const ADMIN_RESEARCH_SUBMENU = [
-  { href: "/topics", label: "주제 탐색" },
-  { href: "/admin/research-groups", label: "모둠 구성" },
+  { href: "/topics", label: "주제 탐색", icon: CompassIcon },
+  { href: "/admin/research-groups", label: "모둠 구성", icon: GroupIcon },
 ];
 const ADMIN_RESEARCH_PREFIXES = ["/topics", "/admin/research-groups"];
 
@@ -63,7 +64,7 @@ export function AppNav({ role }: { role: Role }) {
     label: string,
     href: string,
     active: boolean,
-    submenu: { href: string; label: string }[]
+    submenu: { href: string; label: string; icon: React.ComponentType<{ size?: number }> }[]
   ) => (
     <div className="group relative">
       <Link href={href} className={`flex items-center gap-1 ${tabCls(active)}`}>
@@ -78,10 +79,13 @@ export function AppNav({ role }: { role: Role }) {
             <Link
               key={t.href}
               href={t.href}
-              className={`font-display px-4 py-2.5 text-[13px] hover:bg-paper ${
+              className={`font-display flex items-center gap-2.5 px-4 py-2.5 text-[13px] hover:bg-paper ${
                 isActive(t.href) ? "font-semibold text-accent" : "text-stone-700"
               }`}
             >
+              <span className={isActive(t.href) ? "text-accent" : "text-stone-400"}>
+                <t.icon size={15} />
+              </span>
               {t.label}
             </Link>
           ))}

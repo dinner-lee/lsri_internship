@@ -27,7 +27,7 @@ export default async function TopicsPage({
   const [topics, allTopics, keywordLikes, allNetTopics, cardLikes, cardComments] =
     await Promise.all([
       prisma.topic.findMany({
-        where: { markdown: { not: "" }, userId: { not: user.id } },
+        where: { markdown: { not: "" } },
         include: {
           user: true,
           likes: { include: { user: { select: { name: true, image: true } } } },
@@ -389,6 +389,11 @@ export default async function TopicsPage({
                       {initialOf(t.user.name)}
                     </div>
                     <span className="text-[12.5px] font-semibold">{t.user.name}</span>
+                    {t.userId === user.id && (
+                      <span className="rounded-[5px] bg-accent-soft px-1.5 py-[2px] text-[10px] font-bold text-accent">
+                        내 주제
+                      </span>
+                    )}
                   </div>
                   <div className="text-[14.5px] leading-snug font-bold tracking-tight">{title}</div>
                   <div className="line-clamp-2 text-[12.5px] leading-relaxed text-stone-500">
@@ -415,8 +420,8 @@ export default async function TopicsPage({
                       ))}
                     </div>
                   )}
-                  {/* 자율연구 모둠 구성용 관심 순위 (학습자만) */}
-                  {user.role === "LEARNER" && (
+                  {/* 자율연구 모둠 구성용 관심 순위 (학습자만, 본인 주제 제외) */}
+                  {user.role === "LEARNER" && t.userId !== user.id && (
                     <TopicPickControl topicId={t.id} rank={myRankOf.get(t.id) ?? null} />
                   )}
                   <div className="flex items-center justify-between border-t border-line-soft pt-2.5">

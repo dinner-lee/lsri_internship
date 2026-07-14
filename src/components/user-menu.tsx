@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { Role } from "@prisma/client";
 import { logoutAction } from "@/lib/actions/auth";
 import { initialOf } from "@/lib/utils";
+import { UserIcon, PencilIcon, LogoutIcon } from "@/components/icons";
 
 export function UserAvatar({
   name,
@@ -57,21 +58,30 @@ export function UserMenu({
         <div className="flex flex-col overflow-hidden rounded-xl border border-line bg-white py-1 shadow-[0_4px_16px_rgba(0,0,0,0.08)]">
           <Link
             href="/profile"
-            className="px-4 py-2.5 text-[12.5px] font-medium text-stone-700 hover:bg-paper"
+            className="font-display flex items-center gap-2.5 px-4 py-2.5 text-[13px] text-stone-700 hover:bg-paper"
           >
+            <span className="text-stone-400">
+              <UserIcon size={15} />
+            </span>
             사용자 정보 수정
           </Link>
           {role === "LEARNER" && (
             <Link
               href="/profile#topic"
-              className="px-4 py-2.5 text-[12.5px] font-medium text-stone-700 hover:bg-paper"
+              className="font-display flex items-center gap-2.5 px-4 py-2.5 text-[13px] text-stone-700 hover:bg-paper"
             >
+              <span className="text-stone-400">
+                <PencilIcon size={15} />
+              </span>
               내 연구 주제 설정
             </Link>
           )}
           <div className="my-1 border-t border-line-soft" />
           <form action={logoutAction}>
-            <button className="w-full cursor-pointer px-4 py-2.5 text-left text-[12.5px] text-stone-400 hover:bg-paper hover:text-stone-600">
+            <button className="font-display flex w-full cursor-pointer items-center gap-2.5 px-4 py-2.5 text-left text-[13px] text-stone-700 hover:bg-paper">
+              <span className="text-stone-400">
+                <LogoutIcon size={15} />
+              </span>
               로그아웃
             </button>
           </form>

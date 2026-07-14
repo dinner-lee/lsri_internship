@@ -77,3 +77,45 @@ export function HistoryIcon({ size }: { size?: number }) {
     </Base>
   );
 }
+
+// 결과: 막대 차트
+export function ChartIcon({ size }: { size?: number }) {
+  return (
+    <Base size={size}>
+      <path d="M3 3v16a2 2 0 0 0 2 2h16" />
+      <path d="M18 17V9" />
+      <path d="M13 17V5" />
+      <path d="M8 17v-3" />
+    </Base>
+  );
+}
+
+// 사용자
+export function UserIcon({ size }: { size?: number }) {
+  return (
+    <Base size={size}>
+      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+    </Base>
+  );
+}
+
+// 작성: 펜
+export function PencilIcon({ size }: { size?: number }) {
+  return (
+    <Base size={size}>
+      <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+    </Base>
+  );
+}
+
+// 로그아웃
+export function LogoutIcon({ size }: { size?: number }) {
+  return (
+    <Base size={size}>
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+      <polyline points="16 17 21 12 16 7" />
+      <line x1="21" x2="9" y1="12" y2="12" />
+    </Base>
+  );
+}
