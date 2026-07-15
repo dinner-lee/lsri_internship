@@ -301,6 +301,15 @@ export default async function TopicsPage({
 
   const exploreContent = (
     <>
+      <div className="-mb-3 flex items-center gap-1.5 font-display text-[16px] text-stone-600">
+        <CompassIcon />
+        동료 주제 탐색
+        {mode !== "cards" && (
+          <span className="ml-0.5 text-[12.5px] text-stone-400">
+            {mode === "network" ? "— 관심 키워드가 겹치는 학생 네트워크" : "— 학생과 키워드의 연결"}
+          </span>
+        )}
+      </div>
       {mode === "network" && (
         <TopicNetwork nodes={studentNodes} edges={edges} interactions={interactions} />
       )}
