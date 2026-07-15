@@ -12,7 +12,7 @@ import {
 } from "@/components/topic-network";
 import { UserAvatar } from "@/components/user-menu";
 import { detectCommunities } from "@/lib/community";
-import { CompassIcon, DiscussionIcon } from "@/components/icons";
+import { CompassIcon, DiscussionIcon, GroupIcon } from "@/components/icons";
 import { ResearchDiscussionBoard } from "@/components/discussion-board";
 import { RefreshButton } from "@/components/refresh";
 import { InstantTabs } from "@/components/instant-tabs";
@@ -251,34 +251,39 @@ export default async function TopicsPage({
 
   const discussionContent = (
     <>
-          {/* 확정된 자율연구 모둠 (내 모둠) */}
+          {/* 확정된 자율연구 모둠 (내 모둠) — 스터디 '이번 주 모둠'과 동일한 스타일 */}
           {myResearchGroup && (
-            <div className="flex flex-col gap-2.5 rounded-xl border border-line bg-white px-5 py-4 sm:px-7">
-              <span className="self-start rounded-[5px] bg-accent-soft px-2 py-[3px] text-[10.5px] font-bold text-accent">
-                내 자율연구 모둠
-              </span>
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-5">
-                <div className="flex flex-none flex-col gap-0.5">
-                  <span className="text-[14.5px] font-bold tracking-tight">
-                    <span className="text-accent">모둠 {myResearchGroup.index + 1}</span> ·{" "}
-                    {topicTitleOf(myResearchGroup.topic.markdown)}
-                  </span>
-                  <span className="text-[11.5px] text-stone-400">
-                    주제 작성: {myResearchGroup.topic.user.name.split("/")[0].trim()}
-                  </span>
-                </div>
-                <div className="flex flex-1 flex-wrap gap-1.5 sm:justify-end">
-                  {myResearchGroup.members.map((m) => (
-                    <span
-                      key={m.id}
-                      className={`rounded-full px-2.5 py-1 text-[11.5px] font-medium ${
-                        m.userId === user.id
-                          ? "bg-accent-soft text-accent"
-                          : "bg-paper text-stone-600"
-                      }`}
-                    >
-                      {m.user.name.split("/")[0].trim()}
+            <div className="flex flex-col gap-2.5">
+              <div className="flex items-center gap-1.5 font-display text-[16px] text-stone-600">
+                <GroupIcon />내 자율연구 모둠
+              </div>
+              <div className="flex flex-col gap-4 rounded-[14px] border border-line bg-white px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-5 sm:px-7 sm:py-3.5">
+                <div className="flex flex-none flex-col gap-2">
+                  <div>
+                    <span className="rounded-[5px] bg-accent-soft px-2 py-[3px] text-[11px] font-semibold whitespace-nowrap text-accent">
+                      자율연구 모둠 배정
                     </span>
+                  </div>
+                  <div className="font-display text-[19px] font-normal tracking-tight">
+                    <span className="whitespace-nowrap text-accent">
+                      모둠 {myResearchGroup.index + 1}
+                    </span>{" "}
+                    · {topicTitleOf(myResearchGroup.topic.markdown)}
+                  </div>
+                </div>
+                <div className="flex flex-1 flex-wrap items-center gap-2 sm:justify-end">
+                  {myResearchGroup.members.map((m) => (
+                    <div
+                      key={m.id}
+                      className="flex items-center gap-1.5 rounded-full border border-line bg-paper py-[5px] pr-3 pl-1.5"
+                    >
+                      <div className="flex h-[22px] w-[22px] items-center justify-center rounded-full bg-line text-[10px] font-semibold text-stone-600">
+                        {initialOf(m.user.name)}
+                      </div>
+                      <span className="text-xs font-medium text-stone-700">
+                        {m.userId === user.id ? `${m.user.name} (나)` : m.user.name}
+                      </span>
+                    </div>
                   ))}
                 </div>
                 <Link
