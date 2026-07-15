@@ -137,7 +137,7 @@ export async function DiscussionBoard({
 
               <div className="max-h-72 min-h-32 flex-1 overflow-y-auto px-5 py-4">
                 {g.memo?.content ? (
-                  <div className="text-[13px] leading-[1.8] whitespace-pre-wrap text-stone-800">
+                  <div className="text-[13px] leading-[1.8] whitespace-pre-wrap [overflow-wrap:anywhere] text-stone-800">
                     {g.memo.content}
                   </div>
                 ) : (
