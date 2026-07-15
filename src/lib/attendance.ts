@@ -1,6 +1,6 @@
 import type { AttendanceStatus } from "@prisma/client";
 
-export const ATTENDANCE_STATUSES: AttendanceStatus[] = ["PRESENT", "LATE", "ABSENT", "EXCUSED"];
+export const ATTENDANCE_STATUSES: AttendanceStatus[] = ["PRESENT", "ABSENT"];
 
 export const ATTENDANCE_META: Record<
   AttendanceStatus,
@@ -11,20 +11,10 @@ export const ATTENDANCE_META: Record<
     chip: "bg-[oklch(0.95_0.03_155)] text-good",
     active: "border-good bg-[oklch(0.95_0.03_155)] text-good",
   },
-  LATE: {
-    label: "지각",
-    chip: "bg-[oklch(0.96_0.03_60)] text-warn",
-    active: "border-warn bg-[oklch(0.96_0.03_60)] text-warn",
-  },
   ABSENT: {
     label: "결석",
     chip: "bg-bad-soft text-bad",
     active: "border-bad bg-bad-soft text-bad",
-  },
-  EXCUSED: {
-    label: "공결",
-    chip: "bg-line-soft text-stone-500",
-    active: "border-stone-400 bg-line-soft text-stone-600",
   },
 };
 

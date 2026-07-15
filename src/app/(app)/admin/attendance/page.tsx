@@ -23,7 +23,7 @@ export default async function AttendancePage({
   const totalsOf = new Map<string, Record<AttendanceStatus, number>>();
   records.forEach((r) => {
     if (!totalsOf.has(r.userId))
-      totalsOf.set(r.userId, { PRESENT: 0, LATE: 0, ABSENT: 0, EXCUSED: 0 });
+      totalsOf.set(r.userId, { PRESENT: 0, ABSENT: 0 });
     totalsOf.get(r.userId)![r.status]++;
   });
 
@@ -31,7 +31,7 @@ export default async function AttendancePage({
     userId: l.id,
     name: l.name,
     status: todayOf.get(l.id) ?? null,
-    totals: totalsOf.get(l.id) ?? { PRESENT: 0, LATE: 0, ABSENT: 0, EXCUSED: 0 },
+    totals: totalsOf.get(l.id) ?? { PRESENT: 0, ABSENT: 0 },
   }));
 
   // 체크 기록이 있는 날짜 (최근순)
