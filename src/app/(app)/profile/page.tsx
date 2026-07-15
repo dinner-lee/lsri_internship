@@ -39,7 +39,7 @@ export default async function ProfilePage() {
       </div>
 
       {user.role === "LEARNER" && (
-        <div className="flex flex-col gap-4">
+        <div id="attendance" className="flex scroll-mt-20 flex-col gap-4">
           <div className="flex flex-col gap-0.5 border-t border-line pt-8">
             <div className="font-display text-[17px] font-bold tracking-tight">내 출석 기록</div>
             <div className="text-[12.5px] text-stone-400">
