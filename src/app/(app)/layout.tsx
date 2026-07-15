@@ -44,6 +44,8 @@ export default async function AppLayout({
               {user.role === "ADMIN" ? "관리자" : "학습자"}
             </span>
             <UserMenu name={user.name} image={user.image} role={user.role} />
+            {/* 모바일 관리자 햄버거 — 우측 상단 */}
+            <AppNav role={user.role} variant="mobile" />
           </div>
         </div>
       </header>

@@ -109,6 +109,19 @@ export function PencilIcon({ size }: { size?: number }) {
   );
 }
 
+// 출석: 달력 체크
+export function CalendarCheckIcon({ size }: { size?: number }) {
+  return (
+    <Base size={size}>
+      <path d="M8 2v4" />
+      <path d="M16 2v4" />
+      <rect x="3" y="4" width="18" height="18" rx="2" />
+      <path d="M3 10h18" />
+      <path d="m9 16 2 2 4-4" />
+    </Base>
+  );
+}
+
 // 로그아웃
 export function LogoutIcon({ size }: { size?: number }) {
   return (

@@ -11,6 +11,7 @@ import {
   DiscussionIcon,
   CompassIcon,
   UserIcon,
+  CalendarCheckIcon,
 } from "@/components/icons";
 
 const LEARNER_TABS = [
@@ -24,6 +25,7 @@ const ADMIN_STUDY_SUBMENU = [
   { href: "/admin/results", label: "결과", icon: ChartIcon },
   { href: "/admin/groups", label: "모둠 구성", icon: GroupIcon },
   { href: "/admin/discussions", label: "논의", icon: DiscussionIcon },
+  { href: "/admin/attendance", label: "출석", icon: CalendarCheckIcon },
 ];
 const ADMIN_STUDY_PREFIXES = [
   "/admin/quizzes",
@@ -31,6 +33,7 @@ const ADMIN_STUDY_PREFIXES = [
   "/admin/groups",
   "/admin/live",
   "/admin/discussions",
+  "/admin/attendance",
 ];
 
 // 관리자: '자율연구' 상위 메뉴 아래 주제 탐색/모둠 구성
@@ -49,12 +52,14 @@ const tabCls = (active: boolean) =>
       : "font-medium text-stone-400 hover:text-stone-600"
   }`;
 
-export function AppNav({ role }: { role: Role }) {
+export function AppNav({ role, variant = "desktop" }: { role: Role; variant?: "desktop" | "mobile" }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + "/");
 
   if (role !== "ADMIN") {
+    // 학습자는 탭 2개뿐이라 모바일에서도 그대로 표시
+    if (variant === "mobile") return null;
     return (
       <nav className="flex gap-1">
         {LEARNER_TABS.map((t) => (
@@ -123,9 +128,9 @@ export function AppNav({ role }: { role: Role }) {
     </Link>
   );
 
-  return (
-    <>
-      {/* 데스크톱: 호버 드롭다운 내비 */}
+  // 데스크톱: 호버 드롭다운 내비 (헤더 좌측)
+  if (variant === "desktop")
+    return (
       <nav className="hidden items-center gap-1 md:flex">
         {dropdown("스터디", "/admin/quizzes", studyActive, ADMIN_STUDY_SUBMENU)}
         {dropdown("자율연구", "/topics", researchActive, ADMIN_RESEARCH_SUBMENU)}
@@ -135,9 +140,11 @@ export function AppNav({ role }: { role: Role }) {
           </Link>
         ))}
       </nav>
+    );
 
-      {/* 모바일: 햄버거 메뉴 */}
-      <div className="relative md:hidden">
+  // 모바일: 햄버거 메뉴 (헤더 우측)
+  return (
+    <div className="relative md:hidden">
         <button
           type="button"
           aria-label="메뉴 열기"
@@ -161,7 +168,7 @@ export function AppNav({ role }: { role: Role }) {
           <>
             {/* 바깥 클릭 시 닫기 */}
             <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-            <div className="absolute left-0 z-50 mt-1.5 flex w-52 flex-col overflow-hidden rounded-xl border border-line bg-white py-1.5 shadow-[0_6px_24px_rgba(0,0,0,0.1)]">
+            <div className="absolute right-0 z-50 mt-1.5 flex w-52 flex-col overflow-hidden rounded-xl border border-line bg-white py-1.5 shadow-[0_6px_24px_rgba(0,0,0,0.1)]">
               <span className="px-5 pt-2 pb-1 text-[10.5px] font-semibold text-stone-400">
                 스터디
               </span>
@@ -177,6 +184,5 @@ export function AppNav({ role }: { role: Role }) {
           </>
         )}
       </div>
-    </>
   );
 }
