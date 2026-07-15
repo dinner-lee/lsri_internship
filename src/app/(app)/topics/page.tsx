@@ -15,6 +15,7 @@ import { detectCommunities } from "@/lib/community";
 import { CompassIcon, DiscussionIcon } from "@/components/icons";
 import { ResearchDiscussionBoard } from "@/components/discussion-board";
 import { RefreshButton } from "@/components/refresh";
+import { InstantTabs } from "@/components/instant-tabs";
 
 export default async function TopicsPage({
   searchParams,
@@ -248,39 +249,8 @@ export default async function TopicsPage({
     { href: "/topics?view=keywords", label: "키워드 그래프", active: mode === "keywords" },
   ];
 
-  return (
-    <div className="flex flex-col gap-[22px]">
-      {/* 상단 탭: 동료 주제 탐색 / 모둠별 논의 */}
-      <div className="flex w-fit rounded-[9px] bg-line-soft p-[3px]">
-        {[
-          {
-            key: "explore",
-            label: "주제 탐색",
-            href: "/topics",
-            icon: <CompassIcon size={14} />,
-          },
-          {
-            key: "discussion",
-            label: "모둠",
-            href: "/topics?tab=discussion",
-            icon: <DiscussionIcon size={14} />,
-          },
-        ].map((t) => (
-          <Link
-            key={t.key}
-            href={t.href}
-            className={`font-display flex items-center gap-1.5 rounded-[7px] px-4 py-1.5 text-[13px] ${
-              activeTab === t.key ? "bg-white text-stone-900 shadow-sm" : "text-stone-400"
-            }`}
-          >
-            {t.icon}
-            {t.label}
-          </Link>
-        ))}
-      </div>
-
-      {activeTab === "discussion" && (
-        <>
+  const discussionContent = (
+    <>
           {/* 확정된 자율연구 모둠 (내 모둠) */}
           {myResearchGroup && (
             <div className="flex flex-col gap-2.5 rounded-xl border border-line bg-white px-5 py-4 sm:px-7">
@@ -320,55 +290,12 @@ export default async function TopicsPage({
               </div>
             </div>
           )}
-          <div className="flex items-end justify-between">
-            <div className="flex items-center gap-1.5 font-display text-[16px] text-stone-600">
-              <DiscussionIcon />
-              모둠별 논의
-            </div>
-            <RefreshButton />
-          </div>
           <ResearchDiscussionBoard userId={user.id} />
-        </>
-      )}
+    </>
+  );
 
-      {activeTab === "explore" && (
-      <>
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5 font-display text-[16px] text-stone-600">
-          <CompassIcon />
-          동료 주제 탐색
-          {user.role === "LEARNER" && (
-            <span className="group relative inline-flex items-center">
-              <span className="flex h-[15px] w-[15px] cursor-help items-center justify-center rounded-full border border-stone-300 font-sans text-[10px] font-semibold text-stone-400 group-hover:border-stone-400 group-hover:text-stone-600">
-                i
-              </span>
-              <span className="invisible absolute top-full left-1/2 z-20 mt-1.5 w-max max-w-[300px] -translate-x-1/2 rounded-lg border border-line bg-white px-3 py-2 font-sans text-[11.5px] font-normal text-stone-600 opacity-0 shadow-[0_2px_10px_rgba(0,0,0,0.08)] transition-opacity duration-100 group-hover:visible group-hover:opacity-100">
-                내 주제는 우측 상단 프로필 메뉴에서 설정합니다 · 카드의 관심 순위(1~5)는
-                자율연구 모둠 구성에 활용됩니다
-              </span>
-            </span>
-          )}
-          {mode !== "cards" && (
-            <span className="ml-0.5 text-[12.5px] text-stone-400">
-              {mode === "network" ? "— 관심 키워드가 겹치는 학생 네트워크" : "— 학생과 키워드의 연결"}
-            </span>
-          )}
-        </div>
-        <div className="flex rounded-[9px] bg-line-soft p-[3px]">
-          {viewTabs.map((t) => (
-            <Link
-              key={t.href}
-              href={t.href}
-              className={`font-display rounded-[7px] px-3.5 py-1.5 text-[12.5px] ${
-                t.active ? "bg-white text-stone-900 shadow-sm" : "text-stone-400"
-              }`}
-            >
-              {t.label}
-            </Link>
-          ))}
-        </div>
-      </div>
-
+  const exploreContent = (
+    <>
       {mode === "network" && (
         <TopicNetwork nodes={studentNodes} edges={edges} interactions={interactions} />
       )}
@@ -511,8 +438,53 @@ export default async function TopicsPage({
           </div>
         </>
       )}
-      </>
-      )}
+    </>
+  );
+
+  return (
+    <div className="flex flex-col gap-[22px]">
+      {/* 두 탭 내용을 미리 렌더링해 클라이언트에서 즉시 전환 */}
+      <InstantTabs
+        initial={activeTab}
+        tabs={[
+          {
+            key: "explore",
+            label: (
+              <>
+                <CompassIcon size={14} />
+                주제 탐색
+              </>
+            ),
+            right: (
+              <div className="flex rounded-[9px] bg-line-soft p-[3px]">
+                {viewTabs.map((t) => (
+                  <Link
+                    key={t.href}
+                    href={t.href}
+                    className={`font-display rounded-[7px] px-3.5 py-1.5 text-[12.5px] ${
+                      t.active ? "bg-white text-stone-900 shadow-sm" : "text-stone-400"
+                    }`}
+                  >
+                    {t.label}
+                  </Link>
+                ))}
+              </div>
+            ),
+            content: exploreContent,
+          },
+          {
+            key: "discussion",
+            label: (
+              <>
+                <DiscussionIcon size={14} />
+                모둠
+              </>
+            ),
+            right: <RefreshButton />,
+            content: discussionContent,
+          },
+        ]}
+      />
     </div>
   );
 }
