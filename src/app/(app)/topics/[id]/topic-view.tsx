@@ -38,7 +38,12 @@ export async function TopicDetailView({ id, inModal = false }: { id: string; inM
     .filter((k) => !topic.keywords.includes(k));
 
   return (
-    <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_230px]">
+    <div className="flex flex-col gap-4">
+      {/* 타이틀 — 모달에서는 닫기 버튼과 겹치지 않게 우측 여백 확보 */}
+      <span className={`font-display text-[19px] text-stone-800 ${inModal ? "pr-10" : ""}`}>
+        {topic.user.name.split("/")[0].trim()}의 연구 주제
+      </span>
+      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_230px]">
       <div className="flex min-w-0 flex-col gap-4">
         <div className="flex flex-col gap-3.5 rounded-[14px] border border-line bg-white p-7">
           <div className="flex items-center justify-between">
@@ -123,6 +128,7 @@ export async function TopicDetailView({ id, inModal = false }: { id: string; inM
           })}
         </div>
       </aside>
+      </div>
     </div>
   );
 }
