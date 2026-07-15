@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { initialOf, formatDateTime, topicTitleOf } from "@/lib/utils";
 import { ResearchControls, ResearchConfirmButton } from "./research-controls";
@@ -48,9 +49,19 @@ function GroupCards({ set }: { set: SetWithGroups }) {
           className="flex flex-col gap-3 rounded-xl border border-line bg-white px-5 py-[18px]"
         >
           <div className="flex flex-col gap-0.5">
-            <span className="font-display text-[13.5px]">
-              <span className="font-bold text-accent">모둠 {g.index + 1}</span>
-              <span className="text-stone-400"> · {g.members.length}명</span>
+            <span className="flex items-center justify-between font-display text-[13.5px]">
+              <span>
+                <span className="font-bold text-accent">모둠 {g.index + 1}</span>
+                <span className="text-stone-400"> · {g.members.length}명</span>
+              </span>
+              {set.confirmedAt && (
+                <Link
+                  href={`/research-memo/${g.id}`}
+                  className="font-sans text-[11.5px] font-normal text-stone-400 hover:text-accent"
+                >
+                  메모장 →
+                </Link>
+              )}
             </span>
             <span className="text-[13px] leading-snug font-semibold text-stone-800">
               {topicTitleOf(g.topic.markdown)}

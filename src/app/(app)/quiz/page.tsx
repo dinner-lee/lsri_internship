@@ -10,9 +10,11 @@ import { RefreshOnFocus, RefreshButton } from "@/components/refresh";
 export default async function QuizHomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ week?: string }>;
+  searchParams: Promise<{ week?: string; tab?: string }>;
 }) {
-  const { week } = await searchParams;
+  const { week, tab } = await searchParams;
+  // 모둠 논의의 주차 이동(week 파라미터)도 모둠 탭에 머무르게 함
+  const activeTab = tab === "group" || (tab === undefined && week !== undefined) ? "group" : "quiz";
   const user = await requireUser();
 
   // 왕복 지연을 줄이기 위해 병렬 실행
@@ -77,6 +79,27 @@ export default async function QuizHomePage({
         </Link>
       )}
 
+      {/* 상단 탭: 퀴즈(이번 주 + 지난 기록) / 모둠(이번 모둠 + 논의) */}
+      <div className="flex w-fit rounded-[9px] bg-line-soft p-[3px]">
+        {[
+          { key: "quiz", label: "퀴즈", href: "/quiz", icon: <QuizIcon size={14} /> },
+          { key: "group", label: "모둠", href: "/quiz?tab=group", icon: <GroupIcon size={14} /> },
+        ].map((t) => (
+          <Link
+            key={t.key}
+            href={t.href}
+            className={`font-display flex items-center gap-1.5 rounded-[7px] px-4 py-1.5 text-[13px] ${
+              activeTab === t.key ? "bg-white text-stone-900 shadow-sm" : "text-stone-400"
+            }`}
+          >
+            {t.icon}
+            {t.label}
+          </Link>
+        ))}
+      </div>
+
+      {activeTab === "quiz" && (
+      <>
       <div className="flex flex-col gap-2.5">
         <div className="flex items-center gap-1.5 font-display text-[16px] text-stone-600">
           <QuizIcon />
@@ -123,8 +146,10 @@ export default async function QuizHomePage({
         </div>
       )}
       </div>
+      </>
+      )}
 
-      {myGroup && (
+      {activeTab === "group" && myGroup && (
         <div className="flex flex-col gap-2.5">
           <div className="flex items-center gap-1.5 font-display text-[16px] text-stone-600">
             <GroupIcon />
@@ -167,7 +192,7 @@ export default async function QuizHomePage({
         </div>
       )}
 
-      {confirmedSet && (
+      {activeTab === "group" && confirmedSet && (
         <div className="flex flex-col gap-2.5">
           <div className="flex items-end justify-between">
             <div className="flex items-center gap-1.5 font-display text-[16px] text-stone-600">
@@ -176,10 +201,17 @@ export default async function QuizHomePage({
             </div>
             <RefreshButton />
           </div>
-          <DiscussionBoard weekParam={week} basePath="/quiz" userId={user.id} />
+          <DiscussionBoard weekParam={week} basePath="/quiz?tab=group" userId={user.id} />
         </div>
       )}
 
+      {activeTab === "group" && !myGroup && !confirmedSet && (
+        <div className="rounded-[14px] border border-line bg-white p-7 text-sm text-stone-400">
+          아직 확정된 모둠이 없습니다.
+        </div>
+      )}
+
+      {activeTab === "quiz" && (
       <div className="flex flex-col gap-2.5">
         <div className="flex items-center gap-1.5 font-display text-[16px] text-stone-600">
           <HistoryIcon />
@@ -218,6 +250,7 @@ export default async function QuizHomePage({
           ))}
         </div>
       </div>
+      )}
     </div>
   );
 }

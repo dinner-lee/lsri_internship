@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { initialOf, formatDateTime } from "@/lib/utils";
+import { initialOf, formatDateTime, topicTitleOf } from "@/lib/utils";
 
 function HeartIcon({ size = 12 }: { size?: number }) {
   return (
@@ -85,7 +85,7 @@ export async function DiscussionBoard({
         {weekSets.map(([w, gs]) => (
           <Link
             key={gs.id}
-            href={`${basePath}?week=${w}`}
+            href={`${basePath}${basePath.includes("?") ? "&" : "?"}week=${w}`}
             className={`rounded-full border-[1.5px] px-3.5 py-1.5 text-xs font-semibold ${
               gs.id === selected.id
                 ? "border-accent bg-accent-soft text-accent"
@@ -172,5 +172,113 @@ export async function DiscussionBoard({
         })}
       </div>
     </>
+  );
+}
+
+// 자율연구 모둠 메모 모아보기 (최신 확정 구성 기준)
+export async function ResearchDiscussionBoard({ userId }: { userId: string }) {
+  const set = await prisma.researchGroupSet.findFirst({
+    where: { confirmedAt: { not: null } },
+    orderBy: { confirmedAt: "desc" },
+    include: {
+      groups: {
+        orderBy: { index: "asc" },
+        include: {
+          topic: true,
+          members: { include: { user: true } },
+          memo: { include: { updatedBy: { select: { name: true } } } },
+          memoLikes: true,
+          _count: { select: { memoComments: true } },
+        },
+      },
+    },
+  });
+
+  if (!set) {
+    return (
+      <div className="rounded-[14px] border border-line bg-white p-7 text-sm text-stone-400">
+        아직 확정된 자율연구 모둠이 없습니다.
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+      {set.groups.map((g) => {
+        const isMine = g.members.some((m) => m.userId === userId);
+        return (
+          <div
+            key={g.id}
+            className={`flex flex-col overflow-hidden rounded-xl border bg-white ${
+              isMine ? "border-accent-border" : "border-line"
+            }`}
+          >
+            <div className="flex items-center justify-between border-b border-line-soft px-5 py-3">
+              <div className="flex items-center gap-2.5">
+                <span className="font-display text-[14px] font-normal">모둠 {g.index + 1}</span>
+                {isMine && (
+                  <span className="rounded-[5px] bg-accent-soft px-1.5 py-0.5 text-[10px] font-semibold text-accent">
+                    내 모둠
+                  </span>
+                )}
+                <div className="flex -space-x-1.5">
+                  {g.members.map((m) => (
+                    <span
+                      key={m.id}
+                      title={m.user.name}
+                      className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-line text-[9.5px] font-semibold text-stone-600"
+                    >
+                      {initialOf(m.user.name)}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <Link
+                href={`/research-memo/${g.id}`}
+                className="whitespace-nowrap text-xs text-stone-400 hover:text-accent"
+              >
+                메모장 열기 →
+              </Link>
+            </div>
+            <div className="truncate border-b border-line-soft px-5 py-2 text-[11.5px] text-stone-500">
+              주제: <b className="text-stone-700">{topicTitleOf(g.topic.markdown)}</b>
+            </div>
+
+            <div className="max-h-72 min-h-32 flex-1 overflow-y-auto px-5 py-4">
+              {g.memo?.content ? (
+                <div className="text-[13px] leading-[1.8] whitespace-pre-wrap [overflow-wrap:anywhere] text-stone-800">
+                  {g.memo.content}
+                </div>
+              ) : (
+                <div className="py-6 text-center text-[12.5px] text-stone-300">
+                  아직 작성된 내용이 없습니다
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center justify-between border-t border-line-soft bg-paper px-5 py-1.5 text-[11px] text-stone-400">
+              <span className="flex items-center gap-2 tabular-nums">
+                <span className="inline-flex items-center gap-1">
+                  <span className="text-bad">
+                    <HeartIcon />
+                  </span>
+                  {g.memoLikes.length}
+                </span>
+                <span className="inline-flex items-center gap-1">
+                  <CommentIcon />
+                  {g._count.memoComments}
+                </span>
+              </span>
+              {g.memo && (
+                <span>
+                  {g.memo.updatedBy ? `${g.memo.updatedBy.name} · ` : ""}
+                  {formatDateTime(g.memo.updatedAt)}
+                </span>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
   );
 }

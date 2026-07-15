@@ -12,14 +12,17 @@ import {
 } from "@/components/topic-network";
 import { UserAvatar } from "@/components/user-menu";
 import { detectCommunities } from "@/lib/community";
-import { CompassIcon } from "@/components/icons";
+import { CompassIcon, DiscussionIcon } from "@/components/icons";
+import { ResearchDiscussionBoard } from "@/components/discussion-board";
+import { RefreshButton } from "@/components/refresh";
 
 export default async function TopicsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ view?: string }>;
+  searchParams: Promise<{ view?: string; tab?: string }>;
 }) {
-  const { view } = await searchParams;
+  const { view, tab } = await searchParams;
+  const activeTab = tab === "discussion" ? "discussion" : "explore";
   const mode = view === "network" ? "network" : view === "keywords" ? "keywords" : "cards";
   const user = await requireUser();
 
@@ -247,6 +250,89 @@ export default async function TopicsPage({
 
   return (
     <div className="flex flex-col gap-[22px]">
+      {/* 상단 탭: 동료 주제 탐색 / 모둠별 논의 */}
+      <div className="flex w-fit rounded-[9px] bg-line-soft p-[3px]">
+        {[
+          {
+            key: "explore",
+            label: "동료 주제 탐색",
+            href: "/topics",
+            icon: <CompassIcon size={14} />,
+          },
+          {
+            key: "discussion",
+            label: "모둠별 논의",
+            href: "/topics?tab=discussion",
+            icon: <DiscussionIcon size={14} />,
+          },
+        ].map((t) => (
+          <Link
+            key={t.key}
+            href={t.href}
+            className={`font-display flex items-center gap-1.5 rounded-[7px] px-4 py-1.5 text-[13px] ${
+              activeTab === t.key ? "bg-white text-stone-900 shadow-sm" : "text-stone-400"
+            }`}
+          >
+            {t.icon}
+            {t.label}
+          </Link>
+        ))}
+      </div>
+
+      {activeTab === "discussion" && (
+        <>
+          {/* 확정된 자율연구 모둠 (내 모둠) */}
+          {myResearchGroup && (
+            <div className="flex flex-col gap-2.5 rounded-xl border border-line bg-white px-5 py-4 sm:px-7">
+              <span className="self-start rounded-[5px] bg-accent-soft px-2 py-[3px] text-[10.5px] font-bold text-accent">
+                내 자율연구 모둠
+              </span>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-5">
+                <div className="flex flex-none flex-col gap-0.5">
+                  <span className="text-[14.5px] font-bold tracking-tight">
+                    <span className="text-accent">모둠 {myResearchGroup.index + 1}</span> ·{" "}
+                    {topicTitleOf(myResearchGroup.topic.markdown)}
+                  </span>
+                  <span className="text-[11.5px] text-stone-400">
+                    주제 작성: {myResearchGroup.topic.user.name.split("/")[0].trim()}
+                  </span>
+                </div>
+                <div className="flex flex-1 flex-wrap gap-1.5 sm:justify-end">
+                  {myResearchGroup.members.map((m) => (
+                    <span
+                      key={m.id}
+                      className={`rounded-full px-2.5 py-1 text-[11.5px] font-medium ${
+                        m.userId === user.id
+                          ? "bg-accent-soft text-accent"
+                          : "bg-paper text-stone-600"
+                      }`}
+                    >
+                      {m.user.name.split("/")[0].trim()}
+                    </span>
+                  ))}
+                </div>
+                <Link
+                  href={`/research-memo/${myResearchGroup.id}`}
+                  className="font-display w-full flex-none rounded-[10px] bg-accent py-3 text-center text-[14.5px] whitespace-nowrap text-white hover:bg-accent-strong sm:w-[132px]"
+                >
+                  모둠 메모장
+                </Link>
+              </div>
+            </div>
+          )}
+          <div className="flex items-end justify-between">
+            <div className="flex items-center gap-1.5 font-display text-[16px] text-stone-600">
+              <DiscussionIcon />
+              모둠별 논의
+            </div>
+            <RefreshButton />
+          </div>
+          <ResearchDiscussionBoard userId={user.id} />
+        </>
+      )}
+
+      {activeTab === "explore" && (
+      <>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-1.5 font-display text-[16px] text-stone-600">
           <CompassIcon />
@@ -293,40 +379,6 @@ export default async function TopicsPage({
 
       {mode === "cards" && (
         <>
-          {/* 확정된 자율연구 모둠 (내 모둠) */}
-          {myResearchGroup && (
-            <div className="flex flex-col gap-2.5 rounded-xl border border-line bg-white px-5 py-4 sm:px-7">
-              <span className="self-start rounded-[5px] bg-accent-soft px-2 py-[3px] text-[10.5px] font-bold text-accent">
-                내 자율연구 모둠
-              </span>
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-[14.5px] font-bold tracking-tight">
-                    <span className="text-accent">모둠 {myResearchGroup.index + 1}</span> ·{" "}
-                    {topicTitleOf(myResearchGroup.topic.markdown)}
-                  </span>
-                  <span className="text-[11.5px] text-stone-400">
-                    주제 작성: {myResearchGroup.topic.user.name.split("/")[0].trim()}
-                  </span>
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {myResearchGroup.members.map((m) => (
-                    <span
-                      key={m.id}
-                      className={`rounded-full px-2.5 py-1 text-[11.5px] font-medium ${
-                        m.userId === user.id
-                          ? "bg-accent-soft text-accent"
-                          : "bg-paper text-stone-600"
-                      }`}
-                    >
-                      {m.user.name.split("/")[0].trim()}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
           <div className="flex flex-col gap-2.5 rounded-xl border border-line bg-white px-5 py-[18px]">
             <div className="flex items-center gap-1.5 font-display text-[13px] text-stone-600">
               관심 키워드 지도
@@ -458,6 +510,8 @@ export default async function TopicsPage({
             })}
           </div>
         </>
+      )}
+      </>
       )}
     </div>
   );

@@ -55,6 +55,9 @@ model User {
   topicPicks           TopicPick[]
   researchGroupMembers ResearchGroupMember[]
   attendances          Attendance[]
+  researchMemoEdits        ResearchGroupMemo[]        @relation("ResearchMemoEditor")
+  researchGroupMemoLikes   ResearchGroupMemoLike[]
+  researchGroupMemoComments ResearchGroupMemoComment[]
 }
 
 // ── 출석 ─────────────────────────────────────────────
@@ -319,9 +322,44 @@ model ResearchGroup {
   topicId String // 이 모둠의 앵커 연구 주제
   topic   Topic            @relation(fields: [topicId], references: [id], onDelete: Cascade)
 
-  members ResearchGroupMember[]
+  members      ResearchGroupMember[]
+  memo         ResearchGroupMemo?
+  memoLikes    ResearchGroupMemoLike[]
+  memoComments ResearchGroupMemoComment[]
 
   @@unique([setId, index])
+}
+
+// 자율연구 모둠 공유 메모장 (diff 패치 동기화 — 스터디 메모장과 동일 방식)
+model ResearchGroupMemo {
+  id          String        @id @default(cuid())
+  groupId     String        @unique
+  group       ResearchGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  content     String        @default("")
+  version     Int           @default(0)
+  updatedAt   DateTime      @updatedAt
+  updatedById String?
+  updatedBy   User?         @relation("ResearchMemoEditor", fields: [updatedById], references: [id], onDelete: SetNull)
+}
+
+model ResearchGroupMemoLike {
+  id      String        @id @default(cuid())
+  groupId String
+  group   ResearchGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  userId  String
+  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+}
+
+model ResearchGroupMemoComment {
+  id        String        @id @default(cuid())
+  groupId   String
+  group     ResearchGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  text      String
+  createdAt DateTime      @default(now())
 }
 
 model ResearchGroupMember {

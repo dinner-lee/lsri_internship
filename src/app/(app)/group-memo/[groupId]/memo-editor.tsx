@@ -41,12 +41,15 @@ export function MemoEditor({
   initialContent,
   initialVersion,
   readOnly = false,
+  endpoint,
 }: {
   groupId: string;
   initialContent: string;
   initialVersion: number;
   readOnly?: boolean;
+  endpoint?: string; // 기본: 스터디 모둠 메모 API
 }) {
+  const apiUrl = endpoint ?? `/api/group-memo/${groupId}`;
   const [text, setText] = useState(initialContent);
   const [meta, setMeta] = useState<{ by: string | null; at: string | null }>({
     by: null,
@@ -82,7 +85,7 @@ export function MemoEditor({
         // 내 변경분을 패치로 전송 → 서버가 다른 모둠원의 내용과 병합
         setSyncing(true);
         const patchText = dmp.patch_toText(dmp.patch_make(shadowRef.current, local));
-        const res = await fetch(`/api/group-memo/${groupId}`, {
+        const res = await fetch(apiUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ patchText }),
@@ -98,7 +101,7 @@ export function MemoEditor({
         const [merged] = dmp.patch_apply(during, data.content);
         applyRemote(merged);
       } else {
-        const res = await fetch(`/api/group-memo/${groupId}`, { cache: "no-store" });
+        const res = await fetch(apiUrl, { cache: "no-store" });
         if (!res.ok) return;
         const data: SyncResponse = await res.json();
         if (data.version !== versionRef.current) {

@@ -1,17 +1,27 @@
 "use client";
 
 import { useOptimistic, useState, useTransition } from "react";
-import { toggleMemoLikeAction, addMemoCommentAction } from "@/lib/actions/group-memo";
+import {
+  toggleMemoLikeAction,
+  addMemoCommentAction,
+  toggleResearchMemoLikeAction,
+  addResearchMemoCommentAction,
+} from "@/lib/actions/group-memo";
+
+// kind에 따라 스터디/자율연구 모둠 메모 액션을 선택
+export type MemoKind = "study" | "research";
 import { initialOf } from "@/lib/utils";
 
 export function MemoLikeButton({
   groupId,
   liked,
   count,
+  kind = "study",
 }: {
   groupId: string;
   liked: boolean;
   count: number;
+  kind?: MemoKind;
 }) {
   const [, startTransition] = useTransition();
   // 낙관적 갱신: 클릭 즉시 하트/카운트 변경
@@ -25,7 +35,7 @@ export function MemoLikeButton({
       onClick={() =>
         startTransition(async () => {
           toggle(undefined);
-          await toggleMemoLikeAction(groupId);
+          await (kind === "research" ? toggleResearchMemoLikeAction : toggleMemoLikeAction)(groupId);
         })
       }
       className={`flex cursor-pointer items-center gap-1.5 rounded-full border px-[15px] py-[7px] text-[12.5px] font-semibold ${
@@ -47,10 +57,12 @@ export function MemoComments({
   groupId,
   comments,
   myName,
+  kind = "study",
 }: {
   groupId: string;
   comments: MemoCommentItem[];
   myName: string;
+  kind?: MemoKind;
 }) {
   const [draft, setDraft] = useState("");
   const [, startTransition] = useTransition();
@@ -66,7 +78,7 @@ export function MemoComments({
     setDraft("");
     startTransition(async () => {
       appendComment(text);
-      await addMemoCommentAction(groupId, text);
+      await (kind === "research" ? addResearchMemoCommentAction : addMemoCommentAction)(groupId, text);
     });
   };
 
