@@ -1,9 +1,17 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { Role } from "@prisma/client";
-import { QuizIcon, ChartIcon, GroupIcon, DiscussionIcon, CompassIcon } from "@/components/icons";
+import {
+  QuizIcon,
+  ChartIcon,
+  GroupIcon,
+  DiscussionIcon,
+  CompassIcon,
+  UserIcon,
+} from "@/components/icons";
 
 const LEARNER_TABS = [
   { href: "/quiz", label: "스터디" },
@@ -43,6 +51,7 @@ const tabCls = (active: boolean) =>
 
 export function AppNav({ role }: { role: Role }) {
   const pathname = usePathname();
+  const [open, setOpen] = useState(false);
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + "/");
 
   if (role !== "ADMIN") {
@@ -94,15 +103,80 @@ export function AppNav({ role }: { role: Role }) {
     </div>
   );
 
+  const mobileItem = (
+    href: string,
+    label: string,
+    Icon: React.ComponentType<{ size?: number }>
+  ) => (
+    <Link
+      key={href}
+      href={href}
+      onClick={() => setOpen(false)}
+      className={`font-display flex items-center gap-2.5 px-5 py-2.5 text-[13.5px] hover:bg-paper ${
+        isActive(href) ? "font-semibold text-accent" : "text-stone-700"
+      }`}
+    >
+      <span className={isActive(href) ? "text-accent" : "text-stone-400"}>
+        <Icon size={15} />
+      </span>
+      {label}
+    </Link>
+  );
+
   return (
-    <nav className="flex items-center gap-1">
-      {dropdown("스터디", "/admin/quizzes", studyActive, ADMIN_STUDY_SUBMENU)}
-      {dropdown("자율연구", "/topics", researchActive, ADMIN_RESEARCH_SUBMENU)}
-      {ADMIN_TABS.map((t) => (
-        <Link key={t.href} href={t.href} className={tabCls(isActive(t.href))}>
-          {t.label}
-        </Link>
-      ))}
-    </nav>
+    <>
+      {/* 데스크톱: 호버 드롭다운 내비 */}
+      <nav className="hidden items-center gap-1 md:flex">
+        {dropdown("스터디", "/admin/quizzes", studyActive, ADMIN_STUDY_SUBMENU)}
+        {dropdown("자율연구", "/topics", researchActive, ADMIN_RESEARCH_SUBMENU)}
+        {ADMIN_TABS.map((t) => (
+          <Link key={t.href} href={t.href} className={tabCls(isActive(t.href))}>
+            {t.label}
+          </Link>
+        ))}
+      </nav>
+
+      {/* 모바일: 햄버거 메뉴 */}
+      <div className="relative md:hidden">
+        <button
+          type="button"
+          aria-label="메뉴 열기"
+          onClick={() => setOpen((v) => !v)}
+          className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg text-stone-600 hover:bg-line-soft"
+        >
+          {open ? (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+              <path d="M18 6 6 18" />
+              <path d="m6 6 12 12" />
+            </svg>
+          ) : (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+              <path d="M4 6h16" />
+              <path d="M4 12h16" />
+              <path d="M4 18h16" />
+            </svg>
+          )}
+        </button>
+        {open && (
+          <>
+            {/* 바깥 클릭 시 닫기 */}
+            <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+            <div className="absolute left-0 z-50 mt-1.5 flex w-52 flex-col overflow-hidden rounded-xl border border-line bg-white py-1.5 shadow-[0_6px_24px_rgba(0,0,0,0.1)]">
+              <span className="px-5 pt-2 pb-1 text-[10.5px] font-semibold text-stone-400">
+                스터디
+              </span>
+              {ADMIN_STUDY_SUBMENU.map((t) => mobileItem(t.href, t.label, t.icon))}
+              <span className="mt-1 border-t border-line-soft px-5 pt-3 pb-1 text-[10.5px] font-semibold text-stone-400">
+                자율연구
+              </span>
+              {ADMIN_RESEARCH_SUBMENU.map((t) => mobileItem(t.href, t.label, t.icon))}
+              <div className="mt-1 border-t border-line-soft pt-1">
+                {mobileItem("/admin/users", "계정 관리", UserIcon)}
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    </>
   );
 }
