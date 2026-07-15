@@ -3,21 +3,29 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 import { Markdown } from "@/lib/md";
-import { initialOf } from "@/lib/utils";
+import { initialOf, topicTitleOf } from "@/lib/utils";
 import { TopicLikeButton, CommentsSection } from "./interactions";
 
 export default async function TopicDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const user = await requireUser();
 
-  const topic = await prisma.topic.findUnique({
-    where: { id },
-    include: {
-      user: true,
-      likes: true,
-      comments: { include: { user: true }, orderBy: { createdAt: "asc" } },
-    },
-  });
+  const [topic, allTopics] = await Promise.all([
+    prisma.topic.findUnique({
+      where: { id },
+      include: {
+        user: true,
+        likes: true,
+        comments: { include: { user: true }, orderBy: { createdAt: "asc" } },
+      },
+    }),
+    // 우측 목록: 카드 뷰와 동일한 순서
+    prisma.topic.findMany({
+      where: { markdown: { not: "" } },
+      include: { user: true },
+      orderBy: { updatedAt: "desc" },
+    }),
+  ]);
   if (!topic) notFound();
 
   const liked = topic.likes.some((l) => l.userId === user.id);
@@ -29,10 +37,13 @@ export default async function TopicDetailPage({ params }: { params: Promise<{ id
     .filter((k) => !topic.keywords.includes(k));
 
   return (
-    <div className="flex max-w-[680px] flex-col gap-4">
+    <div className="flex flex-col gap-4">
       <Link href="/topics" className="text-xs text-stone-400 hover:text-stone-600">
         ← 목록으로
       </Link>
+
+      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_250px]">
+        <div className="flex min-w-0 flex-col gap-4">
 
       <div className="flex flex-col gap-3.5 rounded-[14px] border border-line bg-white p-7">
         <div className="flex items-center justify-between">
@@ -69,11 +80,50 @@ export default async function TopicDetailPage({ params }: { params: Promise<{ id
         )}
       </div>
 
-      <CommentsSection
-        topicId={topic.id}
-        myName={user.name ?? ""}
-        comments={topic.comments.map((c) => ({ id: c.id, name: c.user.name, text: c.text }))}
-      />
+          <CommentsSection
+            topicId={topic.id}
+            myName={user.name ?? ""}
+            comments={topic.comments.map((c) => ({ id: c.id, name: c.user.name, text: c.text }))}
+          />
+        </div>
+
+        {/* 우측 주제 목록 — 목록으로 돌아가지 않고 바로 이동 */}
+        <aside className="sticky top-20 hidden max-h-[calc(100vh-120px)] flex-col overflow-hidden rounded-xl border border-line bg-white lg:flex">
+          <span className="font-display border-b border-line-soft px-4 py-3 text-[12.5px] text-stone-600">
+            동료 주제 목록 <span className="font-normal text-stone-400">· {allTopics.length}</span>
+          </span>
+          <div className="flex flex-col overflow-y-auto">
+            {allTopics.map((t) => {
+              const active = t.id === topic.id;
+              return (
+                <Link
+                  key={t.id}
+                  href={`/topics/${t.id}`}
+                  className={`flex flex-col gap-0.5 border-b border-[#f7f6f4] px-4 py-2.5 last:border-b-0 ${
+                    active ? "bg-accent-tint" : "hover:bg-paper"
+                  }`}
+                >
+                  <span className="flex items-center gap-1.5 text-[10.5px] text-stone-400">
+                    {t.user.name.split("/")[0].trim()}
+                    {t.userId === user.id && (
+                      <span className="rounded-[4px] bg-accent-soft px-1 py-px text-[9px] font-bold text-accent">
+                        내 주제
+                      </span>
+                    )}
+                  </span>
+                  <span
+                    className={`line-clamp-2 text-[12px] leading-snug ${
+                      active ? "font-semibold text-accent" : "font-medium text-stone-700"
+                    }`}
+                  >
+                    {topicTitleOf(t.markdown)}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        </aside>
+      </div>
     </div>
   );
 }
