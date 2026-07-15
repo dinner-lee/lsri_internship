@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
-import { initialOf, normKeyword, topicTitleOf } from "@/lib/utils";
+import { initialOf, normKeyword } from "@/lib/utils";
 import { TopicPickControl } from "./topic-pick";
 import { KeywordCloud } from "./keyword-cloud";
 import {
@@ -12,7 +12,7 @@ import {
 } from "@/components/topic-network";
 import { UserAvatar } from "@/components/user-menu";
 import { detectCommunities } from "@/lib/community";
-import { CompassIcon, DiscussionIcon, GroupIcon } from "@/components/icons";
+import { CompassIcon, DiscussionIcon } from "@/components/icons";
 import { ResearchDiscussionBoard } from "@/components/discussion-board";
 import { RefreshButton } from "@/components/refresh";
 import { InstantTabs } from "@/components/instant-tabs";
@@ -57,27 +57,9 @@ export default async function TopicsPage({
       }),
     ]);
 
-  // 자율연구: 내 관심 순위 + 확정된 연구 모둠
-  const [myPicks, researchSet] = await Promise.all([
-    prisma.topicPick.findMany({ where: { userId: user.id } }),
-    prisma.researchGroupSet.findFirst({
-      where: { confirmedAt: { not: null } },
-      orderBy: { confirmedAt: "desc" },
-      include: {
-        groups: {
-          orderBy: { index: "asc" },
-          include: {
-            topic: { include: { user: true } },
-            members: { include: { user: true } },
-          },
-        },
-      },
-    }),
-  ]);
+  // 자율연구: 내 관심 순위
+  const myPicks = await prisma.topicPick.findMany({ where: { userId: user.id } });
   const myRankOf = new Map(myPicks.map((p) => [p.topicId, p.rank]));
-  const myResearchGroup = researchSet?.groups.find((g) =>
-    g.members.some((m) => m.userId === user.id)
-  );
   // 표기가 달라도(공백·대소문자) 같은 키워드로 합치기 — 가장 많이 쓰인 표기를 대표로
   const formCount = new Map<string, Map<string, number>>();
   const addForm = (raw: string) => {
@@ -249,59 +231,12 @@ export default async function TopicsPage({
     { href: "/topics?view=keywords", label: "키워드 그래프", active: mode === "keywords" },
   ];
 
-  const discussionContent = (
-    <>
-          {/* 확정된 자율연구 모둠 (내 모둠) — 스터디 '이번 주 모둠'과 동일한 스타일 */}
-          {myResearchGroup && (
-            <div className="flex flex-col gap-2.5">
-              <div className="flex items-center gap-1.5 font-display text-[16px] text-stone-600">
-                <GroupIcon />내 자율연구 모둠
-              </div>
-              <div className="flex flex-col gap-4 rounded-[14px] border border-line bg-white px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-5 sm:px-7 sm:py-3.5">
-                <div className="flex flex-none flex-col gap-2">
-                  <div>
-                    <span className="rounded-[5px] bg-accent-soft px-2 py-[3px] text-[11px] font-semibold whitespace-nowrap text-accent">
-                      자율연구 모둠 배정
-                    </span>
-                  </div>
-                  <div className="font-display text-[19px] font-normal tracking-tight">
-                    <span className="whitespace-nowrap text-accent">
-                      모둠 {myResearchGroup.index + 1}
-                    </span>{" "}
-                    · {topicTitleOf(myResearchGroup.topic.markdown)}
-                  </div>
-                </div>
-                <div className="flex flex-1 flex-wrap items-center gap-2 sm:justify-end">
-                  {myResearchGroup.members.map((m) => (
-                    <div
-                      key={m.id}
-                      className="flex items-center gap-1.5 rounded-full border border-line bg-paper py-[5px] pr-3 pl-1.5"
-                    >
-                      <div className="flex h-[22px] w-[22px] items-center justify-center rounded-full bg-line text-[10px] font-semibold text-stone-600">
-                        {initialOf(m.user.name)}
-                      </div>
-                      <span className="text-xs font-medium text-stone-700">
-                        {m.userId === user.id ? `${m.user.name} (나)` : m.user.name}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-                <Link
-                  href={`/research-memo/${myResearchGroup.id}`}
-                  className="font-display w-full flex-none rounded-[10px] bg-accent py-3 text-center text-[14.5px] whitespace-nowrap text-white hover:bg-accent-strong sm:w-[132px]"
-                >
-                  모둠 메모장
-                </Link>
-              </div>
-            </div>
-          )}
-          <ResearchDiscussionBoard userId={user.id} />
-    </>
-  );
+  // 모둠 탭: 모둠별 논의 (내 모둠 카드가 맨 앞에 강조 표시)
+  const discussionContent = <ResearchDiscussionBoard userId={user.id} />;
 
   const exploreContent = (
     <>
-      <div className="-mb-3 flex items-center gap-1.5 font-display text-[16px] text-stone-600">
+      <div className="-mb-3.5 flex items-center gap-1.5 font-display text-[16px] text-stone-600">
         <CompassIcon />
         동료 주제 탐색
         {mode !== "cards" && (
@@ -456,7 +391,7 @@ export default async function TopicsPage({
   );
 
   return (
-    <div className="flex flex-col gap-[22px]">
+    <div className="flex flex-col gap-6">
       {/* 두 탭 내용을 미리 렌더링해 클라이언트에서 즉시 전환 */}
       <InstantTabs
         initial={activeTab}
