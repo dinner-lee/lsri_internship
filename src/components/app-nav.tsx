@@ -25,7 +25,6 @@ const ADMIN_STUDY_SUBMENU = [
   { href: "/admin/results", label: "결과", icon: ChartIcon },
   { href: "/admin/groups", label: "모둠 구성", icon: GroupIcon },
   { href: "/admin/discussions", label: "논의", icon: DiscussionIcon },
-  { href: "/admin/attendance", label: "출석", icon: CalendarCheckIcon },
 ];
 const ADMIN_STUDY_PREFIXES = [
   "/admin/quizzes",
@@ -33,7 +32,6 @@ const ADMIN_STUDY_PREFIXES = [
   "/admin/groups",
   "/admin/live",
   "/admin/discussions",
-  "/admin/attendance",
 ];
 
 // 관리자: '자율연구' 상위 메뉴 아래 주제 탐색/모둠 구성
@@ -43,7 +41,12 @@ const ADMIN_RESEARCH_SUBMENU = [
 ];
 const ADMIN_RESEARCH_PREFIXES = ["/topics", "/admin/research-groups"];
 
-const ADMIN_TABS = [{ href: "/admin/users", label: "계정 관리" }];
+// 관리자: '계정 관리' 상위 메뉴 아래 계정/출석
+const ADMIN_ACCOUNT_SUBMENU = [
+  { href: "/admin/users", label: "계정 관리", icon: UserIcon },
+  { href: "/admin/attendance", label: "출석", icon: CalendarCheckIcon },
+];
+const ADMIN_ACCOUNT_PREFIXES = ["/admin/users", "/admin/attendance"];
 
 const tabCls = (active: boolean) =>
   `font-display rounded-lg px-2.5 py-[7px] text-[13px] whitespace-nowrap ${
@@ -73,6 +76,7 @@ export function AppNav({ role, variant = "desktop" }: { role: Role; variant?: "d
 
   const studyActive = ADMIN_STUDY_PREFIXES.some((p) => isActive(p));
   const researchActive = ADMIN_RESEARCH_PREFIXES.some((p) => isActive(p));
+  const accountActive = ADMIN_ACCOUNT_PREFIXES.some((p) => isActive(p));
 
   const dropdown = (
     label: string,
@@ -134,11 +138,7 @@ export function AppNav({ role, variant = "desktop" }: { role: Role; variant?: "d
       <nav className="hidden items-center gap-1 md:flex">
         {dropdown("스터디", "/admin/quizzes", studyActive, ADMIN_STUDY_SUBMENU)}
         {dropdown("자율연구", "/topics", researchActive, ADMIN_RESEARCH_SUBMENU)}
-        {ADMIN_TABS.map((t) => (
-          <Link key={t.href} href={t.href} className={tabCls(isActive(t.href))}>
-            {t.label}
-          </Link>
-        ))}
+        {dropdown("계정 관리", "/admin/users", accountActive, ADMIN_ACCOUNT_SUBMENU)}
       </nav>
     );
 
@@ -177,9 +177,10 @@ export function AppNav({ role, variant = "desktop" }: { role: Role; variant?: "d
                 자율연구
               </span>
               {ADMIN_RESEARCH_SUBMENU.map((t) => mobileItem(t.href, t.label, t.icon))}
-              <div className="mt-1 border-t border-line-soft pt-1">
-                {mobileItem("/admin/users", "계정 관리", UserIcon)}
-              </div>
+              <span className="mt-1 border-t border-line-soft px-5 pt-3 pb-1 text-[10.5px] font-semibold text-stone-400">
+                계정 관리
+              </span>
+              {ADMIN_ACCOUNT_SUBMENU.map((t) => mobileItem(t.href, t.label, t.icon))}
             </div>
           </>
         )}
