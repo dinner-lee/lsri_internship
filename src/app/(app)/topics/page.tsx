@@ -255,13 +255,13 @@ export default async function TopicsPage({
         {[
           {
             key: "explore",
-            label: "동료 주제 탐색",
+            label: "주제 탐색",
             href: "/topics",
             icon: <CompassIcon size={14} />,
           },
           {
             key: "discussion",
-            label: "모둠별 논의",
+            label: "모둠",
             href: "/topics?tab=discussion",
             icon: <DiscussionIcon size={14} />,
           },
