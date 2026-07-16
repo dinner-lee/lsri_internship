@@ -232,7 +232,9 @@ export default async function TopicsPage({
   ];
 
   // 모둠 탭: 모둠별 논의 (내 모둠 카드가 맨 앞에 강조 표시)
-  const discussionContent = <ResearchDiscussionBoard userId={user.id} />;
+  const discussionContent = (
+    <ResearchDiscussionBoard userId={user.id} fullscreen={user.role === "ADMIN"} />
+  );
 
   const exploreContent = (
     <>

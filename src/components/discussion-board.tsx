@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { initialOf, formatDateTime, topicTitleOf } from "@/lib/utils";
+import { MemoFullscreenButton } from "@/components/memo-fullscreen";
 
 function HeartIcon({ size = 12 }: { size?: number }) {
   return (
@@ -43,10 +44,12 @@ export async function DiscussionBoard({
   weekParam,
   basePath,
   userId,
+  fullscreen = false,
 }: {
   weekParam?: string;
   basePath: string;
   userId: string;
+  fullscreen?: boolean; // 관리자용: 카드별 전체 화면 보기 버튼 표시
 }) {
   const confirmedSets = await prisma.groupSet.findMany({
     where: { confirmedAt: { not: null } },
@@ -133,21 +136,30 @@ export async function DiscussionBoard({
                     ))}
                   </div>
                 </div>
-                {isMine ? (
-                  <Link
-                    href={`/group-memo/${g.id}`}
-                    className="font-display rounded-[8px] bg-accent px-3.5 py-1.5 text-[12px] whitespace-nowrap text-white hover:bg-accent-strong"
-                  >
-                    모둠 메모장
-                  </Link>
-                ) : (
-                  <Link
-                    href={`/group-memo/${g.id}`}
-                    className="whitespace-nowrap text-xs text-stone-400 hover:text-accent"
-                  >
-                    메모장 열기 →
-                  </Link>
-                )}
+                <div className="flex items-center gap-2">
+                  {fullscreen && (
+                    <MemoFullscreenButton
+                      title={`모둠 ${g.index + 1}`}
+                      subtitle={g.members.map((m) => m.user.name.split("/")[0].trim()).join(" · ")}
+                      endpoint={`/api/group-memo/${g.id}`}
+                    />
+                  )}
+                  {isMine ? (
+                    <Link
+                      href={`/group-memo/${g.id}`}
+                      className="font-display rounded-[8px] bg-accent px-3.5 py-1.5 text-[12px] whitespace-nowrap text-white hover:bg-accent-strong"
+                    >
+                      모둠 메모장
+                    </Link>
+                  ) : (
+                    <Link
+                      href={`/group-memo/${g.id}`}
+                      className="whitespace-nowrap text-xs text-stone-400 hover:text-accent"
+                    >
+                      메모장 열기 →
+                    </Link>
+                  )}
+                </div>
               </div>
 
               <div className="max-h-72 min-h-32 flex-1 overflow-y-auto px-5 py-4">
@@ -191,7 +203,13 @@ export async function DiscussionBoard({
 }
 
 // 자율연구 모둠 메모 모아보기 (최신 확정 구성 기준)
-export async function ResearchDiscussionBoard({ userId }: { userId: string }) {
+export async function ResearchDiscussionBoard({
+  userId,
+  fullscreen = false,
+}: {
+  userId: string;
+  fullscreen?: boolean; // 관리자용: 카드별 전체 화면 보기 버튼 표시
+}) {
   const set = await prisma.researchGroupSet.findFirst({
     where: { confirmedAt: { not: null } },
     orderBy: { confirmedAt: "desc" },
@@ -254,21 +272,30 @@ export async function ResearchDiscussionBoard({ userId }: { userId: string }) {
                   ))}
                 </div>
               </div>
-              {isMine ? (
-                <Link
-                  href={`/research-memo/${g.id}`}
-                  className="font-display rounded-[8px] bg-accent px-3.5 py-1.5 text-[12px] whitespace-nowrap text-white hover:bg-accent-strong"
-                >
-                  모둠 메모장
-                </Link>
-              ) : (
-                <Link
-                  href={`/research-memo/${g.id}`}
-                  className="whitespace-nowrap text-xs text-stone-400 hover:text-accent"
-                >
-                  메모장 열기 →
-                </Link>
-              )}
+              <div className="flex items-center gap-2">
+                {fullscreen && (
+                  <MemoFullscreenButton
+                    title={`연구 모둠 ${g.index + 1}`}
+                    subtitle={`주제: ${topicTitleOf(g.topic.markdown)}`}
+                    endpoint={`/api/research-memo/${g.id}`}
+                  />
+                )}
+                {isMine ? (
+                  <Link
+                    href={`/research-memo/${g.id}`}
+                    className="font-display rounded-[8px] bg-accent px-3.5 py-1.5 text-[12px] whitespace-nowrap text-white hover:bg-accent-strong"
+                  >
+                    모둠 메모장
+                  </Link>
+                ) : (
+                  <Link
+                    href={`/research-memo/${g.id}`}
+                    className="whitespace-nowrap text-xs text-stone-400 hover:text-accent"
+                  >
+                    메모장 열기 →
+                  </Link>
+                )}
+              </div>
             </div>
             <div className="truncate border-b border-line-soft px-5 py-2 text-[11.5px] text-stone-500">
               주제: <b className="text-stone-700">{topicTitleOf(g.topic.markdown)}</b>
