@@ -3,6 +3,7 @@
 import { useActionState, useMemo, useState } from "react";
 import Link from "next/link";
 import { saveQuizAction, deleteQuizAction, type QuizFormState } from "@/lib/actions/quiz";
+import { startLiveSessionAction } from "@/lib/actions/live";
 import { parseQuiz, typeLabel, formatTimeLimit } from "@/lib/quiz";
 
 export function QuizEditor({
@@ -12,6 +13,7 @@ export function QuizEditor({
   initialDueAt,
   published,
   submissionCount,
+  liveSessionId = null,
 }: {
   quizId: string;
   initialWeek: number;
@@ -19,6 +21,7 @@ export function QuizEditor({
   initialDueAt: string;
   published: boolean;
   submissionCount: number;
+  liveSessionId?: string | null;
 }) {
   const [md, setMd] = useState(initialMarkdown);
   const [state, dispatch, pending] = useActionState<QuizFormState, FormData>(saveQuizAction, {});
@@ -49,6 +52,25 @@ export function QuizEditor({
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {quizId && published && parsed.questions.length > 0 && (
+            liveSessionId ? (
+              <Link
+                href={`/admin/live/${liveSessionId}`}
+                className="rounded-[9px] border border-bad-border bg-bad-soft px-4 py-2.5 text-[13px] font-bold whitespace-nowrap text-bad hover:opacity-80"
+              >
+                ● 진행 화면으로
+              </Link>
+            ) : (
+              <button
+                type="submit"
+                formAction={() => startLiveSessionAction(quizId)}
+                disabled={pending}
+                className="cursor-pointer rounded-[9px] border border-bad-border bg-bad-soft px-4 py-2.5 text-[13px] font-bold whitespace-nowrap text-bad hover:opacity-80 disabled:opacity-60"
+              >
+                ● 실시간 진행
+              </button>
+            )
+          )}
           <button
             type="submit"
             name="publish"

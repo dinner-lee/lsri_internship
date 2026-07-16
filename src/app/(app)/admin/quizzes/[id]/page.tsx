@@ -40,10 +40,17 @@ export default async function QuizEditorPage({ params }: { params: Promise<{ id:
     );
   }
 
-  const quiz = await prisma.quiz.findUnique({
-    where: { id },
-    include: { _count: { select: { submissions: true } } },
-  });
+  const [quiz, liveSession] = await Promise.all([
+    prisma.quiz.findUnique({
+      where: { id },
+      include: { _count: { select: { submissions: true } } },
+    }),
+    // 이 퀴즈로 진행 중인 실시간 세션이 있으면 시작 대신 재진입 링크 표시
+    prisma.liveSession.findFirst({
+      where: { quizId: id, status: { not: "ENDED" } },
+      orderBy: { createdAt: "desc" },
+    }),
+  ]);
   if (!quiz) notFound();
 
   const toLocal = (d: Date) => {
@@ -59,6 +66,7 @@ export default async function QuizEditorPage({ params }: { params: Promise<{ id:
       initialDueAt={quiz.dueAt ? toLocal(quiz.dueAt) : ""}
       published={!!quiz.publishedAt}
       submissionCount={quiz._count.submissions}
+      liveSessionId={liveSession?.id ?? null}
     />
   );
 }
