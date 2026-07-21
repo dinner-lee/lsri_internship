@@ -86,3 +86,31 @@ export async function deleteResearchSetAction(setId: string) {
   revalidatePath("/admin/research-groups");
   revalidatePath("/topics");
 }
+
+// 멤버를 같은 세트의 다른 모둠으로 이동 (확정 후 수동 조정용)
+// 이동한 모둠의 주제에 대한 순위 뱃지도 다시 계산한다 (0=자기 주제, null=미선호)
+export async function moveResearchMemberAction(memberId: string, targetGroupId: string) {
+  await requireAdmin();
+  const [member, target] = await Promise.all([
+    prisma.researchGroupMember.findUnique({ where: { id: memberId }, include: { group: true } }),
+    prisma.researchGroup.findUnique({ where: { id: targetGroupId }, include: { topic: true } }),
+  ]);
+  if (!member || !target) return;
+  if (member.group.setId !== target.setId || member.groupId === target.id) return;
+
+  let rank: number | null = null;
+  if (target.topic.userId === member.userId) rank = 0;
+  else {
+    const pick = await prisma.topicPick.findUnique({
+      where: { userId_topicId: { userId: member.userId, topicId: target.topicId } },
+    });
+    rank = pick?.rank ?? null;
+  }
+
+  await prisma.researchGroupMember.update({
+    where: { id: memberId },
+    data: { groupId: target.id, rank },
+  });
+  revalidatePath("/admin/research-groups");
+  revalidatePath("/topics");
+}

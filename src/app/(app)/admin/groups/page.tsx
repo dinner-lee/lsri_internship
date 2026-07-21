@@ -4,6 +4,7 @@ import { getPrevGroupOf } from "@/lib/actions/groups";
 import { overlapPairs, METHOD_LABELS, type GroupMethodKey } from "@/lib/groups";
 import { initialOf, formatDateTime } from "@/lib/utils";
 import { GroupControls, ConfirmButtons } from "./group-controls";
+import { MoveMemberSelect } from "@/components/move-member";
 
 export default async function AdminGroupsPage({
   searchParams,
@@ -131,6 +132,17 @@ export default async function AdminGroupsPage({
                         {initialOf(m.user.name)}
                       </div>
                       <span className="text-[12.5px] text-stone-800">{m.user.name}</span>
+                      <span className="ml-auto">
+                        <MoveMemberSelect
+                          kind="study"
+                          memberId={m.id}
+                          groupId={g.id}
+                          options={groupSet.groups.map((gr) => ({
+                            id: gr.id,
+                            label: `모둠 ${gr.index + 1}`,
+                          }))}
+                        />
+                      </span>
                     </div>
                   ))}
                 </div>

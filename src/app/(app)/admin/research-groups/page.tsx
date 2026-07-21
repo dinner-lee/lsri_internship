@@ -2,6 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { initialOf, formatDateTime, topicTitleOf } from "@/lib/utils";
 import { ResearchControls, ResearchConfirmButton } from "./research-controls";
+import { MoveMemberSelect } from "@/components/move-member";
 
 const RANK_WEIGHT = (rank: number) => 6 - rank;
 
@@ -40,7 +41,8 @@ type SetWithGroups = {
   }[];
 };
 
-function GroupCards({ set }: { set: SetWithGroups }) {
+function GroupCards({ set, editable = false }: { set: SetWithGroups; editable?: boolean }) {
+  const moveOptions = set.groups.map((g) => ({ id: g.id, label: `모둠 ${g.index + 1}` }));
   return (
     <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-3.5">
       {set.groups.map((g) => (
@@ -83,6 +85,14 @@ function GroupCards({ set }: { set: SetWithGroups }) {
                   {m.user.name.split("/")[0].trim()}
                 </span>
                 <RankBadge rank={m.rank} />
+                {editable && (
+                  <MoveMemberSelect
+                    kind="research"
+                    memberId={m.id}
+                    groupId={g.id}
+                    options={moveOptions}
+                  />
+                )}
               </span>
             ))}
           </div>
@@ -202,7 +212,7 @@ export default async function ResearchGroupsPage() {
             </span>
             <ResearchConfirmButton setId={currentSet.id} />
           </div>
-          <GroupCards set={currentSet} />
+          <GroupCards set={currentSet} editable />
         </div>
       )}
 
@@ -215,12 +225,17 @@ export default async function ResearchGroupsPage() {
             </span>
           </summary>
           <div className="flex flex-col gap-5 border-t border-line-soft px-6 py-5">
-            {confirmedSets.map((s) => (
+            {confirmedSets.map((s, si) => (
               <div key={s.id} className="flex flex-col gap-2.5">
-                <span className="text-[11.5px] text-stone-400">
+                <span className="flex items-center gap-2 text-[11.5px] text-stone-400">
                   {formatDateTime(s.confirmedAt!)} 확정 · 모둠 {s.groups.length}개
+                  {si === 0 && (
+                    <span className="rounded-[5px] bg-accent-soft px-2 py-[3px] text-[10.5px] font-semibold text-accent">
+                      학습자 공개 중 · 멤버 이동 가능
+                    </span>
+                  )}
                 </span>
-                <GroupCards set={s} />
+                <GroupCards set={s} editable={si === 0} />
               </div>
             ))}
           </div>

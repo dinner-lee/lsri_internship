@@ -72,3 +72,18 @@ export async function confirmGroupsAction(groupSetId: string) {
   revalidatePath("/admin/groups");
   revalidatePath("/quiz");
 }
+
+// 멤버를 같은 세트의 다른 모둠으로 이동 (확정 후 수동 조정용)
+export async function moveGroupMemberAction(memberId: string, targetGroupId: string) {
+  await requireAdmin();
+  const [member, target] = await Promise.all([
+    prisma.groupMember.findUnique({ where: { id: memberId }, include: { group: true } }),
+    prisma.group.findUnique({ where: { id: targetGroupId } }),
+  ]);
+  if (!member || !target) return;
+  if (member.group.groupSetId !== target.groupSetId || member.groupId === target.id) return;
+
+  await prisma.groupMember.update({ where: { id: memberId }, data: { groupId: target.id } });
+  revalidatePath("/admin/groups");
+  revalidatePath("/quiz");
+}
