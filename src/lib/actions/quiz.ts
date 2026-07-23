@@ -88,6 +88,20 @@ export async function saveQuizAction(
   return { saved: true };
 }
 
+// 학습자 공개 토글 — 발행된 퀴즈만, openAt이 null이면 학습자에게 보이지 않음
+export async function toggleQuizOpenAction(quizId: string) {
+  await requireAdmin();
+  const quiz = await prisma.quiz.findUnique({ where: { id: quizId } });
+  if (!quiz || !quiz.publishedAt) return;
+  await prisma.quiz.update({
+    where: { id: quizId },
+    data: { openAt: quiz.openAt ? null : new Date() },
+  });
+  revalidatePath("/admin/quizzes");
+  revalidatePath(`/admin/quizzes/${quizId}`);
+  revalidatePath("/quiz");
+}
+
 export async function deleteQuizAction(id: string) {
   await requireAdmin();
   await prisma.quiz.delete({ where: { id } });
@@ -106,7 +120,7 @@ export async function submitQuizAction(
     where: { id: quizId },
     include: { questions: { include: { options: true }, orderBy: { order: "asc" } } },
   });
-  if (!quiz || !quiz.publishedAt) return { error: "퀴즈를 찾을 수 없습니다" };
+  if (!quiz || !quiz.publishedAt || !quiz.openAt) return { error: "퀴즈를 찾을 수 없습니다" };
 
   const existing = await prisma.submission.findUnique({
     where: { quizId_userId: { quizId, userId: user.id } },

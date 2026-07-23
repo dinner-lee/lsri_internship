@@ -35,6 +35,7 @@ export default async function QuizEditorPage({ params }: { params: Promise<{ id:
         initialMarkdown={TEMPLATE}
         initialDueAt=""
         published={false}
+        open={false}
         submissionCount={0}
       />
     );
@@ -65,6 +66,7 @@ export default async function QuizEditorPage({ params }: { params: Promise<{ id:
       initialMarkdown={quiz.markdown}
       initialDueAt={quiz.dueAt ? toLocal(quiz.dueAt) : ""}
       published={!!quiz.publishedAt}
+      open={!!quiz.openAt}
       submissionCount={quiz._count.submissions}
       liveSessionId={liveSession?.id ?? null}
     />

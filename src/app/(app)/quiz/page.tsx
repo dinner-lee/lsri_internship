@@ -21,7 +21,8 @@ export default async function QuizHomePage({
   // 왕복 지연을 줄이기 위해 병렬 실행
   const [current, mySubmissions, confirmedSet, liveSession] = await Promise.all([
     prisma.quiz.findFirst({
-      where: { publishedAt: { not: null } },
+      // 발행 + 공개된 퀴즈만 학습자에게 표시
+      where: { publishedAt: { not: null }, openAt: { not: null } },
       orderBy: { week: "desc" },
       include: { _count: { select: { questions: true } } },
     }),

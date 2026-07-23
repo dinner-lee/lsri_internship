@@ -16,7 +16,7 @@ export default async function TakeQuizPage({ params }: { params: Promise<{ id: s
       },
     },
   });
-  if (!quiz || !quiz.publishedAt) notFound();
+  if (!quiz || !quiz.publishedAt || !quiz.openAt) notFound();
 
   const existing = await prisma.submission.findUnique({
     where: { quizId_userId: { quizId: id, userId: user.id } },

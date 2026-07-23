@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { toggleQuizOpenAction } from "@/lib/actions/quiz";
 
 export default async function AdminQuizzesPage() {
   const [quizzes, liveSession] = await Promise.all([
@@ -77,12 +78,14 @@ export default async function AdminQuizzesPage() {
                 </span>
                 <span
                   className={`rounded-[5px] px-2 py-[3px] text-[11px] font-semibold ${
-                    q.publishedAt
-                      ? "bg-accent-soft text-accent"
-                      : "bg-line-soft text-stone-400"
+                    !q.publishedAt
+                      ? "bg-line-soft text-stone-400"
+                      : q.openAt
+                        ? "bg-accent-soft text-accent"
+                        : "bg-amber-50 text-amber-700"
                   }`}
                 >
-                  {q.publishedAt ? "발행됨" : "임시저장"}
+                  {!q.publishedAt ? "임시저장" : q.openAt ? "공개 중" : "비공개"}
                 </span>
                 {liveSession?.quizId === q.id && (
                   <span className="rounded-[5px] bg-bad-soft px-2 py-[3px] text-[11px] font-bold text-bad">
@@ -96,12 +99,25 @@ export default async function AdminQuizzesPage() {
               </div>
             </Link>
             {q.publishedAt && (
-              <Link
-                href={`/admin/results?week=${q.week}`}
-                className="pr-5 text-xs whitespace-nowrap text-stone-400 hover:text-accent"
-              >
-                결과 →
-              </Link>
+              <>
+                <form action={toggleQuizOpenAction.bind(null, q.id)} className="pr-3">
+                  <button
+                    className={`cursor-pointer rounded-[7px] px-3 py-1.5 text-[11.5px] font-semibold whitespace-nowrap ${
+                      q.openAt
+                        ? "border border-line bg-white text-stone-500 hover:border-stone-300"
+                        : "bg-accent text-white hover:bg-accent-strong"
+                    }`}
+                  >
+                    {q.openAt ? "비공개로 전환" : "학습자에게 공개"}
+                  </button>
+                </form>
+                <Link
+                  href={`/admin/results?week=${q.week}`}
+                  className="pr-5 text-xs whitespace-nowrap text-stone-400 hover:text-accent"
+                >
+                  결과 →
+                </Link>
+              </>
             )}
           </div>
         ))}

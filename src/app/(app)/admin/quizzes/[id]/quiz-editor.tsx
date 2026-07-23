@@ -2,7 +2,12 @@
 
 import { useActionState, useMemo, useState } from "react";
 import Link from "next/link";
-import { saveQuizAction, deleteQuizAction, type QuizFormState } from "@/lib/actions/quiz";
+import {
+  saveQuizAction,
+  deleteQuizAction,
+  toggleQuizOpenAction,
+  type QuizFormState,
+} from "@/lib/actions/quiz";
 import { startLiveSessionAction } from "@/lib/actions/live";
 import { parseQuiz, typeLabel, formatTimeLimit } from "@/lib/quiz";
 
@@ -12,6 +17,7 @@ export function QuizEditor({
   initialMarkdown,
   initialDueAt,
   published,
+  open,
   submissionCount,
   liveSessionId = null,
 }: {
@@ -20,6 +26,7 @@ export function QuizEditor({
   initialMarkdown: string;
   initialDueAt: string;
   published: boolean;
+  open: boolean;
   submissionCount: number;
   liveSessionId?: string | null;
 }) {
@@ -42,13 +49,17 @@ export function QuizEditor({
               {quizId ? "퀴즈 편집" : "새 퀴즈"}
             </span>
             {published && (
-              <span className="rounded-[5px] bg-accent-soft px-2 py-[3px] text-[11px] font-semibold text-accent">
-                발행됨
+              <span
+                className={`rounded-[5px] px-2 py-[3px] text-[11px] font-semibold ${
+                  open ? "bg-accent-soft text-accent" : "bg-amber-50 text-amber-700"
+                }`}
+              >
+                {open ? "공개 중" : "발행됨 · 비공개"}
               </span>
             )}
           </div>
           <div className="text-[12.5px] text-stone-400">
-            마크다운으로 작성하면 오른쪽에 학습자 화면이 실시간으로 표시됩니다
+            발행 후 &lsquo;학습자에게 공개&rsquo;를 눌러야 학습자 화면에 표시됩니다
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -71,6 +82,20 @@ export function QuizEditor({
               </button>
             )
           )}
+          {quizId && published && (
+            <button
+              type="submit"
+              formAction={() => toggleQuizOpenAction(quizId)}
+              disabled={pending}
+              className={`cursor-pointer rounded-[9px] px-4 py-2.5 text-[13px] font-semibold whitespace-nowrap disabled:opacity-60 ${
+                open
+                  ? "border border-line bg-white text-stone-500 hover:border-stone-300"
+                  : "bg-accent text-white hover:bg-accent-strong"
+              }`}
+            >
+              {open ? "비공개로 전환" : "학습자에게 공개"}
+            </button>
+          )}
           <button
             type="submit"
             name="publish"
@@ -87,7 +112,7 @@ export function QuizEditor({
             disabled={pending}
             className="font-display cursor-pointer rounded-[9px] bg-accent px-5 py-2.5 text-[13.5px] text-white hover:bg-accent-strong disabled:opacity-60"
           >
-            {published ? "저장 후 재발행" : "학습자에게 발행"}
+            {published ? "저장 후 재발행" : "발행"}
           </button>
         </div>
       </div>
