@@ -12,6 +12,7 @@ export async function createQnaQuestionAction(content: string) {
   if (!text) return;
   await prisma.qnaQuestion.create({ data: { userId: user.id, content: text } });
   revalidatePath("/quiz");
+  revalidatePath("/admin/questions");
 }
 
 // 작성자 본인 또는 관리자만 삭제 (댓글·좋아요는 cascade)
@@ -21,6 +22,7 @@ export async function deleteQnaQuestionAction(questionId: string) {
   if (!q || (q.userId !== user.id && user.role !== "ADMIN")) return;
   await prisma.qnaQuestion.delete({ where: { id: questionId } });
   revalidatePath("/quiz");
+  revalidatePath("/admin/questions");
 }
 
 export async function toggleQnaLikeAction(questionId: string) {
@@ -31,6 +33,7 @@ export async function toggleQnaLikeAction(questionId: string) {
   if (existing) await prisma.qnaLike.delete({ where: { id: existing.id } });
   else await prisma.qnaLike.create({ data: { questionId, userId: user.id } });
   revalidatePath("/quiz");
+  revalidatePath("/admin/questions");
 }
 
 // parentId가 있으면 답글 — 답글의 답글은 부모 댓글로 평탄화 (1단계 유지)
@@ -54,6 +57,7 @@ export async function addQnaCommentAction(
     data: { questionId, userId: user.id, content: text, parentId: parent },
   });
   revalidatePath("/quiz");
+  revalidatePath("/admin/questions");
 }
 
 export async function deleteQnaCommentAction(commentId: string) {
@@ -62,4 +66,5 @@ export async function deleteQnaCommentAction(commentId: string) {
   if (!c || (c.userId !== user.id && user.role !== "ADMIN")) return;
   await prisma.qnaComment.delete({ where: { id: commentId } });
   revalidatePath("/quiz");
+  revalidatePath("/admin/questions");
 }

@@ -12,6 +12,7 @@ import {
   CompassIcon,
   UserIcon,
   CalendarCheckIcon,
+  QnaIcon,
 } from "@/components/icons";
 
 const LEARNER_TABS = [
@@ -25,6 +26,7 @@ const ADMIN_STUDY_SUBMENU = [
   { href: "/admin/results", label: "결과", icon: ChartIcon },
   { href: "/admin/groups", label: "모둠 구성", icon: GroupIcon },
   { href: "/admin/discussions", label: "논의", icon: DiscussionIcon },
+  { href: "/admin/questions", label: "질문 게시판", icon: QnaIcon },
 ];
 const ADMIN_STUDY_PREFIXES = [
   "/admin/quizzes",
@@ -32,6 +34,7 @@ const ADMIN_STUDY_PREFIXES = [
   "/admin/groups",
   "/admin/live",
   "/admin/discussions",
+  "/admin/questions",
 ];
 
 // 관리자: '자율연구' 상위 메뉴 아래 주제 탐색/모둠 구성
