@@ -4,7 +4,8 @@ import { requireUser } from "@/lib/auth";
 import { formatTimeLimit } from "@/lib/quiz";
 import { dDayLabel } from "@/lib/utils";
 import { DiscussionBoard } from "@/components/discussion-board";
-import { QuizIcon, GroupIcon, HistoryIcon } from "@/components/icons";
+import { QuestionBoard } from "@/components/question-board";
+import { QuizIcon, GroupIcon, HistoryIcon, QnaIcon } from "@/components/icons";
 import { RefreshOnFocus, RefreshButton } from "@/components/refresh";
 import { InstantTabs } from "@/components/instant-tabs";
 
@@ -15,7 +16,12 @@ export default async function QuizHomePage({
 }) {
   const { week, tab } = await searchParams;
   // 모둠 논의의 주차 이동(week 파라미터)도 모둠 탭에 머무르게 함
-  const activeTab = tab === "group" || (tab === undefined && week !== undefined) ? "group" : "quiz";
+  const activeTab =
+    tab === "qna"
+      ? "qna"
+      : tab === "group" || (tab === undefined && week !== undefined)
+        ? "group"
+        : "quiz";
   const user = await requireUser();
 
   // 왕복 지연을 줄이기 위해 병렬 실행
@@ -205,6 +211,17 @@ export default async function QuizHomePage({
             ),
             right: confirmedSet ? <RefreshButton /> : undefined,
             content: groupContent,
+          },
+          {
+            key: "qna",
+            label: (
+              <>
+                <QnaIcon size={14} />
+                질문
+              </>
+            ),
+            right: <RefreshButton />,
+            content: <QuestionBoard userId={user.id} isAdmin={user.role === "ADMIN"} />,
           },
         ]}
       />

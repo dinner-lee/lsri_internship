@@ -58,6 +58,45 @@ model User {
   researchMemoEdits        ResearchGroupMemo[]        @relation("ResearchMemoEditor")
   researchGroupMemoLikes   ResearchGroupMemoLike[]
   researchGroupMemoComments ResearchGroupMemoComment[]
+  qnaQuestions             QnaQuestion[]
+  qnaComments              QnaComment[]
+  qnaLikes                 QnaLike[]
+}
+
+// ── 질문 게시판 ───────────────────────────────────────
+
+model QnaQuestion {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content   String
+  createdAt DateTime @default(now())
+
+  comments QnaComment[]
+  likes    QnaLike[]
+}
+
+model QnaComment {
+  id         String      @id @default(cuid())
+  questionId String
+  question   QnaQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parentId   String? // null이면 댓글, 아니면 해당 댓글에 대한 답글 (1단계)
+  parent     QnaComment?  @relation("QnaReply", fields: [parentId], references: [id], onDelete: Cascade)
+  replies    QnaComment[] @relation("QnaReply")
+  content    String
+  createdAt  DateTime    @default(now())
+}
+
+model QnaLike {
+  id         String      @id @default(cuid())
+  questionId String
+  question   QnaQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([questionId, userId])
 }
 
 // ── 출석 ─────────────────────────────────────────────
