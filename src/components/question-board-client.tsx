@@ -26,7 +26,7 @@ export function NewQuestionForm() {
       <textarea
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
-        placeholder="궁금한 점을 질문해 보세요 — 동료들이 댓글로 함께 답합니다"
+        placeholder="궁금한 점을 질문해 보세요"
         rows={2}
         className="resize-y rounded-[10px] border border-line bg-paper px-3.5 py-2.5 text-[13px] leading-relaxed text-stone-800"
       />

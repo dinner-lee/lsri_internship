@@ -28,7 +28,7 @@ export async function QuestionBoard({ userId, isAdmin }: { userId: string; isAdm
 
       {questions.length === 0 && (
         <div className="rounded-[14px] border border-line bg-white p-7 text-center text-sm text-stone-400">
-          아직 올라온 질문이 없습니다 — 첫 질문을 올려보세요
+          아직 올라온 질문이 없습니다
         </div>
       )}
 
