@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { ShowcaseBoard } from "@/components/showcase-board";
+import { GuestGate } from "@/components/showcase-client";
 import { AutoRefresh, RefreshOnFocus } from "@/components/refresh";
 
 // 게스트용 결과보고회 페이지 — 관리자가 발급한 토큰 링크로만 접근 (로그인 불필요)
@@ -32,7 +33,7 @@ export default async function GuestShowcasePage({
 
       <main className="mx-auto w-full max-w-[960px] px-4 py-6 sm:px-6">
         {access ? (
-          <div className="flex flex-col gap-[18px]">
+          <GuestGate>
             <RefreshOnFocus />
             {/* 게스트는 인원이 많을 수 있어 1분 간격으로만 갱신 (서버 부하 절감) */}
             <AutoRefresh intervalMs={60000} />
@@ -43,7 +44,7 @@ export default async function GuestShowcasePage({
               </div>
             </div>
             <ShowcaseBoard viewer={{ mode: "guest", token }} />
-          </div>
+          </GuestGate>
         ) : (
           <div className="rounded-[14px] border border-line bg-white p-10 text-center text-sm text-stone-400">
             유효하지 않은 링크입니다. 담당자에게 새 링크를 요청해 주세요.

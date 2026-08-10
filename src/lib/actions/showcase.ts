@@ -108,22 +108,64 @@ export async function disableGuestTokenAction() {
   refresh();
 }
 
-// 게스트 질문 답변 — 해당 모둠원 또는 관리자
-export async function answerGuestQuestionAction(questionId: string, content: string) {
+// 답글 대상 검증 — 답글의 답글은 부모 답변으로 평탄화 (1단계 유지)
+async function resolveParent(questionId: string, parentId?: string | null) {
+  if (!parentId) return { ok: true as const, parent: null };
+  const p = await prisma.guestAnswer.findUnique({ where: { id: parentId } });
+  if (!p || p.questionId !== questionId) return { ok: false as const, parent: null };
+  return { ok: true as const, parent: p.parentId ?? p.id };
+}
+
+// 게스트 질문 답변·답글 — 해당 모둠원 또는 관리자
+export async function answerGuestQuestionAction(
+  questionId: string,
+  content: string,
+  parentId?: string | null
+) {
   const user = await requireUser();
   const text = content.trim().slice(0, MAX_LEN);
   if (!text) return;
   const q = await prisma.guestQuestion.findUnique({ where: { id: questionId } });
   if (!q) return;
   if (!(await canEditGroup(user.id, user.role, q.groupId))) return;
-  await prisma.guestAnswer.create({ data: { questionId, userId: user.id, content: text } });
+  const r = await resolveParent(questionId, parentId);
+  if (!r.ok) return;
+  await prisma.guestAnswer.create({
+    data: { questionId, userId: user.id, content: text, parentId: r.parent },
+  });
+  refresh();
+}
+
+// 게스트의 답변·답글 — 유효한 토큰 필요 (로그인 없음)
+export async function createGuestAnswerAction(
+  token: string,
+  questionId: string,
+  guestName: string,
+  content: string,
+  parentId?: string | null
+) {
+  const name = guestName.trim().slice(0, MAX_NAME);
+  const text = content.trim().slice(0, MAX_LEN);
+  if (!token || !name || !text) return;
+  const access = await prisma.showcaseAccess.findUnique({ where: { token } });
+  if (!access) return;
+  const q = await prisma.guestQuestion.findUnique({ where: { id: questionId } });
+  if (!q) return;
+  const r = await resolveParent(questionId, parentId);
+  if (!r.ok) return;
+  await prisma.guestAnswer.create({
+    data: { questionId, guestName: name, content: text, parentId: r.parent },
+  });
   refresh();
 }
 
 export async function deleteGuestAnswerAction(answerId: string) {
   const user = await requireUser();
   const a = await prisma.guestAnswer.findUnique({ where: { id: answerId } });
-  if (!a || (a.userId !== user.id && user.role !== "ADMIN")) return;
+  if (!a) return;
+  // 게스트 작성 답글은 관리자만, 사용자 작성 답글은 본인·관리자만 삭제
+  const allowed = a.userId ? a.userId === user.id || user.role === "ADMIN" : user.role === "ADMIN";
+  if (!allowed) return;
   await prisma.guestAnswer.delete({ where: { id: answerId } });
   refresh();
 }

@@ -405,13 +405,17 @@ model GuestQuestion {
   answers   GuestAnswer[]
 }
 
-// 게스트 질문에 대한 학습자(모둠원)·관리자의 답변
+// 게스트 질문 스레드의 답변·답글 — 학습자(모둠원)·관리자·게스트 모두 작성 가능
 model GuestAnswer {
   id         String        @id @default(cuid())
   questionId String
   question   GuestQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  userId     String
-  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parentId   String? // null = 질문에 대한 답변, 아니면 해당 답변에 대한 답글 (1단계 평탄화)
+  parent     GuestAnswer?  @relation("GuestAnswerReply", fields: [parentId], references: [id], onDelete: Cascade)
+  replies    GuestAnswer[] @relation("GuestAnswerReply")
+  userId     String? // 학습자·관리자 작성 시
+  user       User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  guestName  String? // 게스트 작성 시 (로그인 없음)
   content    String
   createdAt  DateTime      @default(now())
 }

@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useSyncExternalStore, useTransition } from "react";
+import { UserAvatar } from "@/components/user-menu";
 import {
   setGroupTopicAction,
   addShowcaseLinkAction,
   deleteShowcaseLinkAction,
   createGuestQuestionAction,
+  createGuestAnswerAction,
   updateGuestQuestionAction,
   answerGuestQuestionAction,
   deleteGuestAnswerAction,
@@ -13,6 +15,26 @@ import {
   issueGuestTokenAction,
   disableGuestTokenAction,
 } from "@/lib/actions/showcase";
+
+// 게스트 이름은 브라우저에 저장해 매번 입력하지 않도록 함 (같은 탭 내 변경도 즉시 반영)
+const GUEST_NAME_KEY = "showcase-guest-name";
+const guestNameListeners = new Set<() => void>();
+const storedGuestName = () =>
+  typeof window === "undefined" ? "" : (localStorage.getItem(GUEST_NAME_KEY) ?? "");
+const setStoredGuestName = (v: string | null) => {
+  if (v) localStorage.setItem(GUEST_NAME_KEY, v);
+  else localStorage.removeItem(GUEST_NAME_KEY);
+  guestNameListeners.forEach((l) => l());
+};
+const subscribeGuestName = (cb: () => void) => {
+  guestNameListeners.add(cb);
+  window.addEventListener("storage", cb);
+  return () => {
+    guestNameListeners.delete(cb);
+    window.removeEventListener("storage", cb);
+  };
+};
+const useGuestName = () => useSyncExternalStore(subscribeGuestName, storedGuestName, () => "");
 
 // 모둠 연구 주제 인라인 편집 (모둠원·관리자) — 비우고 저장하면 앵커 주제로 되돌아감
 export function GroupTopicEditor({
@@ -174,8 +196,16 @@ export function ShowcaseDeleteButton({
   );
 }
 
-// 게스트 질문에 대한 답변 입력 (모둠원·관리자)
-export function AnswerComposer({ questionId }: { questionId: string }) {
+// 게스트 질문 스레드 답변·답글 입력 (모둠원·관리자)
+export function AnswerComposer({
+  questionId,
+  parentId = null,
+  placeholder = "답변을 남겨보세요",
+}: {
+  questionId: string;
+  parentId?: string | null;
+  placeholder?: string;
+}) {
   const [draft, setDraft] = useState("");
   const [pending, startTransition] = useTransition();
 
@@ -183,7 +213,7 @@ export function AnswerComposer({ questionId }: { questionId: string }) {
     const text = draft.trim();
     if (!text) return;
     setDraft("");
-    startTransition(() => answerGuestQuestionAction(questionId, text));
+    startTransition(() => answerGuestQuestionAction(questionId, text, parentId));
   };
 
   return (
@@ -194,7 +224,7 @@ export function AnswerComposer({ questionId }: { questionId: string }) {
         onKeyDown={(e) => {
           if (e.key === "Enter" && !e.nativeEvent.isComposing) submit();
         }}
-        placeholder="답변을 남겨보세요"
+        placeholder={placeholder}
         className="h-9 flex-1 rounded-full border border-line bg-white px-4 text-[12.5px] text-stone-800"
       />
       <button
@@ -336,47 +366,146 @@ export function GuestLinkManager({ token }: { token: string | null }) {
   );
 }
 
-// 게스트 질문 작성 폼 (/guest/[token] 공개 페이지 — 로그인 없이 이름을 직접 입력)
-export function GuestQuestionForm({ token, groupId }: { token: string; groupId: string }) {
-  const [name, setName] = useState("");
+// 게스트 입력 공통 (질문·답글) — 저장된 이름을 자동 사용, 이름 아바타 표시
+function GuestComposer({
+  placeholder,
+  ariaLabel,
+  onSubmit,
+}: {
+  placeholder: string;
+  ariaLabel: string;
+  onSubmit: (name: string, text: string) => Promise<void>;
+}) {
   const [draft, setDraft] = useState("");
   const [pending, startTransition] = useTransition();
+  const name = useGuestName();
 
   const submit = () => {
-    const n = name.trim();
+    const n = storedGuestName().trim();
     const text = draft.trim();
     if (!n || !text) return;
     setDraft("");
-    startTransition(() => createGuestQuestionAction(token, groupId, n, text));
+    startTransition(() => onSubmit(n, text));
   };
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex items-center gap-2">
+      {name && <UserAvatar name={name} image={null} size={26} />}
       <input
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        placeholder="이름 또는 소속"
-        className="h-9 w-full rounded-[9px] border border-line bg-white px-3.5 text-[12.5px] text-stone-800 sm:w-48"
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && !e.nativeEvent.isComposing) submit();
+        }}
+        placeholder={placeholder}
+        className="h-9 min-w-0 flex-1 rounded-full border border-line bg-white px-4 text-[12.5px] text-stone-800"
       />
-      <div className="flex items-center gap-2">
-        <input
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.nativeEvent.isComposing) submit();
-          }}
-          placeholder="이 모둠에게 궁금한 점을 남겨보세요"
-          className="h-9 flex-1 rounded-full border border-line bg-white px-4 text-[12.5px] text-stone-800"
-        />
+      <button
+        onClick={submit}
+        disabled={pending || !draft.trim()}
+        aria-label={ariaLabel}
+        className="flex h-9 w-9 flex-none cursor-pointer items-center justify-center rounded-full bg-accent text-[15px] text-white hover:bg-accent-strong disabled:cursor-default disabled:bg-line disabled:text-stone-400"
+      >
+        ↑
+      </button>
+    </div>
+  );
+}
+
+// 게스트 질문 작성 폼 (/guest/[token] 공개 페이지 — 저장된 이름 자동 사용)
+export function GuestQuestionForm({ token, groupId }: { token: string; groupId: string }) {
+  return (
+    <GuestComposer
+      placeholder="이 모둠에게 궁금한 점을 남겨보세요"
+      ariaLabel="질문 등록"
+      onSubmit={(n, text) => createGuestQuestionAction(token, groupId, n, text)}
+    />
+  );
+}
+
+// 게스트 답변·답글 작성 (스레드)
+export function GuestAnswerComposer({
+  token,
+  questionId,
+  parentId = null,
+  placeholder = "답글을 남겨보세요",
+}: {
+  token: string;
+  questionId: string;
+  parentId?: string | null;
+  placeholder?: string;
+}) {
+  return (
+    <GuestComposer
+      placeholder={placeholder}
+      ariaLabel="답글 등록"
+      onSubmit={(n, text) => createGuestAnswerAction(token, questionId, n, text, parentId)}
+    />
+  );
+}
+
+// 게스트 신원 게이트 — 최초 진입 시 이름·소속을 입력받아 브라우저에 저장
+export function GuestGate({ children }: { children: React.ReactNode }) {
+  const name = useGuestName();
+  const [draft, setDraft] = useState("");
+
+  if (!name) {
+    const enter = () => {
+      const n = draft.trim().slice(0, 30);
+      if (!n) return;
+      setStoredGuestName(n);
+    };
+    return (
+      <div className="mx-auto flex w-full max-w-[440px] flex-col items-center gap-5 rounded-[18px] border border-line bg-white px-7 py-10 text-center">
+        <div className="flex flex-col gap-1.5">
+          <span className="font-display text-[19px] font-bold tracking-tight text-stone-800">
+            결과보고회에 오신 것을 환영합니다
+          </span>
+          <span className="text-[12.5px] leading-relaxed text-stone-400">
+            사용하실 이름 또는 소속을 입력해 주세요.
+            <br />
+            질문과 답글에 함께 표시됩니다.
+          </span>
+        </div>
+        <div className="flex w-full items-center gap-2">
+          <input
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.nativeEvent.isComposing) enter();
+            }}
+            autoFocus
+            placeholder="예: 김철수 / 교육학과"
+            className="h-11 min-w-0 flex-1 rounded-[10px] border border-line bg-paper px-4 text-[13.5px] text-stone-800"
+          />
+          <button
+            onClick={enter}
+            disabled={!draft.trim()}
+            className="font-display h-11 flex-none cursor-pointer rounded-[10px] bg-accent px-5 text-[13.5px] text-white hover:bg-accent-strong disabled:cursor-default disabled:bg-line disabled:text-stone-400"
+          >
+            입장하기
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-[18px]">
+      <div className="flex items-center gap-2 self-end">
+        <UserAvatar name={name} image={null} size={26} />
+        <span className="text-[12.5px] font-semibold text-stone-600">{name}</span>
         <button
-          onClick={submit}
-          disabled={pending || !name.trim() || !draft.trim()}
-          aria-label="질문 등록"
-          className="flex h-9 w-9 flex-none cursor-pointer items-center justify-center rounded-full bg-accent text-[15px] text-white hover:bg-accent-strong disabled:cursor-default disabled:bg-line disabled:text-stone-400"
+          onClick={() => {
+            setDraft("");
+            setStoredGuestName(null);
+          }}
+          className="cursor-pointer text-[11px] text-stone-400 hover:text-accent"
         >
-          ↑
+          이름 변경
         </button>
       </div>
+      {children}
     </div>
   );
 }

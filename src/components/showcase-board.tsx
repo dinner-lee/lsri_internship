@@ -9,6 +9,7 @@ import {
   GuestQuestionEditButton,
   AnswerComposer,
   GuestQuestionForm,
+  GuestAnswerComposer,
 } from "@/components/showcase-client";
 
 type Viewer =
@@ -74,35 +75,50 @@ export async function ShowcaseBoard({ viewer }: { viewer: Viewer }) {
               mine ? "border-accent-border" : "border-line"
             }`}
           >
-            <div className="flex flex-col gap-1.5 px-5 py-4">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="font-display text-[15px] font-semibold text-stone-800">
+            {viewer.mode === "guest" ? (
+              /* 게스트: 모둠 주제를 크게 보여주는 가로형 배너 */
+              <div className="flex flex-col gap-2 bg-accent-soft/60 px-6 py-5">
+                <span className="font-display text-[12px] font-semibold tracking-wide text-accent">
                   연구 모둠 {g.index + 1}
                 </span>
-                {mine && (
-                  <span className="rounded-full bg-accent-soft px-2.5 py-0.5 text-[10.5px] font-semibold text-accent">
-                    내 모둠
-                  </span>
-                )}
-                {editable ? (
-                  <GroupTopicEditor
-                    groupId={g.id}
-                    topic={g.customTopic ?? topicTitleOf(g.topic.markdown)}
-                    isCustom={!!g.customTopic}
-                  />
-                ) : (
-                  <span className="text-[12px] text-stone-400">
-                    주제:{" "}
-                    <b className="font-medium text-stone-600 [overflow-wrap:anywhere]">
-                      {g.customTopic ?? topicTitleOf(g.topic.markdown)}
-                    </b>
-                  </span>
-                )}
+                <span className="font-display text-[21px] leading-snug font-bold tracking-tight [overflow-wrap:anywhere] text-stone-800">
+                  {g.customTopic ?? topicTitleOf(g.topic.markdown)}
+                </span>
+                <span className="text-[12px] text-stone-500">
+                  {g.members.map((m) => m.user.name.split("/")[0].trim()).join(" · ")}
+                </span>
               </div>
-              <span className="text-[11.5px] text-stone-400">
-                {g.members.map((m) => m.user.name.split("/")[0].trim()).join(" · ")}
-              </span>
-            </div>
+            ) : (
+              <div className="flex flex-col gap-1.5 px-5 py-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-display text-[15px] font-semibold text-stone-800">
+                    연구 모둠 {g.index + 1}
+                  </span>
+                  {mine && (
+                    <span className="rounded-full bg-accent-soft px-2.5 py-0.5 text-[10.5px] font-semibold text-accent">
+                      내 모둠
+                    </span>
+                  )}
+                  {editable ? (
+                    <GroupTopicEditor
+                      groupId={g.id}
+                      topic={g.customTopic ?? topicTitleOf(g.topic.markdown)}
+                      isCustom={!!g.customTopic}
+                    />
+                  ) : (
+                    <span className="text-[12px] text-stone-400">
+                      주제:{" "}
+                      <b className="font-medium text-stone-600 [overflow-wrap:anywhere]">
+                        {g.customTopic ?? topicTitleOf(g.topic.markdown)}
+                      </b>
+                    </span>
+                  )}
+                </div>
+                <span className="text-[11.5px] text-stone-400">
+                  {g.members.map((m) => m.user.name.split("/")[0].trim()).join(" · ")}
+                </span>
+              </div>
+            )}
 
             {/* 발표 자료 링크 */}
             <div className="flex flex-col gap-2.5 border-t border-line-soft px-5 py-4">
@@ -140,53 +156,107 @@ export async function ShowcaseBoard({ viewer }: { viewer: Viewer }) {
                 <span className="text-[12px] text-stone-400">아직 게스트 질문이 없습니다</span>
               )}
 
-              {g.guestQuestions.map((q) => (
-                <div key={q.id} className="flex flex-col gap-1.5">
-                  <span className="flex flex-wrap items-center gap-1.5 text-[11px] text-stone-400">
-                    <b className="text-[11.5px] font-semibold text-stone-600">{q.guestName}</b>
-                    <span className="rounded-full bg-line-soft px-1.5 py-px text-[9.5px] font-semibold text-stone-500">
-                      게스트
-                    </span>
-                    {formatDateTime(q.createdAt)}
-                    {isAdmin && (
-                      <>
-                        <GuestQuestionEditButton questionId={q.id} content={q.content} />
-                        <ShowcaseDeleteButton kind="question" id={q.id} />
-                      </>
-                    )}
-                  </span>
-                  <div className="text-[12.5px] leading-relaxed [overflow-wrap:anywhere] text-stone-800">
-                    {q.content}
-                  </div>
+              {g.guestQuestions.map((q) => {
+                const topAnswers = q.answers.filter((a) => a.parentId === null);
+                const repliesOf = (id: string) => q.answers.filter((a) => a.parentId === id);
+                // 스레드 답글 입력 — 게스트는 저장된 이름으로, 모둠원·관리자는 계정으로
+                const replyComposer = (parentId: string) =>
+                  viewer.mode === "guest" ? (
+                    <GuestAnswerComposer
+                      token={viewer.token}
+                      questionId={q.id}
+                      parentId={parentId}
+                    />
+                  ) : editable ? (
+                    <AnswerComposer
+                      questionId={q.id}
+                      parentId={parentId}
+                      placeholder="답글을 남겨보세요"
+                    />
+                  ) : null;
+                const canReply = viewer.mode === "guest" || editable;
 
-                  {q.answers.map((a) => (
-                    <div key={a.id} className="mt-1 flex gap-2 border-l-2 border-accent/30 pl-3">
-                      <UserAvatar name={a.user.name} image={a.user.image} size={20} />
-                      <div className="flex min-w-0 flex-col gap-0.5">
-                        <span className="flex items-baseline gap-1.5 text-[10.5px] text-stone-400">
-                          <b className="text-[11px] font-semibold text-stone-600">
-                            {a.user.name.split("/")[0].trim()}
-                          </b>
+                const answerBlock = (a: (typeof q.answers)[number], indent: boolean) => {
+                  const name = a.user ? a.user.name.split("/")[0].trim() : (a.guestName ?? "게스트");
+                  const canDelete =
+                    viewer.mode === "member" &&
+                    (a.userId ? isAdmin || a.userId === viewer.userId : isAdmin);
+                  return (
+                    <div
+                      key={a.id}
+                      className={`flex gap-2 ${indent ? "mt-1.5 border-l-2 border-line pl-3" : "mt-1 border-l-2 border-accent/30 pl-3"}`}
+                    >
+                      <UserAvatar name={name} image={a.user?.image ?? null} size={20} />
+                      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                        <span className="flex flex-wrap items-baseline gap-1.5 text-[10.5px] text-stone-400">
+                          <b className="text-[11px] font-semibold text-stone-600">{name}</b>
+                          {!a.user && (
+                            <span className="rounded-full bg-line-soft px-1.5 py-px text-[9px] font-semibold text-stone-500">
+                              게스트
+                            </span>
+                          )}
                           {formatDateTime(a.createdAt)}
-                          {viewer.mode === "member" &&
-                            (isAdmin || a.userId === viewer.userId) && (
-                              <ShowcaseDeleteButton kind="answer" id={a.id} />
-                            )}
+                          {canDelete && <ShowcaseDeleteButton kind="answer" id={a.id} />}
                         </span>
                         <div className="text-[12.5px] leading-relaxed [overflow-wrap:anywhere] text-stone-800">
                           {a.content}
                         </div>
+
+                        {!indent && repliesOf(a.id).map((r) => answerBlock(r, true))}
+
+                        {canReply && (
+                          <details className="mt-0.5">
+                            <summary className="w-fit cursor-pointer list-none text-[11px] text-stone-400 hover:text-accent">
+                              답글 달기
+                            </summary>
+                            <div className="mt-1.5">{replyComposer(a.id)}</div>
+                          </details>
+                        )}
                       </div>
                     </div>
-                  ))}
+                  );
+                };
 
-                  {editable && (
-                    <div className="mt-1">
-                      <AnswerComposer questionId={q.id} />
+                return (
+                  <div key={q.id} className="flex flex-col gap-1.5">
+                    <span className="flex flex-wrap items-center gap-1.5 text-[11px] text-stone-400">
+                      <UserAvatar name={q.guestName} image={null} size={24} />
+                      <b className="text-[11.5px] font-semibold text-stone-600">{q.guestName}</b>
+                      <span className="rounded-full bg-line-soft px-1.5 py-px text-[9.5px] font-semibold text-stone-500">
+                        게스트
+                      </span>
+                      {formatDateTime(q.createdAt)}
+                      {isAdmin && (
+                        <>
+                          <GuestQuestionEditButton questionId={q.id} content={q.content} />
+                          <ShowcaseDeleteButton kind="question" id={q.id} />
+                        </>
+                      )}
+                    </span>
+                    <div className="text-[12.5px] leading-relaxed [overflow-wrap:anywhere] text-stone-800">
+                      {q.content}
                     </div>
-                  )}
-                </div>
-              ))}
+
+                    {topAnswers.map((a) => answerBlock(a, false))}
+
+                    {viewer.mode === "guest" ? (
+                      <div className="mt-1">
+                        <GuestAnswerComposer
+                          token={viewer.token}
+                          questionId={q.id}
+                          placeholder="답글을 남겨보세요"
+                        />
+                      </div>
+                    ) : (
+                      editable && (
+                        <div className="mt-1">
+                          <AnswerComposer questionId={q.id} />
+                        </div>
+                      )
+                    )}
+                  </div>
+                );
+              })}
 
               {viewer.mode === "guest" && <GuestQuestionForm token={viewer.token} groupId={g.id} />}
             </div>
