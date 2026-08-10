@@ -362,6 +362,7 @@ model ResearchGroup {
   index   Int
   topicId String // 이 모둠의 앵커 연구 주제
   topic   Topic            @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  customTopic String? // 모둠원·관리자가 직접 설정한 연구 주제 (null이면 앵커 주제 제목 표시)
 
   members      ResearchGroupMember[]
   memo         ResearchGroupMemo?

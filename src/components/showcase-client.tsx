@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import {
+  setGroupTopicAction,
   addShowcaseLinkAction,
   deleteShowcaseLinkAction,
   createGuestQuestionAction,
@@ -12,6 +13,89 @@ import {
   issueGuestTokenAction,
   disableGuestTokenAction,
 } from "@/lib/actions/showcase";
+
+// 모둠 연구 주제 인라인 편집 (모둠원·관리자) — 비우고 저장하면 앵커 주제로 되돌아감
+export function GroupTopicEditor({
+  groupId,
+  topic,
+  isCustom,
+}: {
+  groupId: string;
+  topic: string;
+  isCustom: boolean;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(topic);
+  const [pending, startTransition] = useTransition();
+
+  if (!editing)
+    return (
+      <span className="flex min-w-0 flex-wrap items-center gap-1.5 text-[12px] text-stone-400">
+        주제: <b className="font-medium text-stone-600 [overflow-wrap:anywhere]">{topic}</b>
+        <button
+          onClick={() => {
+            setDraft(topic);
+            setEditing(true);
+          }}
+          className="cursor-pointer text-[11px] text-stone-300 hover:text-accent"
+        >
+          수정
+        </button>
+      </span>
+    );
+
+  return (
+    <span className="flex w-full items-center gap-1.5">
+      <input
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && !e.nativeEvent.isComposing) {
+            startTransition(async () => {
+              await setGroupTopicAction(groupId, draft);
+              setEditing(false);
+            });
+          }
+        }}
+        autoFocus
+        placeholder="연구 주제 입력"
+        className="h-8 min-w-0 flex-1 rounded-[8px] border border-line bg-white px-2.5 text-[12px] text-stone-800"
+      />
+      <button
+        disabled={pending}
+        onClick={() =>
+          startTransition(async () => {
+            await setGroupTopicAction(groupId, draft);
+            setEditing(false);
+          })
+        }
+        className="cursor-pointer text-[11px] font-semibold text-accent disabled:opacity-50"
+      >
+        저장
+      </button>
+      {isCustom && (
+        <button
+          disabled={pending}
+          onClick={() =>
+            startTransition(async () => {
+              await setGroupTopicAction(groupId, "");
+              setEditing(false);
+            })
+          }
+          className="cursor-pointer whitespace-nowrap text-[11px] text-stone-400 hover:text-stone-600 disabled:opacity-50"
+        >
+          원래대로
+        </button>
+      )}
+      <button
+        onClick={() => setEditing(false)}
+        className="cursor-pointer text-[11px] text-stone-400"
+      >
+        취소
+      </button>
+    </span>
+  );
+}
 
 // 발표 자료 링크 추가 폼 (모둠원·관리자)
 export function AddLinkForm({ groupId }: { groupId: string }) {

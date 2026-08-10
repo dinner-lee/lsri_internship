@@ -3,6 +3,7 @@ import { formatDateTime, topicTitleOf } from "@/lib/utils";
 import { UserAvatar } from "@/components/user-menu";
 import { LinkIcon, QnaIcon } from "@/components/icons";
 import {
+  GroupTopicEditor,
   AddLinkForm,
   ShowcaseDeleteButton,
   GuestQuestionEditButton,
@@ -83,9 +84,20 @@ export async function ShowcaseBoard({ viewer }: { viewer: Viewer }) {
                     내 모둠
                   </span>
                 )}
-                <span className="text-[12px] text-stone-400">
-                  주제: <b className="font-medium text-stone-600">{topicTitleOf(g.topic.markdown)}</b>
-                </span>
+                {editable ? (
+                  <GroupTopicEditor
+                    groupId={g.id}
+                    topic={g.customTopic ?? topicTitleOf(g.topic.markdown)}
+                    isCustom={!!g.customTopic}
+                  />
+                ) : (
+                  <span className="text-[12px] text-stone-400">
+                    주제:{" "}
+                    <b className="font-medium text-stone-600 [overflow-wrap:anywhere]">
+                      {g.customTopic ?? topicTitleOf(g.topic.markdown)}
+                    </b>
+                  </span>
+                )}
               </div>
               <span className="text-[11.5px] text-stone-400">
                 {g.members.map((m) => m.user.name.split("/")[0].trim()).join(" · ")}

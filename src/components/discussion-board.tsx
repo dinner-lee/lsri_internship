@@ -276,7 +276,7 @@ export async function ResearchDiscussionBoard({
                 {fullscreen && (
                   <MemoFullscreenButton
                     title={`연구 모둠 ${g.index + 1}`}
-                    subtitle={`주제: ${topicTitleOf(g.topic.markdown)}`}
+                    subtitle={`주제: ${g.customTopic ?? topicTitleOf(g.topic.markdown)}`}
                     endpoint={`/api/research-memo/${g.id}`}
                   />
                 )}
@@ -298,7 +298,7 @@ export async function ResearchDiscussionBoard({
               </div>
             </div>
             <div className="truncate border-b border-line-soft px-5 py-2 text-[11.5px] text-stone-500">
-              주제: <b className="text-stone-700">{topicTitleOf(g.topic.markdown)}</b>
+              주제: <b className="text-stone-700">{g.customTopic ?? topicTitleOf(g.topic.markdown)}</b>
             </div>
 
             <div className="max-h-72 min-h-32 flex-1 overflow-y-auto px-5 py-4">

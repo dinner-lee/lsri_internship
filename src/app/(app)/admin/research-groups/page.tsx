@@ -36,6 +36,7 @@ type SetWithGroups = {
   groups: {
     id: string;
     index: number;
+    customTopic: string | null;
     topic: { markdown: string; user: { name: string } };
     members: { id: string; rank: number | null; user: { name: string } }[];
   }[];
@@ -66,7 +67,7 @@ function GroupCards({ set, editable = false }: { set: SetWithGroups; editable?: 
               )}
             </span>
             <span className="text-[13px] leading-snug font-semibold text-stone-800">
-              {topicTitleOf(g.topic.markdown)}
+              {g.customTopic ?? topicTitleOf(g.topic.markdown)}
             </span>
             <span className="text-[11px] text-stone-400">
               주제 작성: {g.topic.user.name.split("/")[0].trim()}

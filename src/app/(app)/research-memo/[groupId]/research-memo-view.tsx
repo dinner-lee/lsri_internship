@@ -64,7 +64,7 @@ export async function ResearchMemoView({ groupId }: { groupId: string }) {
           )}
         </div>
         <div className="text-[12.5px] text-stone-500">
-          연구 주제: <b className="text-stone-700">{topicTitleOf(group.topic.markdown)}</b>
+          연구 주제: <b className="text-stone-700">{group.customTopic ?? topicTitleOf(group.topic.markdown)}</b>
           <span className="ml-1.5 text-[11px] text-stone-400">
             (작성: {group.topic.user.name.split("/")[0].trim()})
           </span>

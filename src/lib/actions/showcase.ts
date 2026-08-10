@@ -23,6 +23,20 @@ async function canEditGroup(userId: string, role: string, groupId: string) {
   return !!member;
 }
 
+// 모둠 연구 주제 설정 — 모둠원·관리자 (빈 값이면 앵커 주제 제목으로 되돌림)
+export async function setGroupTopicAction(groupId: string, topic: string) {
+  const user = await requireUser();
+  if (!(await canEditGroup(user.id, user.role, groupId))) return;
+  const t = topic.trim().slice(0, MAX_TITLE);
+  await prisma.researchGroup.update({
+    where: { id: groupId },
+    data: { customTopic: t || null },
+  });
+  refresh();
+  revalidatePath("/topics");
+  revalidatePath("/admin/research-groups");
+}
+
 export async function addShowcaseLinkAction(groupId: string, title: string, url: string) {
   const user = await requireUser();
   const t = title.trim().slice(0, MAX_TITLE);
