@@ -509,11 +509,6 @@ function MainScreen({
                   </div>
                 </div>
 
-                {g.questions.length === 0 && (
-                  <div className="rounded-[11px] border border-dashed border-[#d8dfe9] p-6 text-center text-[13.5px] text-[#8b96a8]">
-                    첫 질문을 남겨보세요.
-                  </div>
-                )}
                 {g.questions.length > 0 && qs.length === 0 && (
                   <div className="rounded-[11px] bg-[#f8fafd] p-[18px] text-center text-[13px] text-[#8b96a8]">
                     현재 검색·필터 조건에 맞는 질문이 없습니다.
