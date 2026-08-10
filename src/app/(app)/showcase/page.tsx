@@ -117,7 +117,7 @@ export default async function ShowcasePage() {
               <input
                 name="agendaNote"
                 defaultValue={settings?.agendaNote ?? ""}
-                placeholder="질문은 발표 중 언제든 남길 수 있으며, 발표자가 종합 질의응답 시간에 답변합니다."
+                placeholder="질문은 발표 중 언제든 남길 수 있습니다."
                 className={inputCls}
               />
             </SettingsField>

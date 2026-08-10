@@ -138,7 +138,7 @@ function LoginScreen({
       <header className="relative z-[2] flex flex-wrap items-center gap-4 px-6 py-5 sm:px-11">
         <LsBrand />
         <span className="hidden h-6 w-px bg-[#d8dfe9] sm:block" />
-        <span className="font-nexon hidden text-[16px] font-bold tracking-[-0.01em] text-[#3d4d64] sm:inline">
+        <span className="font-nexon hidden text-[18px] font-bold tracking-[-0.03em] text-[#3d4d64] sm:inline">
           2026학년도 여름 인턴십 · 결과보고회
         </span>
       </header>
@@ -249,7 +249,7 @@ function LoginScreen({
               ))}
             </div>
             {texts.agendaNote && (
-              <span className="relative text-[12px] leading-[1.65] text-[#93a9c8]">
+              <span className="font-nexon relative text-[13.5px] leading-[1.65] font-normal text-[#93a9c8]">
                 {texts.agendaNote}
               </span>
             )}
@@ -332,7 +332,7 @@ function MainScreen({
         <LsBrand small />
         <span className="hidden h-6 w-px bg-[#d8dfe9] md:block" />
         {!stuck && (
-          <span className="font-nexon hidden text-[15px] font-bold tracking-[-0.01em] text-[#3d4d64] md:inline">
+          <span className="font-nexon hidden text-[16.5px] font-bold tracking-[-0.03em] text-[#3d4d64] md:inline">
             2026학년도 여름 인턴십 · 결과보고회
           </span>
         )}

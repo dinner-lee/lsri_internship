@@ -8,7 +8,7 @@ import { AutoRefresh, RefreshOnFocus } from "@/components/refresh";
 const DEFAULT_TEXTS = {
   welcomeTitle: "2026학년도 학습과학연구소\n여름 인턴십 결과보고회에\n오신 것을 환영합니다",
   welcomeDesc: "사용하실 이름 또는 소속을 입력해 주세요.\n입력하신 이름은 남기신 질문과 답글에 함께 표시됩니다.",
-  agendaNote: "질문은 발표 중 언제든 남길 수 있으며, 발표자가 종합 질의응답 시간에 답변합니다.",
+  agendaNote: "질문은 발표 중 언제든 남길 수 있습니다.",
   boardFooter: "남겨주신 질문은 종합 질의응답 시간에 발표 순서대로 다뤄집니다.",
 };
 
