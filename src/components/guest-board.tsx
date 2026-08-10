@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore, useTransition } from "react";
 import {
   createGuestQuestionAction,
@@ -96,6 +97,37 @@ export type GuestBoardTexts = {
   agendaNote: string;
   boardFooter: string;
 };
+
+// 수동 새로고침 — 1분 자동 갱신을 기다리지 않고 최신 질문·답글을 불러옴
+function RefreshButton() {
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+  return (
+    <button
+      onClick={() => startTransition(() => router.refresh())}
+      disabled={pending}
+      aria-label="새로고침"
+      title="새로고침"
+      className="flex h-9 w-9 flex-none cursor-pointer items-center justify-center rounded-full border border-[#e4e9f0] bg-white text-[#5d6b80] hover:border-[#003E81] hover:text-[#003E81] disabled:opacity-50"
+    >
+      <svg
+        width="15"
+        height="15"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+        className={pending ? "animate-spin" : ""}
+      >
+        <path d="M21 12a9 9 0 1 1-2.64-6.36" />
+        <path d="M21 3v6h-6" />
+      </svg>
+    </button>
+  );
+}
 
 function LsBrand({ small = false }: { small?: boolean }) {
   return (
@@ -374,6 +406,7 @@ function MainScreen({
             </span>
           </div>
         )}
+        <RefreshButton />
         <div className="flex items-center gap-2 rounded-full border border-[#e4e9f0] bg-white py-[5px] pr-[7px] pl-[5px]">
           <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#eaf0f8] text-[12px] font-bold text-[#003E81]">
             {initialOf(name)}
