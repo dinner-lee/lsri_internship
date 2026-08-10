@@ -148,7 +148,7 @@ function LoginScreen({
           <div className="flex flex-col justify-center gap-7 bg-white px-7 py-10 sm:px-[54px] sm:py-[52px]">
             <div className="flex flex-col gap-4">
               {texts.eventBadge && (
-                <span className="self-start rounded-[6px] bg-[#eaf0f8] px-[15px] py-2 text-[13px] font-bold tracking-[0.02em] text-[#003E81]">
+                <span className="font-nexon self-start rounded-[6px] bg-[#eaf0f8] px-[15px] py-2 text-[13px] font-normal tracking-[0.02em] text-[#003E81]">
                   {texts.eventBadge}
                 </span>
               )}
