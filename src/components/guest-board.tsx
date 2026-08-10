@@ -138,7 +138,7 @@ function LoginScreen({
       <header className="relative z-[2] flex flex-wrap items-center gap-4 px-6 py-5 sm:px-11">
         <LsBrand />
         <span className="hidden h-6 w-px bg-[#d8dfe9] sm:block" />
-        <span className="font-nexon hidden text-[14px] font-normal tracking-[-0.01em] text-[#3d4d64] sm:inline">
+        <span className="font-nexon hidden text-[16px] font-bold tracking-[-0.01em] text-[#3d4d64] sm:inline">
           2026학년도 여름 인턴십 · 결과보고회
         </span>
       </header>
@@ -320,7 +320,7 @@ function MainScreen({
         <LsBrand small />
         <span className="hidden h-6 w-px bg-[#d8dfe9] md:block" />
         {!stuck && (
-          <span className="font-nexon hidden text-[13.5px] font-normal tracking-[-0.01em] text-[#3d4d64] md:inline">
+          <span className="font-nexon hidden text-[15px] font-bold tracking-[-0.01em] text-[#3d4d64] md:inline">
             2026학년도 여름 인턴십 · 결과보고회
           </span>
         )}
