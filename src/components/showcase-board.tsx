@@ -16,6 +16,26 @@ type Viewer =
   | { mode: "member"; userId: string; isAdmin: boolean }
   | { mode: "guest"; token: string };
 
+// 자료 링크의 서비스별 아이콘 (캔바 / 구글 슬라이드)
+const CANVA_ICON =
+  "https://ads.apple.com/adsdam/app-store/kr/ko_kr/images/success-stories/canva/lp/icon_lms/ss_canva_chicklet_LP_160px_LMS_2x.png";
+const GOOGLE_SLIDES_ICON =
+  "https://play-lh.googleusercontent.com/xqxFEBjrkpXc_RtE9sPfOEftQmPS0KhFg3IHWyaYVS243dIEbQArz1xOhPgfF_s1NCHpVNBPeb5ykWU_LqyUDw";
+
+function serviceIconOf(url: string): { src: string; alt: string } | null {
+  try {
+    const u = new URL(url);
+    const host = u.hostname;
+    if (host === "canva.com" || host.endsWith(".canva.com"))
+      return { src: CANVA_ICON, alt: "Canva" };
+    if (host === "docs.google.com" && u.pathname.startsWith("/presentation"))
+      return { src: GOOGLE_SLIDES_ICON, alt: "Google Slides" };
+  } catch {
+    // 잘못된 URL이면 아이콘 없이 표시
+  }
+  return null;
+}
+
 // 결과보고회 모둠 카드 보드 — 학습자·관리자(/showcase)와 게스트(/guest/[token]) 공용
 export async function ShowcaseBoard({ viewer }: { viewer: Viewer }) {
   const set = await prisma.researchGroupSet.findFirst({
@@ -129,19 +149,38 @@ export async function ShowcaseBoard({ viewer }: { viewer: Viewer }) {
               {g.showcaseLinks.length === 0 && (
                 <span className="text-[12px] text-stone-400">아직 등록된 발표 자료가 없습니다</span>
               )}
-              {g.showcaseLinks.map((l) => (
-                <span key={l.id} className="flex items-center gap-2">
-                  <a
-                    href={l.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[13px] font-medium text-accent hover:underline [overflow-wrap:anywhere]"
-                  >
-                    {l.title} ↗
-                  </a>
-                  {editable && <ShowcaseDeleteButton kind="link" id={l.id} />}
-                </span>
-              ))}
+              {g.showcaseLinks.map((l) => {
+                const icon = serviceIconOf(l.url);
+                return (
+                  <span key={l.id} className="flex items-center gap-2">
+                    {icon ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={icon.src}
+                        alt={icon.alt}
+                        width={18}
+                        height={18}
+                        className="flex-none rounded-[4px] object-cover"
+                        style={{ width: 18, height: 18 }}
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : (
+                      <span className="flex-none text-stone-400">
+                        <LinkIcon size={14} />
+                      </span>
+                    )}
+                    <a
+                      href={l.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[13px] font-medium text-accent hover:underline [overflow-wrap:anywhere]"
+                    >
+                      {l.title} ↗
+                    </a>
+                    {editable && <ShowcaseDeleteButton kind="link" id={l.id} />}
+                  </span>
+                );
+              })}
               {editable && <AddLinkForm groupId={g.id} />}
             </div>
 
