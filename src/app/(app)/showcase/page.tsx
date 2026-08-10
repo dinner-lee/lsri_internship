@@ -125,7 +125,7 @@ export default async function ShowcasePage() {
               <input
                 name="boardFooter"
                 defaultValue={settings?.boardFooter ?? ""}
-                placeholder="남겨주신 질문은 종합 질의응답 시간에 발표 순서대로 다뤄집니다."
+                placeholder="남겨주신 질문은 발표자 또는 모둠원이 다룰 예정입니다."
                 className={inputCls}
               />
             </SettingsField>
