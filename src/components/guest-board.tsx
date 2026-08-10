@@ -138,7 +138,7 @@ function LoginScreen({
       <header className="relative z-[2] flex flex-wrap items-center gap-4 px-6 py-5 sm:px-11">
         <LsBrand />
         <span className="hidden h-6 w-px bg-[#d8dfe9] sm:block" />
-        <span className="font-nexon hidden text-[18px] font-bold tracking-[-0.03em] text-[#3d4d64] sm:inline">
+        <span className="font-nexon hidden text-[18px] font-normal tracking-[-0.03em] text-[#3d4d64] sm:inline">
           2026학년도 여름 인턴십 · 결과보고회
         </span>
       </header>
@@ -331,7 +331,7 @@ function MainScreen({
       <header className="sticky top-0 z-20 flex flex-wrap items-center gap-3.5 border-b border-[#e4e9f0] bg-white/90 px-4 py-3 backdrop-blur-md sm:px-7">
         <LsBrand small />
         <span className="hidden h-6 w-px bg-[#d8dfe9] md:block" />
-        <span className="font-nexon hidden text-[16.5px] font-bold tracking-[-0.03em] text-[#3d4d64] md:inline">
+        <span className="font-nexon hidden text-[16.5px] font-normal tracking-[-0.03em] text-[#3d4d64] md:inline">
           2026학년도 여름 인턴십 · 결과보고회
         </span>
         <div className="flex-1" />
