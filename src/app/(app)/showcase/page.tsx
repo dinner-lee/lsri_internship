@@ -50,7 +50,7 @@ export default async function ShowcasePage() {
         <div className="text-[12.5px] text-stone-400">
           {isAdmin
             ? "모둠별 발표 자료를 확인하고, 게스트 질문을 관리합니다"
-            : "모둠별 최종 발표 자료를 등록하고, 게스트 질문에 답변합니다"}
+            : "모둠별 최종 발표 자료를 등록하고, 청중의 질문이 등록되면 답변해 주세요"}
         </div>
       </div>
 
