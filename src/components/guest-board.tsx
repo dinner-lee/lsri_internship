@@ -256,6 +256,20 @@ function LoginScreen({
           </div>
         </div>
       </div>
+
+      <footer className="relative z-[2] flex flex-col items-center gap-1 px-6 pb-8 text-center">
+        <a
+          href="https://ls.snu.ac.kr"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-nexon text-[13px] font-normal text-[#5d6b80] hover:text-[#003E81]"
+        >
+          서울대학교 학습과학연구소
+        </a>
+        <span className="text-[11.5px] leading-[1.6] text-[#8b96a8]">
+          (08826) 서울시 관악구 관악로 1 서울대학교 학습과학연구소 10-1동 401호
+        </span>
+      </footer>
     </div>
   );
 }
