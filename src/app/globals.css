@@ -43,6 +43,28 @@
   font-display: swap;
 }
 
+/* 게스트 결과보고회 화면 강조 텍스트용 (weight 300/400) */
+@font-face {
+  font-family: "NexonLv1Gothic";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_20-04@2.1/NEXON Lv1 Gothic OTF Light.woff") format("woff");
+  font-weight: 300;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "NexonLv1Gothic";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_20-04@2.1/NEXON Lv1 Gothic OTF.woff") format("woff");
+  font-weight: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "NexonLv1Gothic";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_20-04@2.1/NEXON Lv1 Gothic OTF Bold.woff") format("woff");
+  font-weight: 700;
+  font-display: swap;
+}
+
 @theme {
   --color-accent: oklch(0.45 0.13 255);
   --color-accent-strong: oklch(0.4 0.13 255);
@@ -60,6 +82,7 @@
   --font-sans: "PyeojinGothic", var(--font-noto), "Noto Sans KR", system-ui, sans-serif;
   --font-display: "SchoolSafetyNotification", "PyeojinGothic", var(--font-noto), "Noto Sans KR",
     system-ui, sans-serif;
+  --font-nexon: "NexonLv1Gothic", var(--font-noto), "Noto Sans KR", system-ui, sans-serif;
 }
 
 body {

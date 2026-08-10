@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useSyncExternalStore, useTransition } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, useTransition } from "react";
 import {
   createGuestQuestionAction,
   createGuestAnswerAction,
@@ -138,7 +138,7 @@ function LoginScreen({
       <header className="relative z-[2] flex flex-wrap items-center gap-4 px-6 py-5 sm:px-11">
         <LsBrand />
         <span className="hidden h-6 w-px bg-[#d8dfe9] sm:block" />
-        <span className="hidden text-[14px] font-semibold tracking-[-0.01em] text-[#3d4d64] sm:inline">
+        <span className="font-nexon hidden text-[14px] font-normal tracking-[-0.01em] text-[#3d4d64] sm:inline">
           2026학년도 여름 인턴십 · 결과보고회
         </span>
       </header>
@@ -152,16 +152,16 @@ function LoginScreen({
                   {texts.eventBadge}
                 </span>
               )}
-              <h1 className="m-0 text-[26px] leading-[1.42] font-extrabold tracking-[-0.035em] whitespace-pre-line text-[#12233c] sm:text-[30px]">
+              <h1 className="font-nexon m-0 text-[26px] leading-[1.42] font-normal tracking-[-0.035em] whitespace-pre-line text-[#12233c] sm:text-[30px]">
                 {texts.welcomeTitle}
               </h1>
-              <p className="m-0 text-[15px] leading-[1.75] whitespace-pre-line text-[#5d6b80] sm:text-[15.5px]">
+              <p className="font-nexon m-0 text-[15px] leading-[1.75] font-light whitespace-pre-line text-[#5d6b80] sm:text-[15.5px]">
                 {texts.welcomeDesc}
               </p>
             </div>
 
             <div className="flex flex-col gap-[11px]">
-              <label className="text-[14px] font-bold text-[#3d4d64]">이름 / 소속</label>
+              <label className="font-nexon text-[14px] font-normal text-[#3d4d64]">이름 / 소속</label>
               <div className="flex flex-wrap gap-2.5">
                 <input
                   value={draft}
@@ -175,7 +175,7 @@ function LoginScreen({
                 <button
                   onClick={enter}
                   disabled={!ok}
-                  className={`h-[58px] flex-none rounded-[10px] px-[30px] text-[14.5px] font-bold tracking-[-0.01em] whitespace-nowrap ${
+                  className={`font-nexon h-[58px] flex-none rounded-[10px] px-[30px] text-[14.5px] font-normal tracking-[-0.01em] whitespace-nowrap ${
                     ok
                       ? "cursor-pointer bg-[linear-gradient(135deg,#2a63b4,#003E81)] text-white shadow-[0_12px_24px_-10px_rgba(0,62,129,.55)] hover:brightness-115"
                       : "cursor-default bg-[#e7ebf1] text-[#9aa3b2]"
@@ -190,13 +190,13 @@ function LoginScreen({
             </div>
 
             <div className="flex flex-col gap-3 border-t border-[#edf0f5] pt-6">
-              <span className="text-[14px] font-bold text-[#3d4d64]">참여 방식</span>
+              <span className="font-nexon text-[14px] font-normal text-[#3d4d64]">참여 방식</span>
               <div className="flex gap-2.5">
                 {(["현장", "온라인"] as const).map((m) => (
                   <button
                     key={m}
                     onClick={() => modeStore.set(m)}
-                    className={`h-[52px] cursor-pointer rounded-[10px] px-7 text-[15px] font-bold whitespace-nowrap ${
+                    className={`font-nexon h-[52px] cursor-pointer rounded-[10px] px-7 text-[15px] font-normal whitespace-nowrap ${
                       mode === m
                         ? "bg-[#003E81] text-white"
                         : "bg-white text-[#5d6b80] shadow-[inset_0_0_0_1px_#e4e9f0]"
@@ -214,7 +214,7 @@ function LoginScreen({
             <div className="absolute -top-5 -right-5 h-[120px] w-[120px] rounded-full border-[1.5px] border-white/10" />
             <div className="relative flex flex-col gap-2">
               <span className="h-[3px] w-[34px] bg-[#b8934a]" />
-              <span className="text-[16px] font-bold tracking-[-0.01em] text-white">발표 순서</span>
+              <span className="font-nexon text-[16px] font-normal tracking-[-0.01em] text-white">발표 순서</span>
             </div>
             <div className="relative flex flex-col">
               {texts.agenda.map((row, i) => (
@@ -226,7 +226,7 @@ function LoginScreen({
                     {pad2(i + 1)}
                   </span>
                   <div className="flex flex-1 flex-col gap-[3px]">
-                    <span className="text-[13.5px] leading-[1.55] font-semibold tracking-[-0.01em] text-white">
+                    <span className="font-nexon text-[13.5px] leading-[1.55] font-light tracking-[-0.01em] text-white">
                       {row.label}
                     </span>
                     {row.time && (
@@ -273,6 +273,19 @@ function MainScreen({
   const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
   const [replyOpen, setReplyOpen] = useState<Record<string, boolean>>({});
 
+  // 본문 검색 바가 스크롤로 가려지면 상단 헤더에 컴팩트 검색 입력을 표시
+  const searchCardRef = useRef<HTMLDivElement | null>(null);
+  const [stuck, setStuck] = useState(false);
+  useEffect(() => {
+    const el = searchCardRef.current;
+    if (!el) return;
+    const ob = new IntersectionObserver(([e]) => setStuck(!e.isIntersecting), {
+      rootMargin: "-70px 0px 0px 0px",
+    });
+    ob.observe(el);
+    return () => ob.disconnect();
+  }, []);
+
   const term = search.trim().toLowerCase();
 
   const submitQuestion = (groupId: string) => {
@@ -306,10 +319,21 @@ function MainScreen({
       <header className="sticky top-0 z-20 flex flex-wrap items-center gap-3.5 border-b border-[#e4e9f0] bg-white/90 px-4 py-3 backdrop-blur-md sm:px-7">
         <LsBrand small />
         <span className="hidden h-6 w-px bg-[#d8dfe9] md:block" />
-        <span className="hidden text-[13.5px] font-semibold tracking-[-0.01em] text-[#3d4d64] md:inline">
-          2026학년도 여름 인턴십 · 결과보고회
-        </span>
+        {!stuck && (
+          <span className="font-nexon hidden text-[13.5px] font-normal tracking-[-0.01em] text-[#3d4d64] md:inline">
+            2026학년도 여름 인턴십 · 결과보고회
+          </span>
+        )}
         <div className="flex-1" />
+        {stuck && (
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="질문 검색"
+            aria-label="질문 내용 또는 작성자 검색"
+            className="h-9 min-w-[110px] flex-1 rounded-full border border-[#e4e9f0] bg-[#f4f6f9] px-4 text-[13px] text-[#12233c] outline-none focus:border-[#003E81] focus:bg-white sm:max-w-[300px]"
+          />
+        )}
         <div className="flex items-center gap-2 rounded-full border border-[#e4e9f0] bg-white py-[5px] pr-[7px] pl-[5px]">
           <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#eaf0f8] text-[12px] font-bold text-[#003E81]">
             {initialOf(name)}
@@ -329,16 +353,19 @@ function MainScreen({
 
       <main className="mx-auto flex w-full max-w-[920px] flex-col gap-[18px] px-4 pt-6 pb-20 sm:px-10 sm:pt-[30px]">
         <div className="flex flex-col gap-[5px]">
-          <h1 className="m-0 text-[22px] font-extrabold tracking-[-0.035em] text-[#12233c] sm:text-[24px]">
+          <h1 className="font-nexon m-0 text-[22px] font-normal tracking-[-0.035em] text-[#12233c] sm:text-[24px]">
             모둠별 발표 · 질의응답
           </h1>
-          <p className="m-0 text-[14px] text-[#5d6b80]">
+          <p className="font-nexon m-0 text-[14px] font-light text-[#5d6b80]">
             발표 자료를 살펴보고 궁금한 점을 질문으로 남겨 주세요. 질문에 공감하거나 답글을 달 수
             있습니다.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5 rounded-2xl bg-white px-3 py-2.5 shadow-[0_14px_34px_-22px_rgba(30,50,90,.28)]">
+        <div
+          ref={searchCardRef}
+          className="flex flex-wrap items-center gap-2.5 rounded-2xl bg-white px-3 py-2.5 shadow-[0_14px_34px_-22px_rgba(30,50,90,.28)]"
+        >
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -394,7 +421,7 @@ function MainScreen({
                   {g.no}
                 </span>
                 <div className="flex min-w-0 flex-1 flex-col gap-2.5">
-                  <h2 className="m-0 text-[17px] leading-[1.5] font-bold tracking-[-0.03em] [overflow-wrap:anywhere] text-[#12233c] sm:text-[19px]">
+                  <h2 className="font-nexon m-0 text-[17px] leading-[1.5] font-normal tracking-[-0.03em] [overflow-wrap:anywhere] text-[#12233c] sm:text-[19px]">
                     {g.title}
                   </h2>
                   <div className="flex flex-wrap gap-1.5">
@@ -610,7 +637,7 @@ function MainScreen({
                               <button
                                 onClick={() => submitReply(q.id)}
                                 disabled={!rd.trim()}
-                                className={`rounded-lg px-4 text-[12.5px] font-bold ${
+                                className={`font-nexon rounded-lg px-4 text-[12.5px] font-normal ${
                                   rd.trim()
                                     ? "cursor-pointer bg-[#003E81] text-white"
                                     : "cursor-default bg-[#e7ebf1] text-[#9aa3b2]"
@@ -664,7 +691,7 @@ function MainScreen({
                         <button
                           onClick={() => submitQuestion(g.id)}
                           disabled={!active}
-                          className={`rounded-[10px] px-[18px] py-[9px] text-[13px] font-bold tracking-[-0.01em] whitespace-nowrap ${
+                          className={`font-nexon rounded-[10px] px-[18px] py-[9px] text-[13px] font-normal tracking-[-0.01em] whitespace-nowrap ${
                             active
                               ? "cursor-pointer bg-[linear-gradient(135deg,#2a63b4,#003E81)] text-white shadow-[0_8px_18px_-8px_rgba(0,62,129,.5)] hover:brightness-115"
                               : "cursor-default bg-[#e7ebf1] text-[#9aa3b2]"
