@@ -13,11 +13,13 @@ import {
   UserIcon,
   CalendarCheckIcon,
   QnaIcon,
+  PresentationIcon,
 } from "@/components/icons";
 
 const LEARNER_TABS = [
   { href: "/quiz", label: "스터디" },
   { href: "/topics", label: "자율연구" },
+  { href: "/showcase", label: "결과보고회" },
 ];
 
 // 관리자: '스터디' 상위 메뉴 아래 퀴즈/결과/모둠 구성
@@ -51,6 +53,9 @@ const ADMIN_ACCOUNT_SUBMENU = [
 ];
 const ADMIN_ACCOUNT_PREFIXES = ["/admin/users", "/admin/attendance"];
 
+// 관리자: '결과보고회'는 하위 메뉴 없는 단일 탭
+const SHOWCASE_HREF = "/showcase";
+
 const tabCls = (active: boolean) =>
   `font-display rounded-lg px-2.5 py-[7px] text-[13px] whitespace-nowrap ${
     active
@@ -64,7 +69,7 @@ export function AppNav({ role, variant = "desktop" }: { role: Role; variant?: "d
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + "/");
 
   if (role !== "ADMIN") {
-    // 학습자는 탭 2개뿐이라 모바일에서도 그대로 표시
+    // 학습자는 탭이 적어 모바일에서도 그대로 표시
     if (variant === "mobile") return null;
     return (
       <nav className="flex gap-1">
@@ -141,6 +146,9 @@ export function AppNav({ role, variant = "desktop" }: { role: Role; variant?: "d
       <nav className="hidden items-center gap-1 md:flex">
         {dropdown("스터디", "/admin/quizzes", studyActive, ADMIN_STUDY_SUBMENU)}
         {dropdown("자율연구", "/topics", researchActive, ADMIN_RESEARCH_SUBMENU)}
+        <Link href={SHOWCASE_HREF} className={tabCls(isActive(SHOWCASE_HREF))}>
+          결과보고회
+        </Link>
         {dropdown("계정 관리", "/admin/users", accountActive, ADMIN_ACCOUNT_SUBMENU)}
       </nav>
     );
@@ -180,6 +188,10 @@ export function AppNav({ role, variant = "desktop" }: { role: Role; variant?: "d
                 자율연구
               </span>
               {ADMIN_RESEARCH_SUBMENU.map((t) => mobileItem(t.href, t.label, t.icon))}
+              <span className="mt-1 border-t border-line-soft px-5 pt-3 pb-1 text-[10.5px] font-semibold text-stone-400">
+                결과보고회
+              </span>
+              {mobileItem(SHOWCASE_HREF, "결과보고회", PresentationIcon)}
               <span className="mt-1 border-t border-line-soft px-5 pt-3 pb-1 text-[10.5px] font-semibold text-stone-400">
                 계정 관리
               </span>

@@ -61,6 +61,7 @@ model User {
   qnaQuestions             QnaQuestion[]
   qnaComments              QnaComment[]
   qnaLikes                 QnaLike[]
+  guestAnswers             GuestAnswer[]
 }
 
 // ── 질문 게시판 ───────────────────────────────────────
@@ -367,7 +368,51 @@ model ResearchGroup {
   memoLikes    ResearchGroupMemoLike[]
   memoComments ResearchGroupMemoComment[]
 
+  showcaseLinks  ShowcaseLink[]
+  guestQuestions GuestQuestion[]
+
   @@unique([setId, index])
+}
+
+// ── 결과보고회 ─────────────────────────────────────────
+
+// 게스트 접근 토큰 (단일 행) — 관리자가 발급한 /guest/[token] 링크로만 게스트 접근 허용
+model ShowcaseAccess {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  createdAt DateTime @default(now())
+}
+
+// 모둠별 최종 발표 자료 링크
+model ShowcaseLink {
+  id        String        @id @default(cuid())
+  groupId   String
+  group     ResearchGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  title     String
+  url       String
+  createdAt DateTime      @default(now())
+}
+
+// 게스트가 로그인 없이 남기는 질문 (/guest 공개 페이지)
+model GuestQuestion {
+  id        String        @id @default(cuid())
+  groupId   String
+  group     ResearchGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  guestName String
+  content   String
+  createdAt DateTime      @default(now())
+  answers   GuestAnswer[]
+}
+
+// 게스트 질문에 대한 학습자(모둠원)·관리자의 답변
+model GuestAnswer {
+  id         String        @id @default(cuid())
+  questionId String
+  question   GuestQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content    String
+  createdAt  DateTime      @default(now())
 }
 
 // 자율연구 모둠 공유 메모장 (diff 패치 동기화 — 스터디 메모장과 동일 방식)
