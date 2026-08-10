@@ -139,9 +139,7 @@ export default async function ShowcasePage() {
         </details>
       )}
 
-      <ShowcaseBoard
-        viewer={{ mode: "member", userId: user.id, isAdmin }}
-      />
+      <ShowcaseBoard userId={user.id} isAdmin={isAdmin} />
     </div>
   );
 }

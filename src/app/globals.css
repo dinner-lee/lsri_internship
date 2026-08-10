@@ -66,28 +66,29 @@
 }
 
 @theme {
-  --color-accent: oklch(0.45 0.13 255);
-  --color-accent-strong: oklch(0.4 0.13 255);
-  --color-accent-soft: oklch(0.95 0.02 255);
-  --color-accent-border: oklch(0.9 0.03 255);
-  --color-accent-tint: oklch(0.97 0.01 255);
+  /* 게스트 결과보고회 화면과 같은 네이비 팔레트 */
+  --color-accent: #003e81;
+  --color-accent-strong: #002a58;
+  --color-accent-soft: #eaf0f8;
+  --color-accent-border: #c9d9ec;
+  --color-accent-tint: #f8fafd;
   --color-bad: oklch(0.52 0.15 25);
   --color-bad-soft: oklch(0.96 0.02 25);
   --color-bad-border: oklch(0.85 0.06 25);
   --color-good: oklch(0.5 0.12 155);
   --color-warn: oklch(0.55 0.12 60);
-  --color-line: #e7e5e2;
-  --color-line-soft: #f0efec;
-  --color-paper: #fafaf9;
+  --color-line: #e4e9f0;
+  --color-line-soft: #edf0f5;
+  --color-paper: #f4f6f9;
   --font-sans: "PyeojinGothic", var(--font-noto), "Noto Sans KR", system-ui, sans-serif;
-  --font-display: "SchoolSafetyNotification", "PyeojinGothic", var(--font-noto), "Noto Sans KR",
-    system-ui, sans-serif;
+  --font-display: "NexonLv1Gothic", "PyeojinGothic", var(--font-noto), "Noto Sans KR", system-ui,
+    sans-serif;
   --font-nexon: "NexonLv1Gothic", var(--font-noto), "Noto Sans KR", system-ui, sans-serif;
 }
 
 body {
-  background: var(--color-paper);
-  color: #18181b;
+  background: linear-gradient(160deg, #eef1fa 0%, #f5f6fa 50%, #eef4f1 100%) fixed;
+  color: #12233c;
   font-family: var(--font-sans);
 }
 

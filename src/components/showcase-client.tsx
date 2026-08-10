@@ -1,13 +1,10 @@
 "use client";
 
-import { useState, useSyncExternalStore, useTransition } from "react";
-import { UserAvatar } from "@/components/user-menu";
+import { useState, useTransition } from "react";
 import {
   setGroupTopicAction,
   addShowcaseLinkAction,
   deleteShowcaseLinkAction,
-  createGuestQuestionAction,
-  createGuestAnswerAction,
   updateGuestQuestionAction,
   answerGuestQuestionAction,
   deleteGuestAnswerAction,
@@ -16,55 +13,45 @@ import {
   disableGuestTokenAction,
 } from "@/lib/actions/showcase";
 
-// 게스트 이름은 브라우저에 저장해 매번 입력하지 않도록 함 (같은 탭 내 변경도 즉시 반영)
-const GUEST_NAME_KEY = "showcase-guest-name";
-const guestNameListeners = new Set<() => void>();
-const storedGuestName = () =>
-  typeof window === "undefined" ? "" : (localStorage.getItem(GUEST_NAME_KEY) ?? "");
-const setStoredGuestName = (v: string | null) => {
-  if (v) localStorage.setItem(GUEST_NAME_KEY, v);
-  else localStorage.removeItem(GUEST_NAME_KEY);
-  guestNameListeners.forEach((l) => l());
-};
-const subscribeGuestName = (cb: () => void) => {
-  guestNameListeners.add(cb);
-  window.addEventListener("storage", cb);
-  return () => {
-    guestNameListeners.delete(cb);
-    window.removeEventListener("storage", cb);
-  };
-};
-const useGuestName = () => useSyncExternalStore(subscribeGuestName, storedGuestName, () => "");
-
 // 모둠 연구 주제 인라인 편집 (모둠원·관리자) — 비우고 저장하면 앵커 주제로 되돌아감
 export function GroupTopicEditor({
   groupId,
   topic,
   isCustom,
+  compact = false,
 }: {
   groupId: string;
   topic: string;
   isCustom: boolean;
+  compact?: boolean; // true면 비편집 상태에서 '주제 수정' 버튼만 표시 (제목은 바깥에서 렌더링)
 }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(topic);
   const [pending, startTransition] = useTransition();
 
-  if (!editing)
+  if (!editing) {
+    const open = () => {
+      setDraft(topic);
+      setEditing(true);
+    };
+    if (compact)
+      return (
+        <button
+          onClick={open}
+          className="cursor-pointer rounded-full px-2 py-[3px] text-[11px] font-semibold whitespace-nowrap text-[#8b96a8] hover:bg-[#eaf0f8] hover:text-[#003E81]"
+        >
+          주제 수정
+        </button>
+      );
     return (
       <span className="flex min-w-0 flex-wrap items-center gap-1.5 text-[12px] text-stone-400">
         주제: <b className="font-medium text-stone-600 [overflow-wrap:anywhere]">{topic}</b>
-        <button
-          onClick={() => {
-            setDraft(topic);
-            setEditing(true);
-          }}
-          className="cursor-pointer text-[11px] text-stone-300 hover:text-accent"
-        >
+        <button onClick={open} className="cursor-pointer text-[11px] text-stone-300 hover:text-accent">
           수정
         </button>
       </span>
     );
+  }
 
   return (
     <span className="flex w-full items-center gap-1.5">
@@ -140,7 +127,7 @@ export function AddLinkForm({ groupId }: { groupId: string }) {
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="자료 이름 (예: 발표 슬라이드)"
-        className="h-9 rounded-[9px] border border-line bg-white px-3.5 text-[12.5px] text-stone-800 sm:w-52"
+        className="h-9 rounded-[9px] border-[1.5px] border-transparent bg-[#f4f6f9] px-3.5 text-[12.5px] text-[#12233c] outline-none focus:border-[#003E81] focus:bg-white sm:w-52"
       />
       <input
         value={url}
@@ -149,12 +136,12 @@ export function AddLinkForm({ groupId }: { groupId: string }) {
           if (e.key === "Enter" && !e.nativeEvent.isComposing) submit();
         }}
         placeholder="링크 주소 (https://...)"
-        className="h-9 flex-1 rounded-[9px] border border-line bg-white px-3.5 text-[12.5px] text-stone-800"
+        className="h-9 flex-1 rounded-[9px] border-[1.5px] border-transparent bg-[#f4f6f9] px-3.5 text-[12.5px] text-[#12233c] outline-none focus:border-[#003E81] focus:bg-white"
       />
       <button
         onClick={submit}
         disabled={pending || !title.trim() || !url.trim()}
-        className="font-display h-9 rounded-[9px] bg-accent px-4 text-[12.5px] text-white hover:bg-accent-strong disabled:cursor-default disabled:bg-line disabled:text-stone-400"
+        className="h-9 rounded-[9px] bg-[#003E81] px-4 text-[12.5px] font-bold text-white hover:brightness-115 disabled:cursor-default disabled:bg-[#e7ebf1] disabled:text-[#9aa3b2]"
       >
         추가
       </button>
@@ -225,15 +212,18 @@ export function AnswerComposer({
           if (e.key === "Enter" && !e.nativeEvent.isComposing) submit();
         }}
         placeholder={placeholder}
-        className="h-9 flex-1 rounded-full border border-line bg-white px-4 text-[12.5px] text-stone-800"
+        className="h-[38px] min-w-0 flex-1 rounded-lg border-[1.5px] border-transparent bg-[#f4f6f9] px-[13px] text-[13px] text-[#12233c] outline-none focus:border-[#003E81] focus:bg-white"
       />
       <button
         onClick={submit}
         disabled={pending || !draft.trim()}
-        aria-label="답변 등록"
-        className="flex h-9 w-9 flex-none cursor-pointer items-center justify-center rounded-full bg-accent text-[15px] text-white hover:bg-accent-strong disabled:cursor-default disabled:bg-line disabled:text-stone-400"
+        className={`rounded-lg px-4 py-2 text-[12.5px] font-bold ${
+          draft.trim() && !pending
+            ? "cursor-pointer bg-[#003E81] text-white"
+            : "cursor-default bg-[#e7ebf1] text-[#9aa3b2]"
+        }`}
       >
-        ↑
+        등록
       </button>
     </div>
   );
@@ -362,151 +352,6 @@ export function GuestLinkManager({ token }: { token: string | null }) {
           </button>
         </div>
       )}
-    </div>
-  );
-}
-
-// 게스트 입력 공통 (질문·답글) — 저장된 이름을 자동 사용, 이름 아바타 표시
-function GuestComposer({
-  placeholder,
-  ariaLabel,
-  onSubmit,
-}: {
-  placeholder: string;
-  ariaLabel: string;
-  onSubmit: (name: string, text: string) => Promise<void>;
-}) {
-  const [draft, setDraft] = useState("");
-  const [pending, startTransition] = useTransition();
-  const name = useGuestName();
-
-  const submit = () => {
-    const n = storedGuestName().trim();
-    const text = draft.trim();
-    if (!n || !text) return;
-    setDraft("");
-    startTransition(() => onSubmit(n, text));
-  };
-
-  return (
-    <div className="flex items-center gap-2">
-      {name && <UserAvatar name={name} image={null} size={26} />}
-      <input
-        value={draft}
-        onChange={(e) => setDraft(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && !e.nativeEvent.isComposing) submit();
-        }}
-        placeholder={placeholder}
-        className="h-9 min-w-0 flex-1 rounded-full border border-line bg-white px-4 text-[12.5px] text-stone-800"
-      />
-      <button
-        onClick={submit}
-        disabled={pending || !draft.trim()}
-        aria-label={ariaLabel}
-        className="flex h-9 w-9 flex-none cursor-pointer items-center justify-center rounded-full bg-accent text-[15px] text-white hover:bg-accent-strong disabled:cursor-default disabled:bg-line disabled:text-stone-400"
-      >
-        ↑
-      </button>
-    </div>
-  );
-}
-
-// 게스트 질문 작성 폼 (/guest/[token] 공개 페이지 — 저장된 이름 자동 사용)
-export function GuestQuestionForm({ token, groupId }: { token: string; groupId: string }) {
-  return (
-    <GuestComposer
-      placeholder="이 모둠에게 궁금한 점을 남겨보세요"
-      ariaLabel="질문 등록"
-      onSubmit={(n, text) => createGuestQuestionAction(token, groupId, n, text)}
-    />
-  );
-}
-
-// 게스트 답변·답글 작성 (스레드)
-export function GuestAnswerComposer({
-  token,
-  questionId,
-  parentId = null,
-  placeholder = "답글을 남겨보세요",
-}: {
-  token: string;
-  questionId: string;
-  parentId?: string | null;
-  placeholder?: string;
-}) {
-  return (
-    <GuestComposer
-      placeholder={placeholder}
-      ariaLabel="답글 등록"
-      onSubmit={(n, text) => createGuestAnswerAction(token, questionId, n, text, parentId)}
-    />
-  );
-}
-
-// 게스트 신원 게이트 — 최초 진입 시 이름·소속을 입력받아 브라우저에 저장
-export function GuestGate({ children }: { children: React.ReactNode }) {
-  const name = useGuestName();
-  const [draft, setDraft] = useState("");
-
-  if (!name) {
-    const enter = () => {
-      const n = draft.trim().slice(0, 30);
-      if (!n) return;
-      setStoredGuestName(n);
-    };
-    return (
-      <div className="mx-auto flex w-full max-w-[440px] flex-col items-center gap-5 rounded-[18px] border border-line bg-white px-7 py-10 text-center">
-        <div className="flex flex-col gap-1.5">
-          <span className="font-display text-[19px] font-bold tracking-tight text-stone-800">
-            결과보고회에 오신 것을 환영합니다
-          </span>
-          <span className="text-[12.5px] leading-relaxed text-stone-400">
-            사용하실 이름 또는 소속을 입력해 주세요.
-            <br />
-            질문과 답글에 함께 표시됩니다.
-          </span>
-        </div>
-        <div className="flex w-full items-center gap-2">
-          <input
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.nativeEvent.isComposing) enter();
-            }}
-            autoFocus
-            placeholder="예: 김철수 / 교육학과"
-            className="h-11 min-w-0 flex-1 rounded-[10px] border border-line bg-paper px-4 text-[13.5px] text-stone-800"
-          />
-          <button
-            onClick={enter}
-            disabled={!draft.trim()}
-            className="font-display h-11 flex-none cursor-pointer rounded-[10px] bg-accent px-5 text-[13.5px] text-white hover:bg-accent-strong disabled:cursor-default disabled:bg-line disabled:text-stone-400"
-          >
-            입장하기
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  return <div className="flex flex-col gap-[18px]">{children}</div>;
-}
-
-// 게스트 신원 표시 (상단 navbar용) — 이름이 설정되기 전에는 아무것도 표시하지 않음
-export function GuestIdentityChip() {
-  const name = useGuestName();
-  if (!name) return null;
-  return (
-    <div className="flex items-center gap-2">
-      <UserAvatar name={name} image={null} size={26} />
-      <span className="text-[12.5px] font-semibold text-stone-600">{name}</span>
-      <button
-        onClick={() => setStoredGuestName(null)}
-        className="cursor-pointer text-[11px] whitespace-nowrap text-stone-400 hover:text-accent"
-      >
-        이름 변경
-      </button>
     </div>
   );
 }
