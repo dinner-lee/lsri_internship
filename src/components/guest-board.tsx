@@ -238,7 +238,7 @@ function LoginScreen({
                     {pad2(i + 1)}
                   </span>
                   <div className="flex flex-1 flex-col gap-[3px]">
-                    <span className="font-nexon text-[13.5px] leading-[1.55] font-light tracking-[-0.01em] text-white">
+                    <span className="font-nexon text-[13.5px] leading-[1.55] font-normal tracking-[-0.01em] text-white">
                       {row.label}
                     </span>
                     {row.time && (
