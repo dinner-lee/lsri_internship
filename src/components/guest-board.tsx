@@ -396,7 +396,7 @@ function MainScreen({
           <h1 className="font-nexon m-0 text-[22px] font-normal tracking-[-0.035em] text-[#12233c] sm:text-[24px]">
             모둠별 발표 · 질의응답
           </h1>
-          <p className="font-nexon m-0 text-[14px] font-light text-[#5d6b80]">
+          <p className="font-nexon m-0 text-[14px] font-normal text-[#5d6b80]">
             발표 자료를 살펴보고 궁금한 점을 질문으로 남겨 주세요. 질문에 공감하거나 답글을 달 수
             있습니다.
           </p>
