@@ -14,7 +14,7 @@ export async function QuestionBoard({ userId, isAdmin }: { userId: string; isAdm
     orderBy: { createdAt: "desc" },
     include: {
       user: { select: { name: true, image: true } },
-      likes: { select: { userId: true } },
+      likes: { select: { userId: true, user: { select: { name: true } } } },
       comments: {
         orderBy: { createdAt: "asc" },
         include: { user: { select: { name: true, image: true } } },
@@ -59,13 +59,19 @@ export async function QuestionBoard({ userId, isAdmin }: { userId: string; isAdm
               <div className="text-[13.5px] leading-[1.8] whitespace-pre-wrap [overflow-wrap:anywhere] text-stone-800">
                 {q.content}
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                 <QnaLikeButton
                   questionId={q.id}
                   liked={q.likes.some((l) => l.userId === userId)}
                   count={q.likes.length}
                 />
                 <span className="text-[11.5px] text-stone-400">댓글 {q.comments.length}</span>
+                {q.likes.length > 0 && (
+                  <span className="text-[11px] text-stone-400 [overflow-wrap:anywhere]">
+                    <span className="text-bad/70">♥</span>{" "}
+                    {q.likes.map((l) => l.user.name.split("/")[0].trim()).join(" · ")}
+                  </span>
+                )}
               </div>
             </div>
 
