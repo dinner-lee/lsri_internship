@@ -62,7 +62,8 @@ export async function createGuestQuestionAction(
   token: string,
   groupId: string,
   guestName: string,
-  content: string
+  content: string,
+  authorKey?: string | null
 ) {
   const name = guestName.trim().slice(0, MAX_NAME);
   const text = content.trim().slice(0, MAX_LEN);
@@ -75,7 +76,45 @@ export async function createGuestQuestionAction(
     include: { set: true },
   });
   if (!group || !group.set.confirmedAt) return;
-  await prisma.guestQuestion.create({ data: { groupId, guestName: name, content: text } });
+  await prisma.guestQuestion.create({
+    data: { groupId, guestName: name, content: text, authorKey: authorKey?.slice(0, 64) ?? null },
+  });
+  refresh();
+}
+
+// 게스트 질문 공감 토글 — voterKey는 브라우저별 무작위 키 (로그인 사용자는 자기 id)
+export async function toggleGuestQuestionLikeAction(
+  token: string,
+  questionId: string,
+  voterKey: string
+) {
+  const key = voterKey.trim().slice(0, 64);
+  if (!token || !key) return;
+  const access = await prisma.showcaseAccess.findUnique({ where: { token } });
+  if (!access) return;
+  const q = await prisma.guestQuestion.findUnique({ where: { id: questionId } });
+  if (!q) return;
+  const existing = await prisma.guestQuestionLike.findUnique({
+    where: { questionId_voterKey: { questionId, voterKey: key } },
+  });
+  if (existing) await prisma.guestQuestionLike.delete({ where: { id: existing.id } });
+  else await prisma.guestQuestionLike.create({ data: { questionId, voterKey: key } });
+  refresh();
+}
+
+// 게스트 화면 문구 설정 저장 — 관리자 전용
+export async function updateShowcaseSettingsAction(formData: FormData) {
+  await requireAdmin();
+  const field = (k: string, max: number) => String(formData.get(k) ?? "").trim().slice(0, max);
+  const data = {
+    eventBadge: field("eventBadge", 100),
+    welcomeTitle: field("welcomeTitle", 200),
+    welcomeDesc: field("welcomeDesc", 500),
+    agenda: field("agenda", 2000),
+    agendaNote: field("agendaNote", 300),
+    boardFooter: field("boardFooter", 300),
+  };
+  await prisma.showcaseSettings.upsert({ where: { id: "main" }, create: data, update: data });
   refresh();
 }
 

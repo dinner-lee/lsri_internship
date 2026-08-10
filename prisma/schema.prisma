@@ -384,6 +384,17 @@ model ShowcaseAccess {
   createdAt DateTime @default(now())
 }
 
+// 게스트 화면 문구 설정 (단일 행, id="main") — 관리자 화면에서 편집, 비우면 기본 문구 사용
+model ShowcaseSettings {
+  id           String @id @default("main")
+  eventBadge   String @default("") // 입장 화면 일시 배지 (예: 8월 21일 (금) 13:00 — 15:30)
+  welcomeTitle String @default("") // 입장 화면 제목 (줄바꿈 유지)
+  welcomeDesc  String @default("") // 입장 화면 설명
+  agenda       String @default("") // 발표 순서 — 한 줄에 하나, "시간 | 라벨" 형식 (비우면 모둠 주제로 자동 생성)
+  agendaNote   String @default("") // 발표 순서 하단 안내
+  boardFooter  String @default("") // 질문 보드 하단 안내
+}
+
 // 모둠별 최종 발표 자료 링크
 model ShowcaseLink {
   id        String        @id @default(cuid())
@@ -400,9 +411,21 @@ model GuestQuestion {
   groupId   String
   group     ResearchGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
   guestName String
+  authorKey String? // 작성 브라우저 식별용 (익명 질문에도 '내 질문' 표시)
   content   String
   createdAt DateTime      @default(now())
   answers   GuestAnswer[]
+  likes     GuestQuestionLike[]
+}
+
+// 게스트 질문 공감 — voterKey는 게스트 브라우저 키 (로그인 없이 토글)
+model GuestQuestionLike {
+  id         String        @id @default(cuid())
+  questionId String
+  question   GuestQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  voterKey   String
+
+  @@unique([questionId, voterKey])
 }
 
 // 게스트 질문 스레드의 답변·답글 — 학습자(모둠원)·관리자·게스트 모두 작성 가능

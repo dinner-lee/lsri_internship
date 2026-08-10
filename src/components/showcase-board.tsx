@@ -22,7 +22,7 @@ const CANVA_ICON =
 const GOOGLE_SLIDES_ICON =
   "https://play-lh.googleusercontent.com/xqxFEBjrkpXc_RtE9sPfOEftQmPS0KhFg3IHWyaYVS243dIEbQArz1xOhPgfF_s1NCHpVNBPeb5ykWU_LqyUDw";
 
-function serviceIconOf(url: string): { src: string; alt: string } | null {
+export function serviceIconOf(url: string): { src: string; alt: string } | null {
   try {
     const u = new URL(url);
     const host = u.hostname;
