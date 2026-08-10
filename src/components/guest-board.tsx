@@ -152,7 +152,7 @@ function LoginScreen({
                   {texts.eventBadge}
                 </span>
               )}
-              <h1 className="font-nexon m-0 text-[26px] leading-[1.42] font-normal tracking-[-0.035em] whitespace-pre-line text-[#12233c] sm:text-[30px]">
+              <h1 className="font-nexon m-0 bg-[linear-gradient(135deg,#2a63b4,#003E81)] bg-clip-text text-[26px] leading-[1.42] font-normal tracking-[-0.035em] whitespace-pre-line text-transparent sm:text-[30px]">
                 {(() => {
                   // '…결과보고회'까지는 weight 700, 그 뒤(예: '에 오신 것을 환영합니다')는 400
                   const t = texts.welcomeTitle;
@@ -167,7 +167,7 @@ function LoginScreen({
                   );
                 })()}
               </h1>
-              <p className="font-nexon m-0 text-[15px] leading-[1.75] font-light whitespace-pre-line text-[#5d6b80] sm:text-[15.5px]">
+              <p className="font-nexon m-0 text-[15px] leading-[1.75] font-normal whitespace-pre-line text-[#5d6b80] sm:text-[15.5px]">
                 {texts.welcomeDesc}
               </p>
             </div>
