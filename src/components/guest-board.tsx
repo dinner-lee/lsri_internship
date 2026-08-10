@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useSyncExternalStore, useTransition } from "react";
 import {
   createGuestQuestionAction,
@@ -98,21 +99,13 @@ export type GuestBoardTexts = {
 
 function LsBrand({ small = false }: { small?: boolean }) {
   return (
-    <div className="flex items-center gap-2.5">
-      <div
-        className={`flex items-center justify-center rounded-[7px] bg-[#003E81] font-extrabold text-white ${small ? "h-[33px] w-[33px] text-[11px]" : "h-9 w-9 text-[11px]"}`}
-      >
-        LS
-      </div>
-      <div className="flex flex-col leading-[1.25]">
-        <span className="text-[13.5px] font-bold tracking-[-0.02em] text-[#12233c]">
-          학습과학연구소
-        </span>
-        <span className="text-[9px] font-semibold tracking-[0.06em] text-[#8b96a8]">
-          LEARNING SCIENCES RESEARCH INSTITUTE
-        </span>
-      </div>
-    </div>
+    <Image
+      src="/lsri-logo.png"
+      alt="학습과학연구소 Learning Sciences Research Institute"
+      width={small ? 118 : 132}
+      height={small ? 26 : 29}
+      priority
+    />
   );
 }
 

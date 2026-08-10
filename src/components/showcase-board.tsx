@@ -51,6 +51,7 @@ export async function ShowcaseBoard({ viewer }: { viewer: Viewer }) {
           guestQuestions: {
             orderBy: { createdAt: "desc" },
             include: {
+              _count: { select: { likes: true } },
               answers: {
                 orderBy: { createdAt: "asc" },
                 include: { user: { select: { name: true, image: true } } },
@@ -265,6 +266,11 @@ export async function ShowcaseBoard({ viewer }: { viewer: Viewer }) {
                         게스트
                       </span>
                       {formatDateTime(q.createdAt)}
+                      {q._count.likes > 0 && (
+                        <span className="rounded-full bg-accent-soft px-2 py-px text-[10px] font-semibold text-accent tabular-nums">
+                          ▲ 공감 {q._count.likes}
+                        </span>
+                      )}
                       {isAdmin && (
                         <>
                           <GuestQuestionEditButton questionId={q.id} content={q.content} />
