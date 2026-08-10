@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 import { ShowcaseBoard } from "@/components/showcase-board";
 import { GuestLinkManager } from "@/components/showcase-client";
-import { RefreshOnFocus } from "@/components/refresh";
+import { AutoRefresh, RefreshOnFocus } from "@/components/refresh";
 import { LinkIcon } from "@/components/icons";
 
 export default async function ShowcasePage() {
@@ -13,6 +13,8 @@ export default async function ShowcasePage() {
   return (
     <div className="flex flex-col gap-[18px]">
       <RefreshOnFocus />
+      {/* 게스트 질문·발표 자료가 발표회 중 실시간에 가깝게 보이도록 10초마다 갱신 */}
+      <AutoRefresh intervalMs={10000} />
       <div className="flex flex-col gap-0.5">
         <div className="font-display text-[17px] font-bold tracking-tight">결과보고회</div>
         <div className="text-[12.5px] text-stone-400">
