@@ -331,20 +331,34 @@ function MainScreen({
       <header className="sticky top-0 z-20 flex flex-wrap items-center gap-3.5 border-b border-[#e4e9f0] bg-white/90 px-4 py-3 backdrop-blur-md sm:px-7">
         <LsBrand small />
         <span className="hidden h-6 w-px bg-[#d8dfe9] md:block" />
-        {!stuck && (
-          <span className="font-nexon hidden text-[16.5px] font-bold tracking-[-0.03em] text-[#3d4d64] md:inline">
-            2026학년도 여름 인턴십 · 결과보고회
-          </span>
-        )}
+        <span className="font-nexon hidden text-[16.5px] font-bold tracking-[-0.03em] text-[#3d4d64] md:inline">
+          2026학년도 여름 인턴십 · 결과보고회
+        </span>
         <div className="flex-1" />
         {stuck && (
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="질문 검색"
-            aria-label="질문 내용 또는 작성자 검색"
-            className="h-9 min-w-[110px] flex-1 rounded-full border border-[#e4e9f0] bg-[#f4f6f9] px-4 text-[13px] text-[#12233c] outline-none focus:border-[#003E81] focus:bg-white sm:max-w-[300px]"
-          />
+          <div className="relative min-w-[110px] flex-1 sm:max-w-[260px]">
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="질문 검색"
+              aria-label="질문 내용 또는 작성자 검색"
+              className="h-9 w-full rounded-full bg-[#f4f6f9] pr-9 pl-4 text-[13px] text-[#12233c] outline-none focus:bg-[#eef1f6]"
+            />
+            <span className="pointer-events-none absolute top-1/2 right-3.5 -translate-y-1/2 text-[#8b96a8]">
+              <svg width="15" height="15" viewBox="0 0 17 17" fill="none" aria-hidden>
+                <circle cx="7.2" cy="7.2" r="5.4" stroke="currentColor" strokeWidth="1.4" />
+                <line
+                  x1="11.4"
+                  y1="11.4"
+                  x2="15.4"
+                  y2="15.4"
+                  stroke="currentColor"
+                  strokeWidth="1.4"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </span>
+          </div>
         )}
         <div className="flex items-center gap-2 rounded-full border border-[#e4e9f0] bg-white py-[5px] pr-[7px] pl-[5px]">
           <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#eaf0f8] text-[12px] font-bold text-[#003E81]">
