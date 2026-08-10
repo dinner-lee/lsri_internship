@@ -443,7 +443,7 @@ function MainScreen({
             >
               {/* 모둠 헤더 */}
               <div className="flex gap-4 bg-[linear-gradient(135deg,#f2f6fc,#eef2f9_60%,#f0f5f2)] px-5 pt-6 pb-5 sm:gap-[18px] sm:px-7">
-                <span className="text-[26px] leading-[1.15] font-extrabold tracking-[-0.02em] text-[#003E81] tabular-nums sm:text-[30px]">
+                <span className="text-[26px] leading-[1.15] font-extrabold tracking-[-0.06em] text-[#003E81] tabular-nums sm:text-[30px]">
                   {g.no}
                 </span>
                 <div className="flex min-w-0 flex-1 flex-col gap-2.5">
