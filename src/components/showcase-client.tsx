@@ -490,22 +490,23 @@ export function GuestGate({ children }: { children: React.ReactNode }) {
     );
   }
 
+  return <div className="flex flex-col gap-[18px]">{children}</div>;
+}
+
+// 게스트 신원 표시 (상단 navbar용) — 이름이 설정되기 전에는 아무것도 표시하지 않음
+export function GuestIdentityChip() {
+  const name = useGuestName();
+  if (!name) return null;
   return (
-    <div className="flex flex-col gap-[18px]">
-      <div className="flex items-center gap-2 self-end">
-        <UserAvatar name={name} image={null} size={26} />
-        <span className="text-[12.5px] font-semibold text-stone-600">{name}</span>
-        <button
-          onClick={() => {
-            setDraft("");
-            setStoredGuestName(null);
-          }}
-          className="cursor-pointer text-[11px] text-stone-400 hover:text-accent"
-        >
-          이름 변경
-        </button>
-      </div>
-      {children}
+    <div className="flex items-center gap-2">
+      <UserAvatar name={name} image={null} size={26} />
+      <span className="text-[12.5px] font-semibold text-stone-600">{name}</span>
+      <button
+        onClick={() => setStoredGuestName(null)}
+        className="cursor-pointer text-[11px] whitespace-nowrap text-stone-400 hover:text-accent"
+      >
+        이름 변경
+      </button>
     </div>
   );
 }

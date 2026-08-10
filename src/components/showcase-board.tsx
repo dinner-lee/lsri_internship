@@ -101,7 +101,7 @@ export async function ShowcaseBoard({ viewer }: { viewer: Viewer }) {
                 <span className="font-display text-[12px] font-semibold tracking-wide text-accent">
                   연구 모둠 {g.index + 1}
                 </span>
-                <span className="font-display text-[21px] leading-snug font-bold tracking-tight [overflow-wrap:anywhere] text-stone-800">
+                <span className="font-display text-[21px] leading-snug font-normal tracking-tight [overflow-wrap:anywhere] text-stone-800">
                   {g.customTopic ?? topicTitleOf(g.topic.markdown)}
                 </span>
                 <span className="text-[12px] text-stone-500">
