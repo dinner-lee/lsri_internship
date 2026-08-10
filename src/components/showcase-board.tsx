@@ -32,6 +32,13 @@ export function serviceIconOf(url: string): { src: string; alt: string } | null 
 
 const initialOf = (n: string) => (n || "게").trim().charAt(0);
 
+// 작성자 배지 — 해당 모둠원이면 '발표자', 관리자면 '관리자'
+function badgeOf(userId: string | null, role: string | undefined, memberIds: Set<string>) {
+  if (userId && memberIds.has(userId)) return "발표자";
+  if (role === "ADMIN") return "관리자";
+  return null;
+}
+
 // 결과보고회 모둠 카드 보드 — 학습자·관리자용 (/showcase, 게스트 화면과 같은 디자인 언어)
 export async function ShowcaseBoard({ userId, isAdmin }: { userId: string; isAdmin: boolean }) {
   const set = await prisma.researchGroupSet.findFirst({
@@ -45,18 +52,15 @@ export async function ShowcaseBoard({ userId, isAdmin }: { userId: string; isAdm
           members: { include: { user: { select: { name: true } } } },
           showcaseLinks: { orderBy: { createdAt: "asc" } },
           guestQuestions: {
-            orderBy: { createdAt: "desc" },
+            orderBy: { createdAt: "asc" },
             include: {
+              user: { select: { name: true, image: true, role: true } },
               _count: { select: { likes: true } },
               answers: {
                 orderBy: { createdAt: "asc" },
-                include: { user: { select: { name: true } } },
+                include: { user: { select: { name: true, role: true } } },
               },
             },
-          },
-          showcaseComments: {
-            orderBy: { createdAt: "asc" },
-            include: { user: { select: { name: true, image: true } } },
           },
         },
       },
@@ -84,6 +88,7 @@ export async function ShowcaseBoard({ userId, isAdmin }: { userId: string; isAdm
         const editable = isAdmin || g.id === myGroupId;
         const mine = g.id === myGroupId && !isAdmin;
         const title = g.customTopic ?? topicTitleOf(g.topic.markdown);
+        const memberIds = new Set(g.members.map((m) => m.userId));
 
         return (
           <section
@@ -171,11 +176,11 @@ export async function ShowcaseBoard({ userId, isAdmin }: { userId: string; isAdm
               {editable && <AddLinkForm groupId={g.id} />}
             </div>
 
-            {/* 게스트 질문 */}
+            {/* 통합 질문·댓글 — 게스트 질문과 학습자·관리자 댓글을 한 곳에 표시 */}
             <div className="flex flex-col gap-[13px] px-5 pt-4 pb-[22px] sm:px-7">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-[11.5px] font-bold tracking-[0.05em] text-[#8b96a8]">
-                  게스트 질문
+                  질문·댓글
                 </span>
                 <span className="rounded-full bg-[#f4f6f9] px-[9px] py-[2px] text-[11.5px] font-bold text-[#3d4d64] tabular-nums">
                   {g.guestQuestions.length}
@@ -183,25 +188,50 @@ export async function ShowcaseBoard({ userId, isAdmin }: { userId: string; isAdm
               </div>
 
               {g.guestQuestions.length === 0 && (
-                <span className="text-[13px] text-[#8b96a8]">아직 게스트 질문이 없습니다.</span>
+                <span className="text-[13px] text-[#8b96a8]">
+                  아직 올라온 질문이나 댓글이 없습니다.
+                </span>
               )}
 
               <div className="flex flex-col gap-[9px]">
                 {g.guestQuestions.map((q) => {
-                  const answered = q.answers.some((a) => a.userId);
+                  const isGuestPost = !q.user;
+                  const authorName = q.user
+                    ? q.user.name.split("/")[0].trim()
+                    : (q.guestName ?? "게스트");
+                  const postBadge = badgeOf(q.userId, q.user?.role, memberIds);
+                  const answered =
+                    isGuestPost &&
+                    q.answers.some((a) => badgeOf(a.userId, a.user?.role, memberIds));
+                  const canDeletePost = isAdmin || (!!q.userId && q.userId === userId);
+
                   return (
                     <div
                       key={q.id}
                       className="flex gap-3 rounded-xl bg-[#fafbfc] p-[14px] shadow-[inset_0_0_0_1px_#eef1f5]"
                     >
-                      <div className="flex h-[31px] w-[31px] flex-none items-center justify-center rounded-full bg-[#f0f2f7] text-[12px] font-bold text-[#3d4d64]">
-                        {initialOf(q.guestName)}
-                      </div>
+                      {q.user ? (
+                        <UserAvatar name={q.user.name} image={q.user.image} size={31} />
+                      ) : (
+                        <div className="flex h-[31px] w-[31px] flex-none items-center justify-center rounded-full bg-[#f0f2f7] text-[12px] font-bold text-[#3d4d64]">
+                          {initialOf(authorName)}
+                        </div>
+                      )}
                       <div className="flex min-w-0 flex-1 flex-col gap-[7px]">
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="text-[13px] font-bold text-[#12233c]">
-                            {q.guestName}
+                            {authorName}
                           </span>
+                          {isGuestPost && (
+                            <span className="rounded-full bg-[#f0f2f7] px-2 py-px text-[9.5px] font-bold text-[#5d6b80]">
+                              게스트
+                            </span>
+                          )}
+                          {postBadge && (
+                            <span className="rounded-[4px] bg-[#003E81] px-[7px] py-[2px] text-[10px] font-extrabold text-white">
+                              {postBadge}
+                            </span>
+                          )}
                           <span className="text-[11.5px] text-[#8b96a8]">
                             {formatDateTime(q.createdAt)}
                           </span>
@@ -219,12 +249,10 @@ export async function ShowcaseBoard({ userId, isAdmin }: { userId: string; isAdm
                               답변 완료
                             </span>
                           )}
-                          {isAdmin && (
-                            <>
-                              <GuestQuestionEditButton questionId={q.id} content={q.content} />
-                              <ShowcaseDeleteButton kind="question" id={q.id} />
-                            </>
+                          {isAdmin && isGuestPost && (
+                            <GuestQuestionEditButton questionId={q.id} content={q.content} />
                           )}
+                          {canDeletePost && <ShowcaseDeleteButton kind="question" id={q.id} />}
                         </div>
                         <p className="m-0 text-[14px] leading-[1.7] [overflow-wrap:anywhere] text-[#2c3a4f]">
                           {q.content}
@@ -233,7 +261,7 @@ export async function ShowcaseBoard({ userId, isAdmin }: { userId: string; isAdm
                         {q.answers.length > 0 && (
                           <div className="mt-[2px] flex flex-col gap-[7px] border-l-2 border-[#e4e9f0] pl-3">
                             {q.answers.map((a) => {
-                              const presenter = !!a.userId;
+                              const replyBadge = badgeOf(a.userId, a.user?.role, memberIds);
                               const name = a.user
                                 ? a.user.name.split("/")[0].trim()
                                 : (a.guestName ?? "게스트");
@@ -243,17 +271,22 @@ export async function ShowcaseBoard({ userId, isAdmin }: { userId: string; isAdm
                               return (
                                 <div
                                   key={a.id}
-                                  className={`flex flex-col gap-[3px] rounded-[9px] px-3 py-[9px] ${presenter ? "bg-[#f0f5fb]" : "bg-[#f7f8fa]"}`}
+                                  className={`flex flex-col gap-[3px] rounded-[9px] px-3 py-[9px] ${replyBadge ? "bg-[#f0f5fb]" : "bg-[#f7f8fa]"}`}
                                 >
                                   <div className="flex flex-wrap items-center gap-[7px]">
                                     <span
-                                      className={`text-[12px] font-bold ${presenter ? "text-[#003E81]" : "text-[#12233c]"}`}
+                                      className={`text-[12px] font-bold ${replyBadge ? "text-[#003E81]" : "text-[#12233c]"}`}
                                     >
                                       {name}
                                     </span>
-                                    {presenter && (
+                                    {!a.user && (
+                                      <span className="rounded-full bg-[#f0f2f7] px-2 py-px text-[9px] font-bold text-[#5d6b80]">
+                                        게스트
+                                      </span>
+                                    )}
+                                    {replyBadge && (
                                       <span className="rounded-[4px] bg-[#003E81] px-[7px] py-[2px] text-[10px] font-extrabold text-white">
-                                        발표자
+                                        {replyBadge}
                                       </span>
                                     )}
                                     <span className="text-[11px] text-[#8b96a8]">
@@ -270,79 +303,19 @@ export async function ShowcaseBoard({ userId, isAdmin }: { userId: string; isAdm
                           </div>
                         )}
 
-                        {editable && (
-                          <div className="mt-1">
-                            <AnswerComposer questionId={q.id} />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* 동료 댓글 — 학습자·관리자 누구나 어느 모둠에나 남길 수 있음 */}
-            <div className="flex flex-col gap-[13px] border-t border-[#edf0f5] bg-[#fafbfd] px-5 pt-4 pb-[22px] sm:px-7">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-[11.5px] font-bold tracking-[0.05em] text-[#8b96a8]">
-                  동료 댓글
-                </span>
-                <span className="rounded-full bg-[#f4f6f9] px-[9px] py-[2px] text-[11.5px] font-bold text-[#3d4d64] tabular-nums">
-                  {g.showcaseComments.length}
-                </span>
-              </div>
-
-              {(() => {
-                const topComments = g.showcaseComments.filter((c) => c.parentId === null);
-                const repliesOf = (id: string) =>
-                  g.showcaseComments.filter((c) => c.parentId === id);
-
-                const commentBlock = (
-                  c: (typeof g.showcaseComments)[number],
-                  indent: boolean
-                ) => (
-                  <div
-                    key={c.id}
-                    className={`flex gap-2 ${indent ? "mt-1.5 border-l-2 border-[#e4e9f0] pl-3" : ""}`}
-                  >
-                    <UserAvatar name={c.user.name} image={c.user.image} size={indent ? 20 : 26} />
-                    <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                      <span className="flex flex-wrap items-baseline gap-1.5 text-[10.5px] text-[#8b96a8]">
-                        <b className="text-[12px] font-bold text-[#12233c]">
-                          {c.user.name.split("/")[0].trim()}
-                        </b>
-                        {formatDateTime(c.createdAt)}
-                        {(isAdmin || c.userId === userId) && (
-                          <ShowcaseDeleteButton kind="comment" id={c.id} />
-                        )}
-                      </span>
-                      <div className="text-[13px] leading-[1.65] [overflow-wrap:anywhere] text-[#3d4d64]">
-                        {c.content}
-                      </div>
-
-                      {!indent && repliesOf(c.id).map((r) => commentBlock(r, true))}
-
-                      {!indent && (
                         <details className="mt-0.5">
                           <summary className="w-fit cursor-pointer list-none text-[11px] text-[#8b96a8] hover:text-[#003E81]">
                             답글 달기
                           </summary>
                           <div className="mt-1.5">
-                            <ShowcaseCommentComposer
-                              groupId={g.id}
-                              parentId={c.id}
-                              placeholder={`${c.user.name.split("/")[0].trim()}님에게 답글`}
-                            />
+                            <AnswerComposer questionId={q.id} placeholder="답글을 남겨보세요" />
                           </div>
                         </details>
-                      )}
+                      </div>
                     </div>
-                  </div>
-                );
-
-                return topComments.map((c) => commentBlock(c, false));
-              })()}
+                  );
+                })}
+              </div>
 
               <ShowcaseCommentComposer groupId={g.id} />
             </div>

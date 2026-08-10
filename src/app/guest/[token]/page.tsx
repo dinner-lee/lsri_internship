@@ -44,10 +44,11 @@ export default async function GuestShowcasePage({
             guestQuestions: {
               orderBy: { createdAt: "asc" },
               include: {
+                user: { select: { name: true, role: true } },
                 likes: { select: { voterKey: true } },
                 answers: {
                   orderBy: { createdAt: "asc" },
-                  include: { user: { select: { name: true } } },
+                  include: { user: { select: { name: true, role: true } } },
                 },
               },
             },
@@ -58,34 +59,41 @@ export default async function GuestShowcasePage({
     prisma.showcaseSettings.findUnique({ where: { id: "main" } }),
   ]);
 
-  const groups: GuestBoardGroup[] = (set?.groups ?? []).map((g, i) => ({
-    id: g.id,
-    no: String(i + 1).padStart(2, "0"),
-    title: g.customTopic ?? topicTitleOf(g.topic.markdown),
-    members: g.members.map((m) => m.user.name.split("/")[0].trim()),
-    links: g.showcaseLinks.map((l) => ({
-      id: l.id,
-      title: l.title,
-      url: l.url,
-      icon: serviceIconOf(l.url),
-    })),
-    questions: g.guestQuestions.map((q) => ({
-      id: q.id,
-      author: q.guestName,
-      authorKey: q.authorKey,
-      text: q.content,
-      createdAt: q.createdAt.toISOString(),
-      likes: q.likes.map((l) => l.voterKey),
-      answered: q.answers.some((a) => a.userId),
-      replies: q.answers.map((a) => ({
-        id: a.id,
-        author: a.user ? a.user.name.split("/")[0].trim() : (a.guestName ?? "게스트"),
-        presenter: !!a.userId,
-        createdAt: a.createdAt.toISOString(),
-        text: a.content,
+  const groups: GuestBoardGroup[] = (set?.groups ?? []).map((g, i) => {
+    const memberIds = new Set(g.members.map((m) => m.userId));
+    // 해당 모둠원이면 '발표자', 관리자면 '관리자' 배지
+    const badgeOf = (uid: string | null, role?: string) =>
+      uid && memberIds.has(uid) ? "발표자" : role === "ADMIN" ? "관리자" : null;
+    return {
+      id: g.id,
+      no: String(i + 1).padStart(2, "0"),
+      title: g.customTopic ?? topicTitleOf(g.topic.markdown),
+      members: g.members.map((m) => m.user.name.split("/")[0].trim()),
+      links: g.showcaseLinks.map((l) => ({
+        id: l.id,
+        title: l.title,
+        url: l.url,
+        icon: serviceIconOf(l.url),
       })),
-    })),
-  }));
+      questions: g.guestQuestions.map((q) => ({
+        id: q.id,
+        author: q.user ? q.user.name.split("/")[0].trim() : (q.guestName ?? "게스트"),
+        badge: badgeOf(q.userId, q.user?.role),
+        authorKey: q.authorKey,
+        text: q.content,
+        createdAt: q.createdAt.toISOString(),
+        likes: q.likes.map((l) => l.voterKey),
+        answered: q.answers.some((a) => badgeOf(a.userId, a.user?.role)),
+        replies: q.answers.map((a) => ({
+          id: a.id,
+          author: a.user ? a.user.name.split("/")[0].trim() : (a.guestName ?? "게스트"),
+          badge: badgeOf(a.userId, a.user?.role),
+          createdAt: a.createdAt.toISOString(),
+          text: a.content,
+        })),
+      })),
+    };
+  });
 
   // 발표 순서 — 관리자가 설정한 "시간 | 라벨" 줄 목록, 비어 있으면 모둠 주제로 자동 생성
   const agendaLines = (settings?.agenda ?? "")

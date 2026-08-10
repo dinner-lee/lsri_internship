@@ -62,7 +62,7 @@ model User {
   qnaComments              QnaComment[]
   qnaLikes                 QnaLike[]
   guestAnswers             GuestAnswer[]
-  showcaseComments         ShowcaseComment[]
+  showcaseQuestions        GuestQuestion[]
 }
 
 // ── 질문 게시판 ───────────────────────────────────────
@@ -370,26 +370,12 @@ model ResearchGroup {
   memoLikes    ResearchGroupMemoLike[]
   memoComments ResearchGroupMemoComment[]
 
-  showcaseLinks    ShowcaseLink[]
-  guestQuestions   GuestQuestion[]
-  showcaseComments ShowcaseComment[]
+  showcaseLinks  ShowcaseLink[]
+  guestQuestions GuestQuestion[]
 
   @@unique([setId, index])
 }
 
-// 결과보고회 모둠(연구 주제)에 대한 학습자·관리자 댓글/답글 — 다른 모둠에도 남길 수 있음
-model ShowcaseComment {
-  id        String            @id @default(cuid())
-  groupId   String
-  group     ResearchGroup     @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  userId    String
-  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  parentId  String? // null = 댓글, 아니면 해당 댓글의 답글 (1단계 평탄화)
-  parent    ShowcaseComment?  @relation("ShowcaseCommentReply", fields: [parentId], references: [id], onDelete: Cascade)
-  replies   ShowcaseComment[] @relation("ShowcaseCommentReply")
-  content   String
-  createdAt DateTime          @default(now())
-}
 
 // ── 결과보고회 ─────────────────────────────────────────
 
@@ -421,12 +407,14 @@ model ShowcaseLink {
   createdAt DateTime      @default(now())
 }
 
-// 게스트가 로그인 없이 남기는 질문 (/guest 공개 페이지)
+// 결과보고회 통합 질문·댓글 — 게스트(로그인 없음)와 학습자·관리자(로그인) 모두 작성
 model GuestQuestion {
   id        String        @id @default(cuid())
   groupId   String
   group     ResearchGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  guestName String
+  guestName String? // 게스트 작성 시 표시 이름 (로그인 작성이면 null)
+  userId    String? // 학습자·관리자 작성 시
+  user      User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
   authorKey String? // 작성 브라우저 식별용 (익명 질문에도 '내 질문' 표시)
   content   String
   createdAt DateTime      @default(now())

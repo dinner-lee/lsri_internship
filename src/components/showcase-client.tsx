@@ -8,7 +8,6 @@ import {
   updateGuestQuestionAction,
   answerGuestQuestionAction,
   addShowcaseCommentAction,
-  deleteShowcaseCommentAction,
   deleteGuestAnswerAction,
   deleteGuestQuestionAction,
   issueGuestTokenAction,
@@ -153,16 +152,15 @@ export function AddLinkForm({ groupId }: { groupId: string }) {
 
 const DELETE_CONFIRM = {
   link: "이 발표 자료 링크를 삭제할까요?",
-  question: "이 게스트 질문을 삭제할까요?",
-  answer: "이 답변을 삭제할까요?",
-  comment: "이 댓글을 삭제할까요?",
+  question: "이 질문·댓글을 삭제할까요? 달린 답글도 함께 삭제됩니다.",
+  answer: "이 답글을 삭제할까요?",
 } as const;
 
 export function ShowcaseDeleteButton({
   kind,
   id,
 }: {
-  kind: "link" | "question" | "answer" | "comment";
+  kind: "link" | "question" | "answer";
   id: string;
 }) {
   const [pending, startTransition] = useTransition();
@@ -176,9 +174,7 @@ export function ShowcaseDeleteButton({
             ? deleteShowcaseLinkAction(id)
             : kind === "question"
               ? deleteGuestQuestionAction(id)
-              : kind === "comment"
-                ? deleteShowcaseCommentAction(id)
-                : deleteGuestAnswerAction(id)
+              : deleteGuestAnswerAction(id)
         );
       }}
       className="cursor-pointer text-[11px] text-stone-300 hover:text-bad disabled:opacity-50"
@@ -234,14 +230,12 @@ export function AnswerComposer({
   );
 }
 
-// 모둠 연구 주제에 대한 동료 댓글/답글 입력 (학습자·관리자 공용)
+// 통합 질문·댓글 작성 (학습자·관리자 공용 — 어느 모둠에나 가능)
 export function ShowcaseCommentComposer({
   groupId,
-  parentId = null,
-  placeholder = "이 모둠의 연구에 댓글을 남겨보세요",
+  placeholder = "이 모둠에게 질문이나 댓글을 남겨보세요",
 }: {
   groupId: string;
-  parentId?: string | null;
   placeholder?: string;
 }) {
   const [draft, setDraft] = useState("");
@@ -251,7 +245,7 @@ export function ShowcaseCommentComposer({
     const text = draft.trim();
     if (!text) return;
     setDraft("");
-    startTransition(() => addShowcaseCommentAction(groupId, text, parentId));
+    startTransition(() => addShowcaseCommentAction(groupId, text));
   };
 
   return (

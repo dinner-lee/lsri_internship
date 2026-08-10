@@ -67,13 +67,14 @@ function timeAgo(iso: string) {
 export type GuestBoardReply = {
   id: string;
   author: string;
-  presenter: boolean; // 학습자·관리자 계정 작성 (발표자 배지)
+  badge: string | null; // "발표자" | "관리자" | null(게스트)
   createdAt: string;
   text: string;
 };
 export type GuestBoardQuestion = {
   id: string;
   author: string;
+  badge: string | null; // 학습자·관리자 작성 시 "발표자" | "관리자"
   authorKey: string | null;
   text: string;
   createdAt: string;
@@ -608,6 +609,11 @@ function MainScreen({
                         <div className="flex min-w-0 flex-1 flex-col gap-[7px]">
                           <div className="flex flex-wrap items-center gap-2">
                             <span className="text-[13px] font-bold text-[#12233c]">{q.author}</span>
+                            {q.badge && (
+                              <span className="rounded-[4px] bg-[#003E81] px-[7px] py-[2px] text-[10px] font-extrabold text-white">
+                                {q.badge}
+                              </span>
+                            )}
                             <span className="text-[11.5px] text-[#8b96a8]" suppressHydrationWarning>
                               {timeAgo(q.createdAt)}
                             </span>
@@ -631,17 +637,17 @@ function MainScreen({
                               {q.replies.map((r) => (
                                 <div
                                   key={r.id}
-                                  className={`flex flex-col gap-[3px] rounded-[9px] px-3 py-[9px] ${r.presenter ? "bg-[#f0f5fb]" : "bg-[#f7f8fa]"}`}
+                                  className={`flex flex-col gap-[3px] rounded-[9px] px-3 py-[9px] ${r.badge ? "bg-[#f0f5fb]" : "bg-[#f7f8fa]"}`}
                                 >
                                   <div className="flex flex-wrap items-center gap-[7px]">
                                     <span
-                                      className={`text-[12px] font-bold ${r.presenter ? "text-[#003E81]" : "text-[#12233c]"}`}
+                                      className={`text-[12px] font-bold ${r.badge ? "text-[#003E81]" : "text-[#12233c]"}`}
                                     >
                                       {r.author}
                                     </span>
-                                    {r.presenter && (
+                                    {r.badge && (
                                       <span className="rounded-[4px] bg-[#003E81] px-[7px] py-[2px] text-[10px] font-extrabold text-white">
-                                        발표자
+                                        {r.badge}
                                       </span>
                                     )}
                                     <span

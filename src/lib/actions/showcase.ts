@@ -155,7 +155,7 @@ async function resolveParent(questionId: string, parentId?: string | null) {
   return { ok: true as const, parent: p.parentId ?? p.id };
 }
 
-// 게스트 질문 답변·답글 — 해당 모둠원 또는 관리자
+// 질문·댓글에 대한 답글 — 로그인한 학습자·관리자 누구나
 export async function answerGuestQuestionAction(
   questionId: string,
   content: string,
@@ -166,7 +166,6 @@ export async function answerGuestQuestionAction(
   if (!text) return;
   const q = await prisma.guestQuestion.findUnique({ where: { id: questionId } });
   if (!q) return;
-  if (!(await canEditGroup(user.id, user.role, q.groupId))) return;
   const r = await resolveParent(questionId, parentId);
   if (!r.ok) return;
   await prisma.guestAnswer.create({
@@ -209,12 +208,8 @@ export async function deleteGuestAnswerAction(answerId: string) {
   refresh();
 }
 
-// 모둠 연구 주제에 대한 동료 댓글/답글 — 로그인한 학습자·관리자 누구나, 어느 모둠에나 가능
-export async function addShowcaseCommentAction(
-  groupId: string,
-  content: string,
-  parentId?: string | null
-) {
+// 학습자·관리자의 질문·댓글 작성 — 어느 모둠에나 가능 (게스트 질문과 같은 통합 댓글창)
+export async function addShowcaseCommentAction(groupId: string, content: string) {
   const user = await requireUser();
   const text = content.trim().slice(0, MAX_LEN);
   if (!text) return;
@@ -223,31 +218,16 @@ export async function addShowcaseCommentAction(
     include: { set: true },
   });
   if (!group || !group.set.confirmedAt) return;
-  // 답글의 답글은 부모 댓글로 평탄화 (1단계 유지)
-  let parent: string | null = null;
-  if (parentId) {
-    const p = await prisma.showcaseComment.findUnique({ where: { id: parentId } });
-    if (!p || p.groupId !== groupId) return;
-    parent = p.parentId ?? p.id;
-  }
-  await prisma.showcaseComment.create({
-    data: { groupId, userId: user.id, content: text, parentId: parent },
-  });
-  revalidatePath("/showcase");
+  await prisma.guestQuestion.create({ data: { groupId, userId: user.id, content: text } });
+  refresh();
 }
 
-export async function deleteShowcaseCommentAction(commentId: string) {
-  const user = await requireUser();
-  const c = await prisma.showcaseComment.findUnique({ where: { id: commentId } });
-  if (!c || (c.userId !== user.id && user.role !== "ADMIN")) return;
-  await prisma.showcaseComment.delete({ where: { id: commentId } });
-  revalidatePath("/showcase");
-}
-
-// 게스트 질문 삭제는 관리자만 (게스트는 로그인하지 않으므로 본인 확인 불가)
+// 질문·댓글 삭제 — 로그인 작성자 본인 또는 관리자 (게스트 작성분은 관리자만)
 export async function deleteGuestQuestionAction(questionId: string) {
   const user = await requireUser();
-  if (user.role !== "ADMIN") return;
-  await prisma.guestQuestion.delete({ where: { id: questionId } }).catch(() => {});
+  const q = await prisma.guestQuestion.findUnique({ where: { id: questionId } });
+  if (!q) return;
+  if (!(user.role === "ADMIN" || (q.userId && q.userId === user.id))) return;
+  await prisma.guestQuestion.delete({ where: { id: questionId } });
   refresh();
 }
