@@ -257,7 +257,7 @@ export default async function TopicsPage({
 
       {mode === "cards" && (
         <>
-          <div className="flex flex-col gap-2.5 rounded-xl border border-line bg-white px-5 py-[18px]">
+          <div className="flex flex-col gap-2.5 rounded-[16px] bg-white px-5 py-[18px] shadow-[0_14px_34px_-22px_rgba(30,50,90,.28)]">
             <div className="flex items-center gap-1.5 font-display text-[13px] text-stone-600">
               관심 키워드 지도
               <span className="group relative inline-flex items-center">
@@ -312,7 +312,7 @@ export default async function TopicsPage({
                 <Link
                   key={t.id}
                   href={`/topics/${t.id}`}
-                  className="flex flex-col gap-2.5 rounded-xl border border-line bg-white p-5 hover:border-accent-border hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
+                  className="flex flex-col gap-2.5 rounded-[16px] bg-white p-5 shadow-[0_14px_34px_-22px_rgba(30,50,90,.28)] hover:ring-[1.5px] hover:ring-accent-border"
                 >
                   <div className="flex items-center gap-2">
                     <div className="flex h-7 w-7 items-center justify-center rounded-full bg-line text-[11px] font-semibold text-stone-600">

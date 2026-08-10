@@ -27,7 +27,7 @@ export async function QuestionBoard({ userId, isAdmin }: { userId: string; isAdm
       <NewQuestionForm />
 
       {questions.length === 0 && (
-        <div className="rounded-[14px] border border-line bg-white p-7 text-center text-sm text-stone-400">
+        <div className="rounded-[20px] bg-white p-7 text-center text-sm text-stone-400 shadow-[0_18px_44px_-26px_rgba(30,50,90,.32),0_1px_3px_rgba(30,50,90,.04)]">
           아직 올라온 질문이 없습니다
         </div>
       )}
@@ -38,7 +38,7 @@ export async function QuestionBoard({ userId, isAdmin }: { userId: string; isAdm
         const canDelete = isAdmin || q.userId === userId;
 
         return (
-          <div key={q.id} className="overflow-hidden rounded-[14px] border border-line bg-white">
+          <div key={q.id} className="overflow-hidden rounded-[16px] bg-white shadow-[0_14px_34px_-22px_rgba(30,50,90,.28)]">
             <div className="flex flex-col gap-2.5 px-5 py-4">
               <div className="flex items-center gap-2.5">
                 <UserAvatar name={q.user.name} image={q.user.image} size={30} />

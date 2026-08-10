@@ -70,7 +70,7 @@ export async function DiscussionBoard({
 
   if (confirmedSets.length === 0) {
     return (
-      <div className="rounded-[14px] border border-line bg-white p-7 text-sm text-stone-400">
+      <div className="rounded-[20px] bg-white p-7 text-sm text-stone-400 shadow-[0_18px_44px_-26px_rgba(30,50,90,.32),0_1px_3px_rgba(30,50,90,.04)]">
         아직 확정된 모둠이 없습니다.
       </div>
     );
@@ -112,8 +112,8 @@ export async function DiscussionBoard({
           return (
             <div
               key={g.id}
-              className={`flex flex-col overflow-hidden rounded-xl border bg-white ${
-                isMine ? "border-accent-border" : "border-line"
+              className={`flex flex-col overflow-hidden rounded-[16px] bg-white shadow-[0_14px_34px_-22px_rgba(30,50,90,.28)] ${
+                isMine ? "ring-[1.5px] ring-accent-border" : ""
               }`}
             >
               <div className="flex items-center justify-between border-b border-line-soft px-5 py-3">
@@ -147,7 +147,7 @@ export async function DiscussionBoard({
                   {isMine ? (
                     <Link
                       href={`/group-memo/${g.id}`}
-                      className="font-display rounded-[8px] bg-accent px-3.5 py-1.5 text-[12px] whitespace-nowrap text-white hover:bg-accent-strong"
+                      className="font-display rounded-[8px] bg-[linear-gradient(135deg,#2a63b4,#003E81)] px-3.5 py-1.5 text-[12px] whitespace-nowrap text-white hover:brightness-115"
                     >
                       모둠 메모장
                     </Link>
@@ -229,7 +229,7 @@ export async function ResearchDiscussionBoard({
 
   if (!set) {
     return (
-      <div className="rounded-[14px] border border-line bg-white p-7 text-sm text-stone-400">
+      <div className="rounded-[20px] bg-white p-7 text-sm text-stone-400 shadow-[0_18px_44px_-26px_rgba(30,50,90,.32),0_1px_3px_rgba(30,50,90,.04)]">
         아직 확정된 자율연구 모둠이 없습니다.
       </div>
     );
@@ -248,8 +248,8 @@ export async function ResearchDiscussionBoard({
         return (
           <div
             key={g.id}
-            className={`flex flex-col overflow-hidden rounded-xl border bg-white ${
-              isMine ? "border-accent-border" : "border-line"
+            className={`flex flex-col overflow-hidden rounded-[16px] bg-white shadow-[0_14px_34px_-22px_rgba(30,50,90,.28)] ${
+              isMine ? "ring-[1.5px] ring-accent-border" : ""
             }`}
           >
             <div className="flex items-center justify-between border-b border-line-soft px-5 py-3">
@@ -283,7 +283,7 @@ export async function ResearchDiscussionBoard({
                 {isMine ? (
                   <Link
                     href={`/research-memo/${g.id}`}
-                    className="font-display rounded-[8px] bg-accent px-3.5 py-1.5 text-[12px] whitespace-nowrap text-white hover:bg-accent-strong"
+                    className="font-display rounded-[8px] bg-[linear-gradient(135deg,#2a63b4,#003E81)] px-3.5 py-1.5 text-[12px] whitespace-nowrap text-white hover:brightness-115"
                   >
                     모둠 메모장
                   </Link>

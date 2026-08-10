@@ -90,7 +90,7 @@ export default async function QuizHomePage({
           이번 주 퀴즈
         </div>
         {current ? (
-          <div className="flex flex-col gap-4 rounded-[14px] border border-line bg-white px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-5 sm:px-7 sm:py-3.5">
+          <div className="flex flex-col gap-4 rounded-[20px] bg-white px-5 py-4 shadow-[0_18px_44px_-26px_rgba(30,50,90,.32),0_1px_3px_rgba(30,50,90,.04)] sm:flex-row sm:items-center sm:justify-between sm:gap-5 sm:px-7 sm:py-3.5">
             <div className="flex flex-col gap-1.5">
               <span className="text-[11.5px] text-stone-400">
                 {[
@@ -117,13 +117,13 @@ export default async function QuizHomePage({
             </div>
             <Link
               href={currentSub ? `/quiz/${current.id}/result` : `/quiz/${current.id}/take`}
-              className="font-display w-full rounded-[10px] bg-accent py-3 text-center text-[14.5px] whitespace-nowrap text-white hover:bg-accent-strong sm:w-[132px]"
+              className="font-display w-full rounded-[10px] bg-[linear-gradient(135deg,#2a63b4,#003E81)] py-3 text-center text-[14.5px] whitespace-nowrap text-white shadow-[0_8px_18px_-8px_rgba(0,62,129,.5)] hover:brightness-115 sm:w-[132px]"
             >
               {currentSub ? "결과 보기" : "퀴즈 시작"}
             </Link>
           </div>
         ) : (
-          <div className="rounded-[14px] border border-line bg-white p-7 text-sm text-stone-400">
+          <div className="rounded-[20px] bg-white p-7 text-sm text-stone-400 shadow-[0_18px_44px_-26px_rgba(30,50,90,.32),0_1px_3px_rgba(30,50,90,.04)]">
             아직 발행된 퀴즈가 없습니다.
           </div>
         )}
@@ -134,7 +134,7 @@ export default async function QuizHomePage({
           <HistoryIcon />
           지난 퀴즈 기록
         </div>
-        <div className="flex flex-col overflow-hidden rounded-xl border border-line bg-white">
+        <div className="flex flex-col overflow-hidden rounded-[16px] bg-white shadow-[0_14px_34px_-22px_rgba(30,50,90,.28)]">
           {records.length === 0 && (
             <div className="px-5 py-4 text-[13px] text-stone-400">아직 기록이 없습니다.</div>
           )}
@@ -156,7 +156,7 @@ export default async function QuizHomePage({
   const groupContent = confirmedSet ? (
     <DiscussionBoard weekParam={week} basePath="/quiz?tab=group" userId={user.id} />
   ) : (
-    <div className="rounded-[14px] border border-line bg-white p-7 text-sm text-stone-400">
+    <div className="rounded-[20px] bg-white p-7 text-sm text-stone-400 shadow-[0_18px_44px_-26px_rgba(30,50,90,.32),0_1px_3px_rgba(30,50,90,.04)]">
       아직 확정된 모둠이 없습니다.
     </div>
   );

@@ -22,7 +22,7 @@ export function NewQuestionForm() {
   };
 
   return (
-    <div className="flex flex-col gap-2.5 rounded-[14px] border border-line bg-white px-5 py-4">
+    <div className="flex flex-col gap-2.5 rounded-[20px] bg-white px-5 py-4 shadow-[0_18px_44px_-26px_rgba(30,50,90,.32),0_1px_3px_rgba(30,50,90,.04)]">
       <textarea
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
@@ -33,7 +33,7 @@ export function NewQuestionForm() {
       <button
         onClick={submit}
         disabled={pending || !draft.trim()}
-        className="font-display self-end rounded-[9px] bg-accent px-5 py-2 text-[13px] text-white hover:bg-accent-strong disabled:cursor-default disabled:bg-line disabled:text-stone-400"
+        className="font-display self-end rounded-[9px] bg-[linear-gradient(135deg,#2a63b4,#003E81)] px-5 py-2 text-[13px] text-white shadow-[0_8px_18px_-8px_rgba(0,62,129,.5)] hover:brightness-115 disabled:cursor-default disabled:bg-line disabled:text-stone-400"
       >
         질문 올리기
       </button>
