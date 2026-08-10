@@ -62,6 +62,7 @@ model User {
   qnaComments              QnaComment[]
   qnaLikes                 QnaLike[]
   guestAnswers             GuestAnswer[]
+  showcaseComments         ShowcaseComment[]
 }
 
 // ── 질문 게시판 ───────────────────────────────────────
@@ -369,10 +370,25 @@ model ResearchGroup {
   memoLikes    ResearchGroupMemoLike[]
   memoComments ResearchGroupMemoComment[]
 
-  showcaseLinks  ShowcaseLink[]
-  guestQuestions GuestQuestion[]
+  showcaseLinks    ShowcaseLink[]
+  guestQuestions   GuestQuestion[]
+  showcaseComments ShowcaseComment[]
 
   @@unique([setId, index])
+}
+
+// 결과보고회 모둠(연구 주제)에 대한 학습자·관리자 댓글/답글 — 다른 모둠에도 남길 수 있음
+model ShowcaseComment {
+  id        String            @id @default(cuid())
+  groupId   String
+  group     ResearchGroup     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parentId  String? // null = 댓글, 아니면 해당 댓글의 답글 (1단계 평탄화)
+  parent    ShowcaseComment?  @relation("ShowcaseCommentReply", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   ShowcaseComment[] @relation("ShowcaseCommentReply")
+  content   String
+  createdAt DateTime          @default(now())
 }
 
 // ── 결과보고회 ─────────────────────────────────────────

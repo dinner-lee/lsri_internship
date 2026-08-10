@@ -209,6 +209,41 @@ export async function deleteGuestAnswerAction(answerId: string) {
   refresh();
 }
 
+// 모둠 연구 주제에 대한 동료 댓글/답글 — 로그인한 학습자·관리자 누구나, 어느 모둠에나 가능
+export async function addShowcaseCommentAction(
+  groupId: string,
+  content: string,
+  parentId?: string | null
+) {
+  const user = await requireUser();
+  const text = content.trim().slice(0, MAX_LEN);
+  if (!text) return;
+  const group = await prisma.researchGroup.findUnique({
+    where: { id: groupId },
+    include: { set: true },
+  });
+  if (!group || !group.set.confirmedAt) return;
+  // 답글의 답글은 부모 댓글로 평탄화 (1단계 유지)
+  let parent: string | null = null;
+  if (parentId) {
+    const p = await prisma.showcaseComment.findUnique({ where: { id: parentId } });
+    if (!p || p.groupId !== groupId) return;
+    parent = p.parentId ?? p.id;
+  }
+  await prisma.showcaseComment.create({
+    data: { groupId, userId: user.id, content: text, parentId: parent },
+  });
+  revalidatePath("/showcase");
+}
+
+export async function deleteShowcaseCommentAction(commentId: string) {
+  const user = await requireUser();
+  const c = await prisma.showcaseComment.findUnique({ where: { id: commentId } });
+  if (!c || (c.userId !== user.id && user.role !== "ADMIN")) return;
+  await prisma.showcaseComment.delete({ where: { id: commentId } });
+  revalidatePath("/showcase");
+}
+
 // 게스트 질문 삭제는 관리자만 (게스트는 로그인하지 않으므로 본인 확인 불가)
 export async function deleteGuestQuestionAction(questionId: string) {
   const user = await requireUser();

@@ -1,11 +1,13 @@
 import { prisma } from "@/lib/prisma";
 import { formatDateTime, topicTitleOf } from "@/lib/utils";
+import { UserAvatar } from "@/components/user-menu";
 import {
   GroupTopicEditor,
   AddLinkForm,
   ShowcaseDeleteButton,
   GuestQuestionEditButton,
   AnswerComposer,
+  ShowcaseCommentComposer,
 } from "@/components/showcase-client";
 
 // 자료 링크의 서비스별 아이콘 (캔바 / 구글 슬라이드)
@@ -51,6 +53,10 @@ export async function ShowcaseBoard({ userId, isAdmin }: { userId: string; isAdm
                 include: { user: { select: { name: true } } },
               },
             },
+          },
+          showcaseComments: {
+            orderBy: { createdAt: "asc" },
+            include: { user: { select: { name: true, image: true } } },
           },
         },
       },
@@ -274,6 +280,71 @@ export async function ShowcaseBoard({ userId, isAdmin }: { userId: string; isAdm
                   );
                 })}
               </div>
+            </div>
+
+            {/* 동료 댓글 — 학습자·관리자 누구나 어느 모둠에나 남길 수 있음 */}
+            <div className="flex flex-col gap-[13px] border-t border-[#edf0f5] bg-[#fafbfd] px-5 pt-4 pb-[22px] sm:px-7">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-[11.5px] font-bold tracking-[0.05em] text-[#8b96a8]">
+                  동료 댓글
+                </span>
+                <span className="rounded-full bg-[#f4f6f9] px-[9px] py-[2px] text-[11.5px] font-bold text-[#3d4d64] tabular-nums">
+                  {g.showcaseComments.length}
+                </span>
+              </div>
+
+              {(() => {
+                const topComments = g.showcaseComments.filter((c) => c.parentId === null);
+                const repliesOf = (id: string) =>
+                  g.showcaseComments.filter((c) => c.parentId === id);
+
+                const commentBlock = (
+                  c: (typeof g.showcaseComments)[number],
+                  indent: boolean
+                ) => (
+                  <div
+                    key={c.id}
+                    className={`flex gap-2 ${indent ? "mt-1.5 border-l-2 border-[#e4e9f0] pl-3" : ""}`}
+                  >
+                    <UserAvatar name={c.user.name} image={c.user.image} size={indent ? 20 : 26} />
+                    <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                      <span className="flex flex-wrap items-baseline gap-1.5 text-[10.5px] text-[#8b96a8]">
+                        <b className="text-[12px] font-bold text-[#12233c]">
+                          {c.user.name.split("/")[0].trim()}
+                        </b>
+                        {formatDateTime(c.createdAt)}
+                        {(isAdmin || c.userId === userId) && (
+                          <ShowcaseDeleteButton kind="comment" id={c.id} />
+                        )}
+                      </span>
+                      <div className="text-[13px] leading-[1.65] [overflow-wrap:anywhere] text-[#3d4d64]">
+                        {c.content}
+                      </div>
+
+                      {!indent && repliesOf(c.id).map((r) => commentBlock(r, true))}
+
+                      {!indent && (
+                        <details className="mt-0.5">
+                          <summary className="w-fit cursor-pointer list-none text-[11px] text-[#8b96a8] hover:text-[#003E81]">
+                            답글 달기
+                          </summary>
+                          <div className="mt-1.5">
+                            <ShowcaseCommentComposer
+                              groupId={g.id}
+                              parentId={c.id}
+                              placeholder={`${c.user.name.split("/")[0].trim()}님에게 답글`}
+                            />
+                          </div>
+                        </details>
+                      )}
+                    </div>
+                  </div>
+                );
+
+                return topComments.map((c) => commentBlock(c, false));
+              })()}
+
+              <ShowcaseCommentComposer groupId={g.id} />
             </div>
           </section>
         );

@@ -7,6 +7,8 @@ import {
   deleteShowcaseLinkAction,
   updateGuestQuestionAction,
   answerGuestQuestionAction,
+  addShowcaseCommentAction,
+  deleteShowcaseCommentAction,
   deleteGuestAnswerAction,
   deleteGuestQuestionAction,
   issueGuestTokenAction,
@@ -153,13 +155,14 @@ const DELETE_CONFIRM = {
   link: "이 발표 자료 링크를 삭제할까요?",
   question: "이 게스트 질문을 삭제할까요?",
   answer: "이 답변을 삭제할까요?",
+  comment: "이 댓글을 삭제할까요?",
 } as const;
 
 export function ShowcaseDeleteButton({
   kind,
   id,
 }: {
-  kind: "link" | "question" | "answer";
+  kind: "link" | "question" | "answer" | "comment";
   id: string;
 }) {
   const [pending, startTransition] = useTransition();
@@ -173,7 +176,9 @@ export function ShowcaseDeleteButton({
             ? deleteShowcaseLinkAction(id)
             : kind === "question"
               ? deleteGuestQuestionAction(id)
-              : deleteGuestAnswerAction(id)
+              : kind === "comment"
+                ? deleteShowcaseCommentAction(id)
+                : deleteGuestAnswerAction(id)
         );
       }}
       className="cursor-pointer text-[11px] text-stone-300 hover:text-bad disabled:opacity-50"
@@ -201,6 +206,52 @@ export function AnswerComposer({
     if (!text) return;
     setDraft("");
     startTransition(() => answerGuestQuestionAction(questionId, text, parentId));
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      <input
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && !e.nativeEvent.isComposing) submit();
+        }}
+        placeholder={placeholder}
+        className="h-[38px] min-w-0 flex-1 rounded-lg border-[1.5px] border-transparent bg-[#f4f6f9] px-[13px] text-[13px] text-[#12233c] outline-none focus:border-[#003E81] focus:bg-white"
+      />
+      <button
+        onClick={submit}
+        disabled={pending || !draft.trim()}
+        className={`rounded-lg px-4 py-2 text-[12.5px] font-bold ${
+          draft.trim() && !pending
+            ? "cursor-pointer bg-[#003E81] text-white"
+            : "cursor-default bg-[#e7ebf1] text-[#9aa3b2]"
+        }`}
+      >
+        등록
+      </button>
+    </div>
+  );
+}
+
+// 모둠 연구 주제에 대한 동료 댓글/답글 입력 (학습자·관리자 공용)
+export function ShowcaseCommentComposer({
+  groupId,
+  parentId = null,
+  placeholder = "이 모둠의 연구에 댓글을 남겨보세요",
+}: {
+  groupId: string;
+  parentId?: string | null;
+  placeholder?: string;
+}) {
+  const [draft, setDraft] = useState("");
+  const [pending, startTransition] = useTransition();
+
+  const submit = () => {
+    const text = draft.trim();
+    if (!text) return;
+    setDraft("");
+    startTransition(() => addShowcaseCommentAction(groupId, text, parentId));
   };
 
   return (
