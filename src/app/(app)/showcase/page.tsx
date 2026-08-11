@@ -55,7 +55,7 @@ export default async function ShowcasePage() {
       </div>
 
       {isAdmin && (
-        <div className="flex flex-col gap-2 rounded-[14px] border border-line bg-white px-5 py-4">
+        <div className="flex flex-col gap-2 rounded-[20px] bg-white shadow-[0_18px_44px_-26px_rgba(30,50,90,.32),0_1px_3px_rgba(30,50,90,.04)] px-5 py-4">
           <span className="flex items-center gap-1.5 text-[12.5px] font-semibold text-stone-600">
             <LinkIcon size={13} />
             게스트 링크
@@ -68,7 +68,7 @@ export default async function ShowcasePage() {
       )}
 
       {isAdmin && (
-        <details className="overflow-hidden rounded-[14px] border border-line bg-white">
+        <details className="overflow-hidden rounded-[20px] bg-white shadow-[0_18px_44px_-26px_rgba(30,50,90,.32),0_1px_3px_rgba(30,50,90,.04)]">
           <summary className="flex cursor-pointer list-none items-center gap-1.5 px-5 py-4 text-[12.5px] font-semibold text-stone-600 hover:bg-paper/60">
             <PencilIcon size={13} />
             게스트 화면 문구 설정
@@ -131,7 +131,7 @@ export default async function ShowcasePage() {
             </SettingsField>
             <button
               type="submit"
-              className="font-display self-end rounded-[9px] bg-accent px-5 py-2 text-[13px] text-white hover:bg-accent-strong"
+              className="font-display self-end rounded-[9px] bg-[linear-gradient(135deg,#2a63b4,#003E81)] px-5 py-2 text-[13px] text-white hover:brightness-115"
             >
               저장
             </button>

@@ -90,7 +90,7 @@ export function QuizEditor({
               className={`cursor-pointer rounded-[9px] px-4 py-2.5 text-[13px] font-semibold whitespace-nowrap disabled:opacity-60 ${
                 open
                   ? "border border-line bg-white text-stone-500 hover:border-stone-300"
-                  : "bg-accent text-white hover:bg-accent-strong"
+                  : "bg-accent text-white hover:brightness-115"
               }`}
             >
               {open ? "비공개로 전환" : "학습자에게 공개"}
@@ -110,14 +110,14 @@ export function QuizEditor({
             name="publish"
             value="1"
             disabled={pending}
-            className="font-display cursor-pointer rounded-[9px] bg-accent px-5 py-2.5 text-[13.5px] text-white hover:bg-accent-strong disabled:opacity-60"
+            className="font-display cursor-pointer rounded-[9px] bg-[linear-gradient(135deg,#2a63b4,#003E81)] px-5 py-2.5 text-[13.5px] text-white hover:brightness-115 disabled:opacity-60"
           >
             {published ? "저장 후 재발행" : "발행"}
           </button>
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-2.5 rounded-xl border border-line bg-white px-5 py-3.5">
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-2.5 rounded-[16px] bg-white shadow-[0_14px_34px_-22px_rgba(30,50,90,.28)] px-5 py-3.5">
         <label className="flex items-center gap-2 text-[12.5px] font-semibold text-stone-600">
           주차
           <input
@@ -183,7 +183,7 @@ export function QuizEditor({
         </div>
 
         <div className="flex flex-col gap-3">
-          <div className="flex flex-col gap-1 rounded-xl border border-line bg-white px-[22px] py-5">
+          <div className="flex flex-col gap-1 rounded-[16px] bg-white shadow-[0_14px_34px_-22px_rgba(30,50,90,.28)] px-[22px] py-5">
             <span className="text-[11px] font-semibold text-accent">
               미리보기 · {parsed.questions.length}문항 · {formatTimeLimit(parsed.timeLimitSec)}
             </span>
@@ -196,7 +196,7 @@ export function QuizEditor({
           {parsed.questions.map((q, qi) => (
             <div
               key={qi}
-              className="flex flex-col gap-3 rounded-xl border border-line bg-white px-[22px] py-5"
+              className="flex flex-col gap-3 rounded-[16px] bg-white shadow-[0_14px_34px_-22px_rgba(30,50,90,.28)] px-[22px] py-5"
             >
               <div className="flex items-start gap-2.5">
                 <span className="flex-none rounded-md bg-accent-soft px-2 py-[3px] text-[11px] font-bold text-accent">

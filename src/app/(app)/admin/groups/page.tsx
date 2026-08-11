@@ -19,7 +19,7 @@ export default async function AdminGroupsPage({
   });
   if (quizzes.length === 0) {
     return (
-      <div className="rounded-[14px] border border-line bg-white p-7 text-sm text-stone-400">
+      <div className="rounded-[20px] bg-white shadow-[0_18px_44px_-26px_rgba(30,50,90,.32),0_1px_3px_rgba(30,50,90,.04)] p-7 text-sm text-stone-400">
         아직 만든 퀴즈가 없습니다.{" "}
         <Link href="/admin/quizzes/new" className="text-accent underline">
           첫 퀴즈 만들기
@@ -109,7 +109,7 @@ export default async function AdminGroupsPage({
             {groupCards.map(({ g, avg, overlap }) => (
               <div
                 key={g.id}
-                className="flex flex-col gap-3 rounded-xl border border-line bg-white px-5 py-[18px]"
+                className="flex flex-col gap-3 rounded-[16px] bg-white shadow-[0_14px_34px_-22px_rgba(30,50,90,.28)] px-5 py-[18px]"
               >
                 <div className="flex items-center justify-between">
                   <span className="font-display text-[13.5px] font-bold">모둠 {g.index + 1}</span>
@@ -173,7 +173,7 @@ export default async function AdminGroupsPage({
             {confirmedHistory.map((h, hi) => (
               <details
                 key={h.id}
-                className="group rounded-xl border border-line bg-white open:pb-4"
+                className="group rounded-[16px] bg-white shadow-[0_14px_34px_-22px_rgba(30,50,90,.28)] open:pb-4"
               >
                 <summary className="flex cursor-pointer list-none items-center justify-between px-5 py-3.5 [&::-webkit-details-marker]:hidden">
                   <div className="flex items-center gap-3">

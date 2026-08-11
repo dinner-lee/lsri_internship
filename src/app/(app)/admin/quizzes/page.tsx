@@ -27,7 +27,7 @@ export default async function AdminQuizzesPage() {
         </div>
         <Link
           href="/admin/quizzes/new"
-          className="font-display rounded-[9px] bg-accent px-5 py-2.5 text-[13.5px] text-white hover:bg-accent-strong"
+          className="font-display rounded-[9px] bg-[linear-gradient(135deg,#2a63b4,#003E81)] px-5 py-2.5 text-[13.5px] text-white hover:brightness-115"
         >
           + 새 퀴즈
         </Link>
@@ -56,7 +56,7 @@ export default async function AdminQuizzesPage() {
         </Link>
       )}
 
-      <div className="flex flex-col overflow-hidden rounded-xl border border-line bg-white">
+      <div className="flex flex-col overflow-hidden rounded-[16px] bg-white shadow-[0_14px_34px_-22px_rgba(30,50,90,.28)]">
         {quizzes.length === 0 && (
           <div className="px-5 py-4 text-[13px] text-stone-400">
             아직 만든 퀴즈가 없습니다. 첫 퀴즈를 만들어보세요.
@@ -105,7 +105,7 @@ export default async function AdminQuizzesPage() {
                     className={`cursor-pointer rounded-[7px] px-3 py-1.5 text-[11.5px] font-semibold whitespace-nowrap ${
                       q.openAt
                         ? "border border-line bg-white text-stone-500 hover:border-stone-300"
-                        : "bg-accent text-white hover:bg-accent-strong"
+                        : "bg-accent text-white hover:brightness-115"
                     }`}
                   >
                     {q.openAt ? "비공개로 전환" : "학습자에게 공개"}

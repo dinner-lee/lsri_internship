@@ -23,7 +23,7 @@ export function ResearchControls({
   const rem = learnerCount > 0 ? learnerCount % count : 0;
 
   return (
-    <div className="flex flex-col gap-5 rounded-[14px] border border-line bg-white p-6">
+    <div className="flex flex-col gap-5 rounded-[20px] bg-white shadow-[0_18px_44px_-26px_rgba(30,50,90,.32),0_1px_3px_rgba(30,50,90,.04)] p-6">
       <div className="flex flex-wrap items-end gap-8">
         <div className="flex flex-col gap-2">
           <span className="text-xs font-semibold text-stone-600">모둠 수</span>
@@ -57,7 +57,7 @@ export function ResearchControls({
         <button
           onClick={generate}
           disabled={pending || learnerCount === 0}
-          className="font-display ml-auto cursor-pointer rounded-[9px] bg-accent px-6 py-2.5 text-[14px] text-white hover:bg-accent-strong disabled:opacity-60"
+          className="font-display ml-auto cursor-pointer rounded-[9px] bg-[linear-gradient(135deg,#2a63b4,#003E81)] px-6 py-2.5 text-[14px] text-white hover:brightness-115 disabled:opacity-60"
         >
           {pending ? "구성 중…" : "모둠 구성"}
         </button>
@@ -78,7 +78,7 @@ export function ResearchConfirmButton({ setId }: { setId: string }) {
         })
       }
       disabled={pending}
-      className="font-display cursor-pointer rounded-[9px] bg-accent px-5 py-2 text-[13px] text-white hover:bg-accent-strong disabled:opacity-60"
+      className="font-display cursor-pointer rounded-[9px] bg-[linear-gradient(135deg,#2a63b4,#003E81)] px-5 py-2 text-[13px] text-white hover:brightness-115 disabled:opacity-60"
     >
       {pending ? "확정 중…" : "이 구성으로 확정"}
     </button>

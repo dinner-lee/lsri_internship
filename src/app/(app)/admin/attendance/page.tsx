@@ -50,7 +50,7 @@ export default async function AttendancePage({
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-line bg-white px-5 py-3.5">
+      <div className="flex flex-wrap items-center gap-3 rounded-[16px] bg-white shadow-[0_14px_34px_-22px_rgba(30,50,90,.28)] px-5 py-3.5">
         <form className="flex items-center gap-2" action="/admin/attendance">
           <span className="text-xs font-semibold text-stone-600">날짜</span>
           <input

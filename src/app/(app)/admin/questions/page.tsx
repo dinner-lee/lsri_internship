@@ -27,7 +27,7 @@ async function LikeRanking() {
   }));
 
   return (
-    <div className="flex flex-col gap-2 rounded-[14px] border border-line bg-white px-5 py-4">
+    <div className="flex flex-col gap-2 rounded-[20px] bg-white shadow-[0_18px_44px_-26px_rgba(30,50,90,.32),0_1px_3px_rgba(30,50,90,.04)] px-5 py-4">
       <span className="text-[12.5px] font-semibold text-stone-600">
         <span className="text-bad/70">♥</span> 좋아요 랭킹
         <span className="ml-1.5 font-normal text-stone-400">좋아요를 많이 누른 순</span>

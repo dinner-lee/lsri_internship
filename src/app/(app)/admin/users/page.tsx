@@ -22,7 +22,7 @@ export default async function AdminUsersPage() {
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-line bg-white">
+      <div className="overflow-x-auto rounded-[16px] bg-white shadow-[0_14px_34px_-22px_rgba(30,50,90,.28)]">
         <div className="min-w-[640px]">
         <div className="grid grid-cols-[1fr_130px_190px_90px_150px] gap-2 border-b border-line-soft px-5 py-[11px] text-[11px] font-semibold text-stone-400">
           <span>이름</span>

@@ -49,7 +49,7 @@ function GroupCards({ set, editable = false }: { set: SetWithGroups; editable?: 
       {set.groups.map((g) => (
         <div
           key={g.id}
-          className="flex flex-col gap-3 rounded-xl border border-line bg-white px-5 py-[18px]"
+          className="flex flex-col gap-3 rounded-[16px] bg-white shadow-[0_14px_34px_-22px_rgba(30,50,90,.28)] px-5 py-[18px]"
         >
           <div className="flex flex-col gap-0.5">
             <span className="flex items-center justify-between font-display text-[13.5px]">
@@ -155,7 +155,7 @@ export default async function ResearchGroupsPage() {
       </div>
 
       {/* 주제별 득표 현황 */}
-      <div className="flex flex-col gap-3 rounded-[14px] border border-line bg-white p-6">
+      <div className="flex flex-col gap-3 rounded-[20px] bg-white shadow-[0_18px_44px_-26px_rgba(30,50,90,.32),0_1px_3px_rgba(30,50,90,.04)] p-6">
         <span className="font-display text-[13.5px] text-stone-600">
           주제별 선호 현황{" "}
           <span className="font-normal text-stone-400">
@@ -218,7 +218,7 @@ export default async function ResearchGroupsPage() {
       )}
 
       {confirmedSets.length > 0 && (
-        <details className="group rounded-[14px] border border-line bg-white" open={!currentSet}>
+        <details className="group rounded-[20px] bg-white shadow-[0_18px_44px_-26px_rgba(30,50,90,.32),0_1px_3px_rgba(30,50,90,.04)]" open={!currentSet}>
           <summary className="cursor-pointer list-none px-6 py-4">
             <span className="font-display text-[13.5px] text-stone-600">
               확정된 구성 기록{" "}

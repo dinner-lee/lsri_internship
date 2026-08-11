@@ -99,7 +99,7 @@ export function HostClient({
               <button
                 onClick={advance}
                 disabled={pending}
-                className="font-display cursor-pointer rounded-[9px] bg-accent px-6 py-2.5 text-[14px] text-white hover:bg-accent-strong disabled:opacity-60"
+                className="font-display cursor-pointer rounded-[9px] bg-[linear-gradient(135deg,#2a63b4,#003E81)] px-6 py-2.5 text-[14px] text-white hover:brightness-115 disabled:opacity-60"
               >
                 {pending ? "진행 중…" : advanceLabel}
               </button>
@@ -108,7 +108,7 @@ export function HostClient({
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 rounded-xl border border-line bg-white px-5 py-3.5 text-[12.5px] text-stone-500">
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 rounded-[16px] bg-white shadow-[0_14px_34px_-22px_rgba(30,50,90,.28)] px-5 py-3.5 text-[12.5px] text-stone-500">
         <span>
           참가자 <b className="text-stone-800">{state.participantCount}명</b>
         </span>
@@ -140,7 +140,7 @@ export function HostClient({
 
       {/* 대기실: 참가자 명단 */}
       {state.status === "LOBBY" && (
-        <div className="flex flex-col gap-4 rounded-[14px] border border-line bg-white p-7">
+        <div className="flex flex-col gap-4 rounded-[20px] bg-white shadow-[0_18px_44px_-26px_rgba(30,50,90,.32),0_1px_3px_rgba(30,50,90,.04)] p-7">
           <div className="font-display text-[15px] text-stone-700">
             대기실 — 학습자들이 스터디 홈의 배너로 입장합니다
           </div>
@@ -162,7 +162,7 @@ export function HostClient({
 
       {/* 진행 중 문항 (정답 표시 포함) */}
       {(state.status === "QUESTION" || state.status === "REVEAL") && q && (
-        <div className="flex flex-col gap-4 rounded-[14px] border border-line bg-white px-[26px] py-6">
+        <div className="flex flex-col gap-4 rounded-[20px] bg-white shadow-[0_18px_44px_-26px_rgba(30,50,90,.32),0_1px_3px_rgba(30,50,90,.04)] px-[26px] py-6">
           <div className="flex items-start gap-3">
             <span className="flex-none rounded-[7px] bg-accent-soft px-2 py-1 text-xs font-bold text-accent">
               Q{state.index + 1}
@@ -259,13 +259,13 @@ export function HostClient({
       )}
 
       {state.status === "ENDED" && (
-        <div className="flex items-center justify-between rounded-[14px] border border-line bg-white px-6 py-5">
+        <div className="flex items-center justify-between rounded-[20px] bg-white shadow-[0_18px_44px_-26px_rgba(30,50,90,.32),0_1px_3px_rgba(30,50,90,.04)] px-6 py-5">
           <span className="text-[13px] text-stone-500">
             세션이 종료되었고 결과가 제출 기록으로 저장되었습니다.
           </span>
           <Link
             href={`/admin/results?week=${state.week}`}
-            className="font-display rounded-[9px] bg-accent px-5 py-2.5 text-[13.5px] text-white hover:bg-accent-strong"
+            className="font-display rounded-[9px] bg-[linear-gradient(135deg,#2a63b4,#003E81)] px-5 py-2.5 text-[13.5px] text-white hover:brightness-115"
           >
             제출 현황 보기
           </Link>

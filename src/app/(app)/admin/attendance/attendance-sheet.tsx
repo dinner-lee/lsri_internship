@@ -42,7 +42,7 @@ export function AttendanceSheet({ date, rows }: { date: string; rows: Attendance
   const checkedCount = optRows.filter((r) => r.status !== null).length;
 
   return (
-    <div className="flex flex-col rounded-xl border border-line bg-white">
+    <div className="flex flex-col rounded-[16px] bg-white shadow-[0_14px_34px_-22px_rgba(30,50,90,.28)]">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line-soft px-5 py-3">
         <span className="text-[12.5px] text-stone-500">
           체크 완료 <b className="text-accent">{checkedCount}</b> / {optRows.length}명

@@ -12,7 +12,7 @@ export default async function AdminResultsPage({
   const quizzes = await prisma.quiz.findMany({ orderBy: { week: "asc" } });
   if (quizzes.length === 0) {
     return (
-      <div className="rounded-[14px] border border-line bg-white p-7 text-sm text-stone-400">
+      <div className="rounded-[20px] bg-white shadow-[0_18px_44px_-26px_rgba(30,50,90,.32),0_1px_3px_rgba(30,50,90,.04)] p-7 text-sm text-stone-400">
         아직 만든 퀴즈가 없습니다.{" "}
         <Link href="/admin/quizzes/new" className="text-accent underline">
           첫 퀴즈 만들기
@@ -78,7 +78,7 @@ export default async function AdminResultsPage({
         {stats.map((s) => (
           <div
             key={s.label}
-            className="flex flex-col gap-1 rounded-xl border border-line bg-white px-[18px] py-4"
+            className="flex flex-col gap-1 rounded-[16px] bg-white shadow-[0_14px_34px_-22px_rgba(30,50,90,.28)] px-[18px] py-4"
           >
             <span className="font-display text-[12px] text-stone-400">{s.label}</span>
             <span
@@ -92,7 +92,7 @@ export default async function AdminResultsPage({
         ))}
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-line bg-white">
+      <div className="overflow-x-auto rounded-[16px] bg-white shadow-[0_14px_34px_-22px_rgba(30,50,90,.28)]">
         <div className="min-w-[560px]">
         <div className="grid grid-cols-[44px_1fr_110px_70px_110px] gap-2 border-b border-line-soft px-5 py-[11px] text-[11px] font-semibold text-stone-400">
           <span>#</span>
