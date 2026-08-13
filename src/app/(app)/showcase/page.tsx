@@ -73,7 +73,7 @@ export default async function ShowcasePage() {
             <PencilIcon size={13} />
             게스트 화면 문구 설정
             <span className="font-normal text-stone-400">
-              입장 화면의 일시·환영 문구·발표 순서를 설정합니다 (비우면 기본 문구)
+              입장 화면의 일시·환영 문구·발표 순서를 설정합니다 (비우면 기본 문구 · **텍스트**는 굵게)
             </span>
           </summary>
           <form
@@ -83,7 +83,7 @@ export default async function ShowcasePage() {
             <SettingsField label="행사 일시 배지" hint="예: 8월 21일 (금) 13:00 — 15:30">
               <input name="eventBadge" defaultValue={settings?.eventBadge ?? ""} className={inputCls} />
             </SettingsField>
-            <SettingsField label="환영 제목" hint="줄바꿈이 그대로 표시됩니다">
+            <SettingsField label="환영 제목" hint="줄바꿈 유지 · **텍스트**는 굵게 표시">
               <textarea
                 name="welcomeTitle"
                 rows={3}
@@ -92,7 +92,7 @@ export default async function ShowcasePage() {
                 className={`${inputCls} resize-y`}
               />
             </SettingsField>
-            <SettingsField label="환영 설명">
+            <SettingsField label="환영 설명" hint="**텍스트**는 굵게 표시">
               <textarea
                 name="welcomeDesc"
                 rows={2}

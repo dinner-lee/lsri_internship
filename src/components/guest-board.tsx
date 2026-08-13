@@ -52,6 +52,21 @@ const ensureVoterKey = () => {
 const initialOf = (n: string) => (n || "게").trim().charAt(0);
 const pad2 = (n: number) => String(n).padStart(2, "0");
 
+// 관리자 설정 문구의 **텍스트** 구간을 weight 700으로 렌더링
+function renderBold(text: string) {
+  const parts = text.split("**");
+  if (parts.length < 3) return text;
+  return parts.map((p, i) =>
+    i % 2 === 1 ? (
+      <b key={i} className="font-bold">
+        {p}
+      </b>
+    ) : (
+      p
+    )
+  );
+}
+
 function timeAgo(iso: string) {
   const diff = Date.now() - new Date(iso).getTime();
   const m = Math.floor(diff / 60000);
@@ -182,13 +197,15 @@ function LoginScreen({
             <div className="flex flex-col gap-4">
               {texts.eventBadge && (
                 <span className="font-nexon self-start rounded-[6px] bg-[#eaf0f8] px-[15px] py-2 text-[13px] font-normal tracking-[0.02em] text-[#003E81]">
-                  {texts.eventBadge}
+                  {renderBold(texts.eventBadge)}
                 </span>
               )}
               <h1 className="font-nexon m-0 bg-[linear-gradient(135deg,#2a63b4,#003E81)] bg-clip-text text-[26px] leading-[1.42] font-normal tracking-[-0.035em] whitespace-pre-line text-transparent sm:text-[30px]">
                 {(() => {
-                  // '…결과보고회'까지는 weight 700, 그 뒤(예: '에 오신 것을 환영합니다')는 400
                   const t = texts.welcomeTitle;
+                  // 관리자가 **표시**를 직접 넣었으면 그 구간만 굵게
+                  if (t.includes("**")) return renderBold(t);
+                  // 기본: '…결과보고회'까지 weight 700, 그 뒤는 400
                   const idx = t.lastIndexOf("결과보고회");
                   if (idx < 0) return t;
                   const cut = idx + "결과보고회".length;
@@ -201,7 +218,7 @@ function LoginScreen({
                 })()}
               </h1>
               <p className="font-nexon m-0 text-[15px] leading-[1.75] font-normal whitespace-pre-line text-[#5d6b80] sm:text-[15.5px]">
-                {texts.welcomeDesc}
+                {renderBold(texts.welcomeDesc)}
               </p>
             </div>
 
@@ -272,7 +289,7 @@ function LoginScreen({
                   </span>
                   <div className="flex flex-1 flex-col gap-[3px]">
                     <span className="font-nexon text-[13.5px] leading-[1.55] font-normal tracking-[-0.01em] text-white">
-                      {row.label}
+                      {renderBold(row.label)}
                     </span>
                     {row.time && (
                       <span className="text-[11.5px] text-[#93a9c8] tabular-nums">{row.time}</span>
@@ -283,7 +300,7 @@ function LoginScreen({
             </div>
             {texts.agendaNote && (
               <span className="font-nexon relative text-[13.5px] leading-[1.65] font-normal text-[#93a9c8]">
-                {texts.agendaNote}
+                {renderBold(texts.agendaNote)}
               </span>
             )}
           </div>
@@ -783,7 +800,7 @@ function MainScreen({
         })}
 
         {texts.boardFooter && (
-          <p className="m-0 mt-2 text-center text-[12.5px] text-[#8b96a8]">{texts.boardFooter}</p>
+          <p className="m-0 mt-2 text-center text-[12.5px] text-[#8b96a8]">{renderBold(texts.boardFooter)}</p>
         )}
       </main>
     </div>
