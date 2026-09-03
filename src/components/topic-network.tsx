@@ -287,7 +287,7 @@ export function TopicNetwork({
 
   if (nodes.length === 0)
     return (
-      <div className="rounded-xl border border-line bg-white p-7 text-[13px] text-stone-400">
+      <div className="rounded-[16px] bg-white shadow-[0_14px_34px_-22px_rgba(30,50,90,.28)] p-7 text-[13px] text-stone-400">
         아직 키워드를 설정한 학습자가 없습니다.
       </div>
     );
@@ -366,7 +366,7 @@ export function TopicNetwork({
 
   return (
     <div className="flex flex-col gap-2.5">
-      <div className="relative overflow-hidden rounded-xl border border-line bg-white">
+      <div className="relative overflow-hidden rounded-[16px] bg-white shadow-[0_14px_34px_-22px_rgba(30,50,90,.28)]">
         <svg
           ref={svgRef}
           viewBox={`${box.x} ${box.y} ${box.w} ${box.h}`}

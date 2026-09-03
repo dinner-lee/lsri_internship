@@ -240,7 +240,7 @@ export default async function TopicsPage({
     <>
       <div className="-mb-3.5 flex items-center gap-1.5 font-display text-[16px] text-stone-600">
         <CompassIcon />
-        동료 주제 탐색
+        주제 탐색
         {mode !== "cards" && (
           <span className="ml-0.5 text-[12.5px] text-stone-400">
             {mode === "network" ? "— 관심 키워드가 겹치는 학생 네트워크" : "— 학생과 키워드의 연결"}
@@ -259,7 +259,7 @@ export default async function TopicsPage({
         <>
           <div className="flex flex-col gap-2.5 rounded-[16px] bg-white px-5 py-[18px] shadow-[0_14px_34px_-22px_rgba(30,50,90,.28)]">
             <div className="flex items-center gap-1.5 font-display text-[13px] text-stone-600">
-              관심 키워드 지도
+              키워드 목록
               <span className="group relative inline-flex items-center">
                 <span className="flex h-[15px] w-[15px] cursor-help items-center justify-center rounded-full border border-stone-300 font-sans text-[10px] font-semibold text-stone-400 group-hover:border-stone-400 group-hover:text-stone-600">
                   i

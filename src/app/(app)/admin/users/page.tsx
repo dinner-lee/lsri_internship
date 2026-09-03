@@ -2,14 +2,18 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth";
 import { UserAvatar } from "@/components/user-menu";
 import { RoleToggle } from "./role-toggle";
+import { InviteCodeManager } from "./invite-codes";
 
 export default async function AdminUsersPage() {
   const me = await requireAdmin();
 
-  const users = await prisma.user.findMany({
-    orderBy: [{ role: "asc" }, { createdAt: "asc" }],
-    include: { _count: { select: { submissions: true } } },
-  });
+  const [users, inviteCodes] = await Promise.all([
+    prisma.user.findMany({
+      orderBy: [{ role: "asc" }, { createdAt: "asc" }],
+      include: { _count: { select: { submissions: true } } },
+    }),
+    prisma.inviteCode.findMany({ orderBy: { createdAt: "desc" } }),
+  ]);
   const admins = users.filter((u) => u.role === "ADMIN").length;
 
   return (
@@ -21,6 +25,8 @@ export default async function AdminUsersPage() {
           생성되며, 여기에서 역할을 변경할 수 있습니다
         </div>
       </div>
+
+      <InviteCodeManager initial={inviteCodes} />
 
       <div className="overflow-x-auto rounded-[16px] bg-white shadow-[0_14px_34px_-22px_rgba(30,50,90,.28)]">
         <div className="min-w-[640px]">
