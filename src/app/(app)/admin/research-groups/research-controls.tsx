@@ -24,9 +24,9 @@ export function ResearchControls({
 
   return (
     <div className="flex flex-col gap-5 rounded-[20px] bg-white shadow-[0_18px_44px_-26px_rgba(30,50,90,.32),0_1px_3px_rgba(30,50,90,.04)] p-6">
+      <span className="font-display text-[13.5px] font-semibold text-stone-700">모둠 수 설정</span>
       <div className="flex flex-wrap items-end gap-8">
         <div className="flex flex-col gap-2">
-          <span className="text-xs font-semibold text-stone-600">모둠 수</span>
           <div className="flex items-center gap-0.5 rounded-[9px] bg-line-soft p-[3px]">
             <button
               type="button"

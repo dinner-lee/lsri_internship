@@ -220,7 +220,7 @@ export default async function ResearchGroupsPage() {
       {currentSet && (
         <div className="flex flex-col gap-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="font-display text-[13.5px] text-stone-600">
+            <span className="font-display text-[13.5px] font-semibold text-stone-700">
               구성 결과{" "}
               <span className="font-normal text-stone-400">
                 · 아직 확정되지 않았습니다 — 다시 구성하면 대체됩니다
@@ -235,8 +235,8 @@ export default async function ResearchGroupsPage() {
       {confirmedSets.length > 0 && (
         <details className="group rounded-[20px] bg-white shadow-[0_18px_44px_-26px_rgba(30,50,90,.32),0_1px_3px_rgba(30,50,90,.04)]" open={!currentSet}>
           <summary className="cursor-pointer list-none px-6 py-4">
-            <span className="font-display text-[13.5px] text-stone-600">
-              확정된 구성 기록{" "}
+            <span className="font-display text-[13.5px] font-semibold text-stone-700">
+              확정된 모둠 구성{" "}
               <span className="font-normal text-stone-400">· {confirmedSets.length}건</span>
             </span>
           </summary>

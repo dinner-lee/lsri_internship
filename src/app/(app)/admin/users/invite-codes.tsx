@@ -49,7 +49,7 @@ export function InviteCodeManager({ initial }: { initial: InviteCodeRow[] }) {
   return (
     <div className="flex flex-col gap-3 rounded-[20px] bg-white p-6 shadow-[0_18px_44px_-26px_rgba(30,50,90,.32),0_1px_3px_rgba(30,50,90,.04)]">
       <div className="flex flex-col gap-0.5">
-        <span className="font-display text-[13.5px] text-stone-600">초대 코드 관리</span>
+        <span className="font-display text-[13.5px] font-semibold text-stone-700">초대 코드 관리</span>
         <span className="text-[12px] text-stone-400">
           이 코드를 학습자·관리자에게 공유하면 &apos;가입하기&apos;에서 계정을 만들 수 있습니다
         </span>
