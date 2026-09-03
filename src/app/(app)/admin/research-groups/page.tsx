@@ -146,7 +146,6 @@ export default async function ResearchGroupsPage() {
       return { t, score, byRank, voters: tp.length };
     })
     .sort((a, b) => b.score - a.score);
-  const maxScore = Math.max(1, ...voteRows.map((r) => r.score));
 
   return (
     <div className="flex flex-col gap-[18px]">
@@ -185,12 +184,6 @@ export default async function ResearchGroupsPage() {
                   <span className="ml-1.5 text-[10.5px] font-normal whitespace-nowrap text-stone-400">
                     {t.user.name.split("/")[0].trim()}
                   </span>
-                </span>
-                <span className="h-[6px] w-full max-w-56 overflow-hidden rounded-full bg-line-soft">
-                  <span
-                    className="block h-full rounded-full bg-accent"
-                    style={{ width: `${Math.round((score / maxScore) * 100)}%` }}
-                  />
                 </span>
                 {voters > 0 && (
                   <div className="flex flex-wrap items-center gap-1.5">
