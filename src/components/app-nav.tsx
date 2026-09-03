@@ -18,7 +18,7 @@ import {
 
 const LEARNER_TABS = [
   { href: "/quiz", label: "스터디" },
-  { href: "/topics", label: "자율연구" },
+  { href: "/topics", label: "모둠 구성" },
   { href: "/showcase", label: "결과보고회" },
 ];
 
@@ -145,7 +145,7 @@ export function AppNav({ role, variant = "desktop" }: { role: Role; variant?: "d
     return (
       <nav className="hidden items-center gap-1 md:flex">
         {dropdown("스터디", "/admin/quizzes", studyActive, ADMIN_STUDY_SUBMENU)}
-        {dropdown("자율연구", "/topics", researchActive, ADMIN_RESEARCH_SUBMENU)}
+        {dropdown("모둠 구성", "/topics", researchActive, ADMIN_RESEARCH_SUBMENU)}
         <Link href={SHOWCASE_HREF} className={tabCls(isActive(SHOWCASE_HREF))}>
           결과보고회
         </Link>
@@ -185,7 +185,7 @@ export function AppNav({ role, variant = "desktop" }: { role: Role; variant?: "d
               </span>
               {ADMIN_STUDY_SUBMENU.map((t) => mobileItem(t.href, t.label, t.icon))}
               <span className="mt-1 border-t border-line-soft px-5 pt-3 pb-1 text-[10.5px] font-semibold text-stone-400">
-                자율연구
+                모둠 구성
               </span>
               {ADMIN_RESEARCH_SUBMENU.map((t) => mobileItem(t.href, t.label, t.icon))}
               <span className="mt-1 border-t border-line-soft px-5 pt-3 pb-1 text-[10.5px] font-semibold text-stone-400">
