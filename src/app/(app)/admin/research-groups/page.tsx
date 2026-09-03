@@ -134,12 +134,15 @@ export default async function ResearchGroupsPage() {
 
   const pickedCount = new Set(picks.map((p) => p.userId)).size;
 
-  // 주제별 득표 요약
+  // 주제별 득표 요약 — 순위별로 누가 체크했는지 이름까지 함께 집계
   const voteRows = topics
     .map((t) => {
       const tp = picks.filter((p) => p.topicId === t.id);
       const score = tp.reduce((s, p) => s + RANK_WEIGHT(p.rank), 0);
-      const byRank = [1, 2, 3, 4, 5].map((r) => tp.filter((p) => p.rank === r).length);
+      const byRank = [1, 2, 3, 4, 5].map((r) => ({
+        rank: r,
+        names: tp.filter((p) => p.rank === r).map((p) => p.user.name.split("/")[0].trim()),
+      }));
       return { t, score, byRank, voters: tp.length };
     })
     .sort((a, b) => b.score - a.score);
@@ -183,22 +186,29 @@ export default async function ResearchGroupsPage() {
                     {t.user.name.split("/")[0].trim()}
                   </span>
                 </span>
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                  <span className="h-[6px] w-full max-w-56 overflow-hidden rounded-full bg-line-soft">
-                    <span
-                      className="block h-full rounded-full bg-accent"
-                      style={{ width: `${Math.round((score / maxScore) * 100)}%` }}
-                    />
-                  </span>
-                  {voters > 0 && (
-                    <span className="flex flex-none gap-1.5 text-[10px] text-stone-400">
-                      {byRank
-                        .map((n, r) => (n > 0 ? `${r + 1}순위 ${n}` : null))
-                        .filter(Boolean)
-                        .join(" · ")}
-                    </span>
-                  )}
-                </div>
+                <span className="h-[6px] w-full max-w-56 overflow-hidden rounded-full bg-line-soft">
+                  <span
+                    className="block h-full rounded-full bg-accent"
+                    style={{ width: `${Math.round((score / maxScore) * 100)}%` }}
+                  />
+                </span>
+                {voters > 0 && (
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {byRank
+                      .filter((r) => r.names.length > 0)
+                      .map((r) => (
+                        <span
+                          key={r.rank}
+                          className={`inline-flex items-center gap-1 rounded-[5px] px-1.5 py-[1px] text-[10px] font-medium ${
+                            r.rank === 1 ? "bg-accent text-white" : "bg-accent-soft text-accent"
+                          }`}
+                        >
+                          <b className="font-bold">{r.rank}순위</b>
+                          <span className="font-normal opacity-90">{r.names.join(", ")}</span>
+                        </span>
+                      ))}
+                  </div>
+                )}
               </div>
               <span className="flex-none text-right text-[12.5px] font-bold whitespace-nowrap text-accent">
                 {score}점
