@@ -154,42 +154,54 @@ export default async function ResearchGroupsPage() {
         </div>
       </div>
 
-      {/* 주제별 득표 현황 */}
-      <div className="flex flex-col gap-3 rounded-[20px] bg-white shadow-[0_18px_44px_-26px_rgba(30,50,90,.32),0_1px_3px_rgba(30,50,90,.04)] p-6">
-        <span className="font-display text-[13.5px] text-stone-600">
-          주제별 선호 현황{" "}
-          <span className="font-normal text-stone-400">
-            · 1순위 5점 ~ 5순위 1점 가중 합산 · 선호 제출 {pickedCount}명
+      {/* 주제 선호도 */}
+      <div className="flex flex-col gap-4 rounded-[20px] bg-white p-6 shadow-[0_18px_44px_-26px_rgba(30,50,90,.32),0_1px_3px_rgba(30,50,90,.04)]">
+        <div className="flex flex-col gap-0.5">
+          <span className="font-display text-[13.5px] font-semibold text-stone-700">
+            주제 선호도
           </span>
-        </span>
+          <span className="text-[11.5px] text-stone-400">
+            1순위 5점 ~ 5순위 1점 가중 합산 · 선호 제출 {pickedCount}명
+          </span>
+        </div>
         {voteRows.length === 0 && (
-          <span className="text-[12.5px] text-stone-400">아직 작성된 연구 주제가 없습니다.</span>
+          <span className="text-[12.5px] text-stone-400">아직 작성된 항목이 없습니다.</span>
         )}
-        <div className="flex flex-col gap-2">
-          {voteRows.map(({ t, score, byRank, voters }) => (
-            <div key={t.id} className="flex items-center gap-3">
-              <span className="w-[220px] flex-none truncate text-[12.5px] font-medium text-stone-800">
-                {topicTitleOf(t.markdown)}
-                <span className="ml-1.5 text-[10.5px] font-normal text-stone-400">
-                  {t.user.name.split("/")[0].trim()}
+        <div className="flex flex-col">
+          {voteRows.map(({ t, score, byRank, voters }, i) => (
+            <div
+              key={t.id}
+              className="flex items-start gap-3 border-t border-line-soft py-3 first:border-t-0 first:pt-0 last:pb-0"
+            >
+              <span className="flex h-5 w-5 flex-none items-center justify-center rounded-full bg-line-soft text-[10px] font-bold text-stone-500 tabular-nums">
+                {i + 1}
+              </span>
+              <div className="flex min-w-0 flex-1 flex-col gap-2">
+                <span className="text-[12.5px] leading-snug font-medium break-words text-stone-800">
+                  {topicTitleOf(t.markdown)}
+                  <span className="ml-1.5 text-[10.5px] font-normal whitespace-nowrap text-stone-400">
+                    {t.user.name.split("/")[0].trim()}
+                  </span>
                 </span>
-              </span>
-              <span className="h-[7px] max-w-64 flex-1 overflow-hidden rounded-full bg-line-soft">
-                <span
-                  className="block h-full rounded-full bg-accent"
-                  style={{ width: `${Math.round((score / maxScore) * 100)}%` }}
-                />
-              </span>
-              <span className="w-10 flex-none text-right text-[11.5px] font-bold text-accent">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <span className="h-[6px] w-full max-w-56 overflow-hidden rounded-full bg-line-soft">
+                    <span
+                      className="block h-full rounded-full bg-accent"
+                      style={{ width: `${Math.round((score / maxScore) * 100)}%` }}
+                    />
+                  </span>
+                  {voters > 0 && (
+                    <span className="flex flex-none gap-1.5 text-[10px] text-stone-400">
+                      {byRank
+                        .map((n, r) => (n > 0 ? `${r + 1}순위 ${n}` : null))
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <span className="flex-none text-right text-[12.5px] font-bold whitespace-nowrap text-accent">
                 {score}점
-              </span>
-              <span className="hidden flex-none gap-1 text-[10px] text-stone-400 sm:flex">
-                {voters === 0
-                  ? "선호 없음"
-                  : byRank
-                      .map((n, i) => (n > 0 ? `${i + 1}순위 ${n}` : null))
-                      .filter(Boolean)
-                      .join(" · ")}
               </span>
             </div>
           ))}
